@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: tibco-flogo-generators
+  description: 'TIBCO® Flogo Extension Generators'
+  annotations:
+    github.com/project-slug: TIBCOSoftware/flogo-enterprise-hub
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - documentation
+    - tibco-hub-documentation
+spec:
+  owner: tibco-flogo-generators
+  domain: documentation
