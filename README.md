@@ -4,7 +4,7 @@
 
 TIBCO® Developer Hub is the center for building the apps that empower your organization. This repository holds the ready-to-install entries — templates, import flows, self-service flows, documentation, samples, and API definitions — that appear in your Developer Hub **Marketplace** and help you accelerate development, standardize best practices, and bring existing TIBCO assets into your Hub.
 
-![The TIBCO Developer Hub Marketplace](MP_Screenshot.jpg)
+![The TIBCO Developer Hub Marketplace](docs/MP_Screenshot.jpg)
 
 ## What is this repository?
 
