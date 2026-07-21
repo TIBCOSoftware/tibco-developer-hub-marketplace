@@ -16,7 +16,7 @@ Components, APIs, and Resources.
 Import flows appear under **Import** in the left navigation (not under Develop). You can search,
 sort, filter, and star them just like templates.
 
-![The Import page listing available import flows](./images/import-flows-overview.png)
+![The Import page listing available import flows](./images/import-flows-overview.webp)
 
 ## An import flow is a template with extra actions
 
@@ -51,7 +51,7 @@ menu in the top-right of an import flow gives you the same **Template Editor**, 
 Actions**, and **Task List** options. This guide focuses on what is *different*: the steps and
 the custom actions.
 
-<img src="./images/import-flow-card.png" alt="An import flow card on the Import page" width="350">
+<img src="./images/import-flow-card.webp" alt="An import flow card on the Import page" width="350">
 
 ## The import-flow steps
 
@@ -63,7 +63,7 @@ A typical import flow runs five steps in order:
 4. **Create a Pull Request / Push** the generated YAML back to the repository.
 5. **Register** the entity in the Software Catalog.
 
-![An import flow run showing the steps complete in order](./images/import-flow-run-steps.png)
+![An import flow run showing the steps complete in order](./images/import-flow-run-steps.webp)
 
 ## The custom actions
 
@@ -71,7 +71,7 @@ These are the "extra" actions that a regular template does not use. You can see 
 with their full input and output schemas, on the
 **[Installed Actions](/tibco/hub/create/actions)** page.
 
-![The extract-parameters and create-yaml actions in Installed Actions](./images/custom-actions.png)
+![The extract-parameters and create-yaml actions in Installed Actions](./images/custom-actions.webp)
 
 ### `tibco:git:clone` (or `fetch:plain`)
 Clones the existing Git repository into the workspace so later steps can read its files. Set
@@ -297,7 +297,7 @@ verify the result with the evaluators above before committing it to your import 
    and the entity is registered. Click **Open in catalog** to view it, or **Repository (Pull
    Request)** to review the change.
 
-![The imported component in the catalog](./images/imported-component.png)
+![The imported component in the catalog](./images/imported-component.webp)
 
 ## Advanced: linking components (dependencies)
 
@@ -305,7 +305,7 @@ The simple flow above produces a single, isolated Component. The real value of t
 is the **integration topology** — seeing how your applications depend on each other and on shared
 resources. To import those **links between components**, you use a slightly different approach.
 
-![Two components linked to a shared database resource in the catalog](./images/linked-components-topology.png)
+![Two components linked to a shared database resource in the catalog](./images/linked-components-topology.webp)
 
 There are three differences from the simple flow.
 

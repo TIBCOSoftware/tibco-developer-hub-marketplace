@@ -24,7 +24,7 @@ To see every template available in your instance, go to **Develop** in the left 
 Each card shows the template's type, description, owner, and tags. You can search, star
 favorites, and filter by category and tag.
 
-![Available templates in the Develop view](./images/templates-overview.png)
+![Available templates in the Develop view](./images/templates-overview.webp)
 
 ## How a template is constructed
 
@@ -139,7 +139,7 @@ becomes the label and their `description` becomes the helper text beneath it, an
 `required` list adds the asterisk (`*`). The `owner` property uses `ui:field: OwnerPicker`,
 so instead of a plain text box it renders as a catalog picker limited to Groups.
 
-![The example parameters rendered as a template form](./images/template-form.png)
+![The example parameters rendered as a template form](./images/template-form.webp)
 
 Some commonly used field widgets:
 
@@ -325,13 +325,13 @@ template produces. Skeleton files are run through templating, so they can use
 3. **Open the result** from the run page via **Open in Catalog**, and review history in the
    Task List.
 
-![The Develop view with the Register Existing Component button](./images/develop-new-component.png)
+![The Develop view with the Register Existing Component button](./images/develop-new-component.webp)
 
 There is also a ready-made starting point: the
 [**Template to Create a Template**](/tibco/hub/marketplace?filters%5Bkind%5D=template&filters%5Btags%5D=create-template),
 which you can install from the Marketplace and use to scaffold a new template you can edit.
 
-<img src="./images/template-to-create-template-card.png" alt="A template to create templates card" width="350">
+<img src="./images/template-to-create-template-card.webp" alt="A template to create templates card" width="350">
 
 ## Tip: generate templates with an agent and skills
 

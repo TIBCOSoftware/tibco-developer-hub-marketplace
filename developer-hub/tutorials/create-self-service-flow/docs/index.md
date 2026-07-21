@@ -3,9 +3,16 @@
 Where a template scaffolds a new project and an import flow brings existing code into the
 catalog, a **self service flow** acts directly on the **TIBCO Platform**: it executes a series
 of platform API calls — build an app, deploy it, provision a capability, expose an endpoint —
-straight from a form in the TIBCO Developer Hub. This guide explains what a self service flow
-is, the custom actions and form fields that make it work, and how to build, register, and run
-one.
+straight from a form in the TIBCO Developer Hub.
+
+This tutorial walks through the whole picture, in the order you need it:
+
+1. what a self service flow is, and where it shows up in the Developer Hub,
+2. how it relates to a normal template,
+3. the custom actions that talk to the platform,
+4. the custom form fields that make the form platform-aware,
+5. a complete, working example, and
+6. how to register and run your flow.
 
 ## What is a self service flow?
 
@@ -25,27 +32,41 @@ app — and register it in the catalog.*
 
 ## Where self service flows appear
 
-The Developer Hub gives self service flows their own surfaces:
+Before you build one, it helps to know where your flow will end up. The Developer Hub gives self
+service flows three of their own surfaces.
 
-- a dedicated **Self Service** page (left navigation) that lists all registered self service
-  flows, with search, filters, and favorites,
-- a **Self Service Flows** card on the home page that also displays your bookmarked favorites,
-  and
-- a dedicated **Self Service** category in the **Marketplace**.
+The main one is the dedicated **Self Service** page in the left navigation. It lists every
+registered self service flow as a card, with search, category filters, and a **Personal →
+Starred** filter for your favorites — the same layout as the Develop view, but scoped to
+`self-service` templates only.
 
-![The Self Service page listing available self service flows](./images/self-service-page.png)
+![The Self Service page listing available self service flows](./images/self-service-page.webp)
 
-![The Self Service Flows card on the home page](./images/home-self-service-flows-card.png)
+Each card ends in a **Choose** button, which opens the flow's form. That is the entry point your
+users will click, so the `title` and `description` you give the template are what sells it.
 
-![A self service flow entry in the Marketplace](./images/marketplace-self-service-category.png)
+The second surface is the **Marketplace**, which has its own **Self Service** category. This is
+how ready-made flows — including the example used later in this tutorial — are distributed: a
+user "gets" the entry, and the flow is registered into their Developer Hub in one click.
+
+![A self service flow entry in the Marketplace](./images/marketplace-self-service-category.webp)
+
+The third surface, the home page card, is covered at the end of this tutorial once you have a
+flow to star.
 
 ## A self service flow is a template
 
 Technically, a self service flow is the same entity as a template: a Backstage
-`scaffolder.backstage.io/v1beta3` `Template`. Two things make it a self service flow:
+`scaffolder.backstage.io/v1beta3` `Template`. What turns it into a self service flow is the
+**`self-service` tag**. That single tag does all the routing:
 
-- **`spec.type: self-service`**, which routes it to the Self Service page, and
-- the **`self-service` tag**.
+- the **Self Service** page lists every `Template` tagged `self-service` (excluding anything also
+  tagged `devhub-marketplace`),
+- the home page **Self Service Flows** card queries the catalog for the same tag, and
+- the **Develop** page excludes it, so a flow never shows up in both places.
+
+Set `spec.type: self-service` as well. It is not what routes the flow — the tag is — but it is the
+convention every TIBCO flow follows, and Backstage shows it as the type chip on the card.
 
 ```yaml
 apiVersion: scaffolder.backstage.io/v1beta3
@@ -55,12 +76,12 @@ metadata:
   title: Build & Deploy Flogo App
   description: 'Builds and deploys a Flogo application to a dynamically selected TIBCO Data Plane.'
   tags:
-    - self-service      # <- this tag marks it as a self service flow
+    - self-service      # <- this tag is what makes it a self service flow
     - tibco
     - flogo
 spec:
   owner: group:default/tibco-self-service
-  type: self-service    # <- this type routes it to the Self Service page
+  type: self-service    # <- convention; shown as the type chip on the card
 ```
 
 Because it is a template, everything from the
@@ -84,7 +105,11 @@ support and handles diverse payload types: structured JSON, multipart forms for 
 and standard URL-encoded data. MIME types are detected automatically from file extensions (such
 as `.zip`, `.json`, or `.flogo`). If no HTTP method is given, it defaults to `GET`.
 
-![The tibco:call-platform-api action in Installed Actions](./images/call-platform-api-action.png)
+![The tibco:call-platform-api action in Installed Actions](./images/call-platform-api-action.webp)
+
+The Installed Actions page above is worth keeping open while you write a flow: it always shows
+the schema of the action as it is installed in *your* Developer Hub. The tables below summarise
+the parameters you will use most.
 
 **Input parameters**
 
@@ -160,7 +185,11 @@ Retrieves an API definition from the Developer Hub catalog and stores it in the 
 workspace. It works with *API* entities and can resolve definitions from *Component* entities
 via the `providesApis` field.
 
-![The tibco:fetch-api-file action in Installed Actions](./images/fetch-api-file-action.png)
+![The tibco:fetch-api-file action in Installed Actions](./images/fetch-api-file-action.webp)
+
+Typical use: a flow that deploys an application and then needs the app's own OpenAPI definition
+to push it to an API gateway. Instead of downloading the spec by hand, the flow pulls it
+straight out of the catalog.
 
 **Input parameters**
 
@@ -210,10 +239,16 @@ both valid and contextually relevant.
 | DataplaneSelectorExtension | `DataplaneSelector` | A dropdown menu for selecting a TIBCO Dataplane. |
 | CapabilitySelectorExtension | `CapabilitySelector` | A multi-functional selector that filters targets by health status. |
 
-You can try both out in the **Custom Field Explorer** (Develop → ellipsis menu → Custom Field
-Explorer).
+Before wiring a field into your flow, try it out in the **Custom Field Explorer** (Develop →
+ellipsis menu → Custom Field Explorer). It renders a single field in isolation, against your
+real Control Plane, and shows the JSON value it produces — which is exactly what your steps will
+receive.
 
-![The CapabilitySelector in the Custom Field Explorer](./images/capability-selector-explorer.png)
+![The CapabilitySelector in the Custom Field Explorer](./images/capability-selector-explorer.webp)
+
+In the screenshot the `CapabilitySelector` has already queried the platform and is offering only
+the data planes that satisfy the configured capabilities. Note the output panel: the field
+returns an object, not a string. The next section explains what is in it.
 
 ### `CapabilitySelector` — combined selector logic
 
@@ -247,6 +282,8 @@ need:
 | `dataplaneId` | string | The unique identifier of the chosen Dataplane |
 | `capabilityId` | string | The instance ID targeted for the deployment |
 | `dataplaneUrl` | string | The resolved base URL for API interactions |
+| `dataplaneHost` | string | The hostname of the Dataplane — use it for ingress configuration when exposing an app endpoint |
+| `dataplaneName` | string | The display name of the Dataplane — use it in output text shown to the user |
 
 Use it directly in your steps:
 
@@ -345,5 +382,13 @@ at the raw URL of your flow YAML. Because the template has `spec.type: self-serv
 appears on the **Self Service** page, where anyone can hit **Choose**, fill in the form, and
 watch the steps execute against the platform.
 
-Tip: star the flows you use most — they show up in the **Personal → Starred** filter and on the
-home page Self Service Flows card.
+Run it once end to end. Each step reports its own log output, so if a platform call fails you
+can see the status code and response body of the exact `tibco:call-platform-api` step that
+broke, and fix the endpoint or payload without guessing.
+
+Finally, star the flows you and your team use most. Starred flows show up under the **Personal →
+Starred** filter on the Self Service page, and — the third surface promised at the start of this
+tutorial — on the **Self Service Flows** card on the Developer Hub home page, one click away
+from where everyone starts their day.
+
+![The Self Service Flows card on the home page](./images/home-self-service-flows-card.webp)
