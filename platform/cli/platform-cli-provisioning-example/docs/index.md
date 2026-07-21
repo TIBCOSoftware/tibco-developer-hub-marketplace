@@ -2,7 +2,7 @@
 
 **Documentation**
 
-[https://docs.tibco.com/pub/platform-cp/1.11.0/doc/html/Default.htm#UserGuide/tibco-platform-cli-overview.htm](https://docs.tibco.com/pub/platform-cp/1.11.0/doc/html/Default.htm#UserGuide/tibco-platform-cli-overview.htm)
+[https://docs.tibco.com/pub/platform-cp/latest/doc/html/Default.htm#UserGuide/tibco-platform-cli-overview.htm](https://docs.tibco.com/pub/platform-cp/latest/doc/html/Default.htm#UserGuide/tibco-platform-cli-overview.htm)
 
 **GitHub Repository:**
 
@@ -57,7 +57,7 @@ platform_cli_profile="<Your_CLI_Profile>"
 fqdn_base="<Your_EndPoint_URL>"
 ```
 
-Provide a use-case, your base URL and specify your CLI profile, for more information on profiles see: [Using Profiles](https://docs.tibco.com/pub/platform-cp/1.10.0/doc/html/Default.htm#CLI/authentication.htm?TocPath=TIBCO%2520Platform%2520CLI%257C_____5)
+Provide a use-case, your base URL and specify your CLI profile, for more information on profiles see: [Using Profiles](https://docs.tibco.com/pub/platform-cp/latest/doc/html/Default.htm#CLI/authentication.htm?TocPath=TIBCO%2520Platform%2520CLI%257C_____5)
 
 Optionally you can specify the platform cli to use and your kube config file in **0-common-script-functions.sh**
 
