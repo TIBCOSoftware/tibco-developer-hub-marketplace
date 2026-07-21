@@ -1,0 +1,8 @@
+site_name: 'Developer Hub Portable'
+site_description: 'developer-hub-portable-doc'
+
+nav:
+  - Introduction: index.md
+
+plugins:
+  - techdocs-core

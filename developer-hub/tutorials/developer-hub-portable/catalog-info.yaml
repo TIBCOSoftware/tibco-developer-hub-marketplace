@@ -1,0 +1,33 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: developer-hub-portable-doc
+  description: Developer Hub Portable Documentation
+spec:
+  type: organization
+  profile:
+    displayName: Developer Hub Portable Documentation
+#    email: info@acme.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: developer-hub-portable-doc
+  description: A group of documents
+spec:
+  owner: developer-hub-portable-doc
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: developer-hub-portable
+  description: 'Run the Developer Hub Portable'
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - documentation
+    - tibco-hub-documentation
+spec:
+  owner: developer-hub-portable-doc
+  domain: developer-hub-portable-doc
