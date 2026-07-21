@@ -29,7 +29,7 @@ You can download the Hotfix from here: https://support.tibco.com/wolken-support/
 * Check the option **"Enable BW6 Design Assistant"**
 * Click **Apply and Close**
 
-![Enable BW6 Design Assistant](image.png)
+![Enable BW6 Design Assistant](image.webp)
 
 ---
 
