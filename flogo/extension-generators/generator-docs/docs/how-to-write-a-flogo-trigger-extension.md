@@ -1,6 +1,6 @@
 # HOW TO WRITE A FLOGO TRIGGER EXTENSION
 
-![Functions](./images/activity.png)
+![Functions](./images/activity.webp)
 
 To write a Flogo extension - whether it's an activity, trigger, or function - you'll be working in Go and following a specific structure that Flogo expects. Here's a practical breakdown tailored for somebody like you, who's already deep into backend and infrastructure tooling.
 ya
@@ -667,7 +667,7 @@ Settings, Input, and Output fields support various decorator UI options:
 
 1. Simple text input box for name-type pair:
 
-![ui-textbox](./images/ui-textbox.png)
+![ui-textbox](./images/ui-textbox.webp)
 
 ```json
 {
@@ -684,7 +684,7 @@ Settings, Input, and Output fields support various decorator UI options:
 
 2. Simple boolean toggle:
 
-![ui-textbox](./images/ui-boolean-toggle.png)
+![ui-textbox](./images/ui-boolean-toggle.webp)
 
 ```json
 {
@@ -702,7 +702,7 @@ Settings, Input, and Output fields support various decorator UI options:
 
 3. Dropdown box:
 
-![ui-textbox](./images/ui-dropdown.png)
+![ui-textbox](./images/ui-dropdown.webp)
 
 ```json
 {
@@ -723,7 +723,7 @@ Settings, Input, and Output fields support various decorator UI options:
 
 4. Array table:
 
-![ui-textbox](./images/ui-proparray.png)
+![ui-textbox](./images/ui-proparray.webp)
 
 ```json
 {
@@ -741,7 +741,7 @@ Settings, Input, and Output fields support various decorator UI options:
 
 5. JSON Object
 
-![ui-jsonobject](./images/ui-jsonobject.png)
+![ui-jsonobject](./images/ui-jsonobject.webp)
 
 ```json
 {

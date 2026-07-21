@@ -2,6 +2,16 @@
 
 A library of **skills for AI coding agents** (such as **Claude Code**) to design, build, test, and deploy TIBCO Flogo integration applications. Drop these skills into the `.claude/skills/` directory of any project and the agent will use them to drive the Flogo, build, and platform CLIs end-to-end.
 
+## Watch: Build Integration Workflows in Minutes
+
+See the skills in action — designing, building and deploying a Flogo application with an AI coding agent.
+
+[![Build Integration workflows in minutes with AI Coding Agents & Skills](https://img.youtube.com/vi/bxucbxwSBPc/maxresdefault.jpg)](https://www.youtube.com/watch?v=bxucbxwSBPc)
+
+*Click the image to watch on YouTube.*
+
+---
+
 ## Run the Flogo Skill Library Template
 
 [Open the Flogo Skill Library Template](/tibco/hub/create/templates/default/flogo-skill-library-template) to scaffold a new project pre-seeded with the skills, an `AGENT.md` for your coding agent, and the docs you're reading now.
@@ -24,7 +34,7 @@ user-invocable: true
 # Step-by-step instructions, command references, and recipes...
 ```
 
-![Skills folder structure and SKILL.md preview](./images/coding-agents-skills.png)
+![Skills folder structure and SKILL.md preview](./images/coding-agents-skills.webp)
 
 ---
 
@@ -47,7 +57,7 @@ The library contains **6 skills** that cover the full Flogo development lifecycl
 
 The skills work alongside the rest of the Flogo developer toolkit. The coding agent uses **VS Code with the Flogo Design Assistant** for design-time editing, **flogobuild** for local builds, and the **TIBCO Platform CLI (`tibcop`)** to deploy applications to a dataplane on the TIBCO Platform.
 
-![Architecture: VS Code + Skills + Design Assistant + builders + dataplane](./images/architecture.png)
+![Architecture: VS Code + Skills + Design Assistant + builders + dataplane](./images/architecture.webp)
 
 ---
 
@@ -55,7 +65,7 @@ The skills work alongside the rest of the Flogo developer toolkit. The coding ag
 
 Using the `mapping-from-excel` skill, the agent can read an Excel mapping spec — input fields in column A, output fields in column B, and a mapping expression in column C — and turn it into a fully wired Flogo flow with two mappers, a logger, and a timer trigger.
 
-![Excel mapping spec turned into a Flogo flow](./images/excel-to-flogo-mapping.png)
+![Excel mapping spec turned into a Flogo flow](./images/excel-to-flogo-mapping.webp)
 
 A typical prompt:
 
@@ -67,7 +77,7 @@ A typical prompt:
 
 The `flogo-deploy` skill chains together the build (`flogobuild`), values generation, deployment (`tibcop flogo:deploy-app-release`), and scale-up (`tibcop flogo:scale-app`) steps. The agent can take an app from source to a running instance on the TIBCO Platform in a single conversation.
 
-![Deployment success with build ID, app ID, and live logs in the platform](./images/deployed-app.png)
+![Deployment success with build ID, app ID, and live logs in the platform](./images/deployed-app.webp)
 
 A typical prompt:
 
@@ -110,7 +120,7 @@ The skills assume the following CLIs are installed and on your `PATH`:
 
 The Flogo Design Assistant CLI ships with the **TIBCO Flogo VS Code extension** at a long path like `<vscode-extensions-dir>/tibco.flogo-<version>/bin/flogodesign-cli`. Set up an `fda` alias so you (and the coding agent) can simply run `fda <task>` from any terminal.
 
-![Alias setup examples for zsh, PowerShell and CMD](./images/fda-alias-setup.png)
+![Alias setup examples for zsh, PowerShell and CMD](./images/fda-alias-setup.webp)
 
 ### Find the path to `flogodesign-cli`
 

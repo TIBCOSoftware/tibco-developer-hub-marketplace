@@ -22,7 +22,7 @@ metadata:
       url: "https://github.com/TIBCOSoftware/flogo-enterprise-hub/tree/master/demos/flogo-machine-learning-anomaly-detection"
       icon: github
     - title: Flogo Documentation
-      url: "https://docs.tibco.com/pub/flogo/2.25.8/doc/html/Default.htm"
+      url: "https://docs.tibco.com/pub/flogo/latest/doc/html/Default.htm"
       icon: docs
   tags:
     - artificial-intelligence

@@ -1,6 +1,6 @@
 # FLOGO FUNCTION EXTENSION SCAFFOLDER
 
-![Flogo Extension Generator](./images/Flogo-border.png)
+![Flogo Extension Generator](./images/Flogo-border.webp)
 
 ## About this Template
 
@@ -8,7 +8,7 @@ This template is used to scaffold a Flogo Function Extension. It will populate t
 
 Navigate to the Develop a new component section under TIBCO Developer Hub. You will see a tile named 'Flogo Function Extension Scaffolder':
 
-![scaffolder](./images/simple-function-generator-scaffolder.png)
+![scaffolder](./images/simple-function-generator-scaffolder.webp)
 
 
 ## What you’ll need to do first...
@@ -19,7 +19,7 @@ TIBCO Developer Hub templates uses and store your artefacts in Github. You'll ne
 ### Fork the Official TIBCO Flogo Enterprise Repository
 Head over to [Flogo Enterprise Github Repository](https://github.com/TIBCOSoftware/flogo-enterprise-hub) and fork it to your Github account. 
 
-![fork](./images/simple-function-generator-repository-fork.png)
+![fork](./images/simple-function-generator-repository-fork.webp)
 
 
 Any new extensions you create using the Flogo Extension Generator templates will be placed under the extensions folder in this repository.
@@ -29,7 +29,7 @@ Any new extensions you create using the Flogo Extension Generator templates will
 
 ### Step 1 - Flogo Enterprise Hub Repository Location
 
-![step1](./images/simple-function-generator-scaffolder-step1.png)
+![step1](./images/simple-function-generator-scaffolder-step1.webp)
 
 Provide values for Owner, Repository, and Branch. The template will use these values to initiate a pull from this repository.
 
@@ -38,7 +38,7 @@ By default, the Repository name is 'flogo-enterprise-hub'. If you've forked the 
 
 ### Step 2 - Contribution Details
 
-![step2](./images/simple-function-generator-scaffolder-step2.png)
+![step2](./images/simple-function-generator-scaffolder-step2.webp)
 
 
 Provide values for Function Package Name, Version, Title, and Description:
@@ -52,7 +52,7 @@ Provide values for Function Package Name, Version, Title, and Description:
 
 ### Step 3 - Function Details
 
-![step3](./images/simple-function-generator-scaffolder-step3.png)
+![step3](./images/simple-function-generator-scaffolder-step3.webp)
 
 The Function Details step allows you to configure one or more functions for your extension.
 
@@ -68,11 +68,11 @@ Provide values for each Function:
 
 ### Step 4 - Review
 
-![review](./images/simple-function-generator-review.png)
+![review](./images/simple-function-generator-review.webp)
 
 ### Step 5 - Run
 
-![run](./images/simple-function-generator-run.png)
+![run](./images/simple-function-generator-run.webp)
 
 
 

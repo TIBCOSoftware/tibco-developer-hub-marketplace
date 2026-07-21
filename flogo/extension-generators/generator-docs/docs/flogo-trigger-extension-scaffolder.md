@@ -1,6 +1,6 @@
 # FLOGO TRIGGER EXTENSION SCAFFOLDER
 
-![Flogo Extension Generator](./images/Flogo-border.png)
+![Flogo Extension Generator](./images/Flogo-border.webp)
 
 ## About this Template
 
@@ -8,7 +8,7 @@ This template is used to scaffold a Flogo Trigger Extension. It will populate th
 
 Navigate to the Develop a new component section under TIBCO Developer Hub. You will see a tile named 'Flogo Trigger Extension Scaffolder':
 
-![scaffolder](./images/simple-trigger-generator-scaffolder.png)
+![scaffolder](./images/simple-trigger-generator-scaffolder.webp)
 
 
 ## What you’ll need to do first...
@@ -19,7 +19,7 @@ TIBCO Developer Hub templates uses and store your artefacts in Github. You'll ne
 ### Fork the Official TIBCO Flogo Enterprise Repository
 Head over to [Flogo Enterprise Github Repository](https://github.com/TIBCOSoftware/flogo-enterprise-hub) and fork it to your Github account. 
 
-![fork](./images/simple-trigger-generator-repository-fork.png)
+![fork](./images/simple-trigger-generator-repository-fork.webp)
 
 
 Any new extensions you create using the Flogo Extension Generator templates will be placed under the extensions folder in this repository.
@@ -29,7 +29,7 @@ Any new extensions you create using the Flogo Extension Generator templates will
 
 ### Step 1 - Flogo Enterprise Hub Repository Location
 
-![step1](./images/simple-trigger-generator-scaffolder-step1.png)
+![step1](./images/simple-trigger-generator-scaffolder-step1.webp)
 
 Provide values for Owner, Repository, and Branch. The template will use these values to initiate a pull from this repository.
 
@@ -38,7 +38,7 @@ By default, the Repository name is 'flogo-enterprise-hub'. If you've forked the 
 
 ### Step 2 - Contribution Details
 
-![step2](./images/simple-trigger-generator-scaffolder-step2.png)
+![step2](./images/simple-trigger-generator-scaffolder-step2.webp)
 
 
 Provide values for Category, ExtensionName, Version, Description, and Overview:
@@ -70,20 +70,20 @@ Example:
 
 | Section | |
 |--|--|
-| Details | ![details](./images/simple-trigger-generator-contribution-details-1.png) |
-| Settings | ![settings](./images/simple-trigger-generator-contribution-details-2.png) |
-| Handler | ![handler](./images/simple-trigger-generator-contribution-details-3.png)  |
-| Output | ![output](./images/simple-trigger-generator-contribution-details-4.png)  |
+| Details | ![details](./images/simple-trigger-generator-contribution-details-1.webp) |
+| Settings | ![settings](./images/simple-trigger-generator-contribution-details-2.webp) |
+| Handler | ![handler](./images/simple-trigger-generator-contribution-details-3.webp)  |
+| Output | ![output](./images/simple-trigger-generator-contribution-details-4.webp)  |
 
 
 
 ### Step 4 - Review
 
-![review](./images/simple-trigger-generator-review.png)
+![review](./images/simple-trigger-generator-review.webp)
 
 ### Step 5 - Run
 
-![run](./images/simple-trigger-generator-run.png)
+![run](./images/simple-trigger-generator-run.webp)
 
 
 

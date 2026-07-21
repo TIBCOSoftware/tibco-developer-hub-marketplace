@@ -191,7 +191,7 @@ For issues, questions, or contributions:
 
 ## 🎪 Live Demo
 
-![Demo Flow](images/Flow-flow-executable-run-invoked-byClaude.png)
+![Demo Flow](images/Flow-flow-executable-run-invoked-byClaude.webp)
 
 **Experience the complete workflow:**
 1. **Visual Design**: Templates created in Flogo's drag-and-drop interface

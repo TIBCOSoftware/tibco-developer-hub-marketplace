@@ -1,6 +1,6 @@
 # HOW TO WRITE A FLOGO FUNCTION EXTENSION
 
-![Functions](./images/functions.png)
+![Functions](./images/functions.webp)
 
 To write a Flogo extension - whether it's an activity, trigger, or function - you'll be working in Go and following a specific structure that Flogo expects. Here's a practical breakdown tailored for somebody like you, who's already deep into backend and infrastructure tooling.
 

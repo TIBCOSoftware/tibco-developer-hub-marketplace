@@ -1,5 +1,5 @@
 # FLOGO ACTIVITY EXTENSION SCAFFOLDER
-![Flogo Extension Generator](./images/Flogo-border.png)
+![Flogo Extension Generator](./images/Flogo-border.webp)
 
 ## About this Template
 
@@ -7,7 +7,7 @@ This template is used to scaffold a Flogo Activity Extension. It will populate t
 
 Navigate to the Develop a new component section under TIBCO Developer Hub. You will see a tile named 'Flogo Trigger Extension Scaffolder':
 
-![scaffolder](./images/simple-activity-generator-scaffolder.png)
+![scaffolder](./images/simple-activity-generator-scaffolder.webp)
 
 ## What you’ll need to do first...
 
@@ -17,7 +17,7 @@ TIBCO Developer Hub templates uses and store your artefacts in Github. You'll ne
 ### Fork the Official TIBCO Flogo Enterprise Repository
 Head over to [Flogo Enterprise Github Repository](https://github.com/TIBCOSoftware/flogo-enterprise-hub) and fork it to your Github account. 
 
-![fork](./images/simple-activity-generator-repository-fork.png)
+![fork](./images/simple-activity-generator-repository-fork.webp)
 
 
 Any new extensions you create using the Flogo Extension Generator templates will be placed under the extensions folder in this repository.
@@ -27,7 +27,7 @@ Any new extensions you create using the Flogo Extension Generator templates will
 
 ### Step 1 - Flogo Enterprise Hub Repository Location
 
-![scaffolder-step1](./images/simple-activity-generator-scaffolder-step1.png)
+![scaffolder-step1](./images/simple-activity-generator-scaffolder-step1.webp)
 
 Provide values for Owner, Repository, and Branch. The template will use these values to initiate a pull from this repository.
 
@@ -36,7 +36,7 @@ By default, the Repository name is 'flogo-enterprise-hub'. If you've forked the 
 
 ### Step 2 - Contribution Details
 
-![scaffolder-step2](./images/simple-activity-generator-scaffolder-step2.png)
+![scaffolder-step2](./images/simple-activity-generator-scaffolder-step2.webp)
 
 
 Provide values for Category, ExtensionName, Version, Description, and Overview:
@@ -69,20 +69,20 @@ Example:
 
 | Section | |
 |--|--|
-| Details | ![details](./images/simple-activity-generator-contribution-details-1.png) |
-| Settings | ![settings](./images/simple-activity-generator-contribution-details-2.png) |
-| Input | ![input](./images/simple-activity-generator-contribution-details-3.png) |
-| Output | ![output](./images/simple-activity-generator-contribution-details-4.png) |
+| Details | ![details](./images/simple-activity-generator-contribution-details-1.webp) |
+| Settings | ![settings](./images/simple-activity-generator-contribution-details-2.webp) |
+| Input | ![input](./images/simple-activity-generator-contribution-details-3.webp) |
+| Output | ![output](./images/simple-activity-generator-contribution-details-4.webp) |
 
 
 
 ### Step 4 - Review
 
-![review](./images/simple-activity-generator-review.png)
+![review](./images/simple-activity-generator-review.webp)
 
 ### Step 5 - Run
 
-![run](./images/simple-activity-generator-run.png)
+![run](./images/simple-activity-generator-run.webp)
 
 
 

@@ -136,7 +136,7 @@ This section are some of the questions that are asked about this sample.
 <a name="ref" />
 
 ## References
-- TIBCO Platform Documentation: https://docs.tibco.com/pub/platform-cp/1.10.0/doc/html/Default.htm
-- TIBCO Flogo Enterprise Documentation: https://docs.tibco.com/pub/flogo/2.25.8/doc/html/Default.htm
+- TIBCO Platform Documentation: https://docs.tibco.com/pub/platform-cp/latest/doc/html/Default.htm
+- TIBCO Flogo Enterprise Documentation: https://docs.tibco.com/pub/flogo/latest/doc/html/Default.htm
 - skikit-learn: https://scikit-learn.org/stable/index.html
 - skikit-learn IsolationForest API Reference: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html
