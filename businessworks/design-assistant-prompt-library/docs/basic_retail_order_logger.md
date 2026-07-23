@@ -9,7 +9,7 @@
 
 !!! note "Prompt 1"
     ```
-    Can you create an application called Retail_Order_Logger ?
+    Can you create an application called RetailOrderLogger ?
     ```
 
 
