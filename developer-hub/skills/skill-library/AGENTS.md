@@ -56,6 +56,7 @@ Local backend services (sibling files in `packages/backend/src/`): `rootLoggerSe
 - `/import-flow` — templates tagged `import-flow` (excluding `devhub-internal`), uses `TemplateListPage` from `@internal/backstage-plugin-import-flow`
 - `/marketplace` — templates tagged `devhub-marketplace`, uses `MarketplacePage` from `@internal/plugin-marketplace`
 - `/create` — wrapped `CustomScaffolderPage` in `components/scaffolder/`
+- `/self-service-flow` — templates tagged `self-service` (excluding `devhub-marketplace`), via `CustomSelfServicePage` in `App.tsx`; also surfaced by the home page Self Service Flows card, and excluded from `/create`
 - `/integration-topology` — `@internal/plugin-integration-topology`
 
 Tag-based grouping for these three pages is configured via `templateGroups`, `importFlowGroups`, and `marketplaceGroups` in `app-config.yaml`.
@@ -117,6 +118,21 @@ Import flows follow a **clone → extract → generate → register** pattern us
 3. Create `templates/<slug>/<slug>.yaml` with tag `import-flow`; optionally create `entity-skeletons-<tech>/` for Nunjucks templates
 4. Register in `app-config.local.yaml`; restart backend for it to appear at `/import-flow`
 
+### create-self-service-flow
+
+Author a new self service flow — a Template that executes a series of actions on the **TIBCO Platform** via its APIs, rather than scaffolding a repo (`create-template`) or ingesting one (`create-import-flow`). Typical uses: build & deploy an app to a Data Plane, provision a capability or connector, expose an endpoint, import platform apps into the Hub.
+
+A flow is recognised as self service by the **`self-service` tag** — that is the only thing the routing reads. It then appears at `/self-service-flow` and on the home page Self Service Flows card, and is excluded from `/create`. Set `spec.type: self-service` too by convention (it renders as the type chip), but it does not affect routing.
+
+It uses TIBCO custom actions — `tibco:call-platform-api` (the core action), `tibco:file:write`, `tibco:fetch-api-file`, `tibco:extract-parameters` — plus the platform-aware form fields `CapabilitySelector` and `DataplaneSelector`, which query live Control Plane data while the user fills in the form.
+
+1. Read a reference flow first: `tibco-examples/self-service-flows/build-deploy-flogo-app/` (build → deploy → expose → link → register) or the BW5CE variant
+2. Gather: slug (conventionally `self-service-<name>`), title, description, goal, technology, required capabilities, whether the flow publishes and registers a catalog entry, owner (default `group:default/tibco-self-service`)
+3. Create `templates/<slug>/<slug>.yaml` with the `self-service` tag (and `spec.type: self-service` by convention); add a `skeleton-<tech>-app/` only if publishing to GitHub
+4. Follow the **check → provision-if-missing → act** step pattern, guarding every provisioning step with `if:` so re-runs are idempotent
+5. Control Plane calls omit `baseUrl`; Data Plane calls must pass `baseUrl: ${{ parameters.deploymentTarget.dataplaneUrl }}`
+6. Ensure `cpLink` and `TIBCOPlatformToken` are set in `app-config.local.yaml`; register in `catalog.locations` and restart the backend
+
 ### create-theme
 
 Add a new Backstage theme (or replace the default TIBCO one) with an optional custom logo.
@@ -149,6 +165,32 @@ Two-phase end-to-end test for an import flow template.
 2. POST to `http://127.0.0.1:7007/api/scaffolder/v2/tasks` with real parameter values
 3. Poll `GET /api/scaffolder/v2/tasks/{id}` until status is `completed` or `failed`
 4. Query `GET /api/catalog/entities?filter=kind=Component,metadata.name=<name>` to confirm the imported entities were registered in the catalog
+
+### test-self-service-flow
+
+Two-phase test for a self service flow. Heavier than the other test skills: Phase 2 consumes real Data Plane resources, so it is a deployment, not a rehearsal.
+
+**Phase 1 — dry-run (structure validation)**: same mechanics as `test-template`. Validates YAML, the parameter schema, and skeleton rendering. All TIBCO platform actions (`tibco:call-platform-api`, `tibco:file:write`, `tibco:extract-parameters`, `tibco:fetch-api-file`) fail here — they are not dry-run-aware, and this is expected.
+
+**Phase 2 — live run + verification**:
+1. Summarise the blast radius first (every API call, CP vs DP, resources created), then get explicit user confirmation
+2. Assemble the `deploymentTarget` object by hand from `GET /tp-cp-ws/v1/data-planes` — the `CapabilitySelector` is a frontend field and never runs over the API
+3. `POST /api/scaffolder/v2/tasks`, then poll `GET /api/scaffolder/v2/tasks/{id}` with a long timeout (600s+); read `/events` for the `buildId` and `appId` logged by the flow
+4. Verify against the **platform** APIs that the build exists, the app is running, and the endpoint is public — a `completed` task only means every call returned 2xx
+5. Verify against the **catalog** API that the entity was registered, retrying for refresh lag
+6. Report what the run left behind (app, repo, catalog entity) and offer cleanup — never delete without asking
+
+### reuse-or-build
+
+Answer *"do I need to build a new service, or can I re-use an existing one, to get `<information>`?"* from the **live** catalog — real contracts and definitions, not guesswork.
+
+Like `impact-analysis`, this Developer Hub is Backstage **1.41.1** with **no MCP server** — read the catalog through the **catalog REST API** at `http://localhost:7007/api/catalog` (spec: `marketplace-content/tibco-platform-apis/version-118/backstage-api-1.41.1.yaml`). Endpoints allow anonymous access in local guest mode.
+
+1. Pin down the information need: the concrete **fields** required, the **shape** (event-driven vs request/response), and the **consumer** team/component (ask via `AskUserQuestion` if ambiguous)
+2. Search for candidates: keyword search (`GET /entities/by-query?fullTextFilter[term]=…`), a full scan of `kind=api` (`GET /entities?filter=kind=api`), plus `kind=component` and `kind=resource`
+3. Field-level match: batch-fetch candidates with `spec.definition` (`POST /entities/by-refs` with a `fields` projection), parse each XSD / JSON Schema / OpenAPI, and build a candidate × field coverage matrix — a match requires the fields to be present in the definition, not just the name
+4. Classify into the cheapest tier that satisfies the need — ✅ **Reuse as-is** · 🟡 **Extend existing** (name the entity and recommend `/impact-analysis` on it) · 🔴 **Build new** — accounting for transport (topic vs queue), contract openness, and cross-team consumers
+5. Write a decision report under `reports/` (verdict box, coverage matrix, two color-coded topology diagrams, cost/risk comparison, next steps, and a provenance snapshot)
 
 ### impact-analysis
 

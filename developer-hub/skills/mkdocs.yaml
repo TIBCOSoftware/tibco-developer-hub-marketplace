@@ -5,6 +5,15 @@ nav:
   - Introduction: index.md
   - Impact analysis walkthrough: impact-analysis-questions.md
   - Impact analysis example: car-information-api-impact-analysis.md
+  - Reuse-or-build examples:
+      - Index & sample questions: reuse-analysis-index.md
+      - 'Reuse: below-reorder alert': reuse-below-reorder-alert.md
+      - 'Reuse: quality per production order': reuse-quality-per-order.md
+      - 'Extend: carrier + tracking number': reuse-carrier-tracking.md
+      - 'Extend: planned goods-issue date': reuse-planned-gi-date.md
+      - 'Extend: material master': reuse-material-master.md
+      - 'Build: reserved-vs-available stock': reuse-stock-on-demand.md
+      - Data snapshot: reuse-analysis-data-snapshot.md
 
 plugins:
   - techdocs-core

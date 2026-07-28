@@ -1,13 +1,14 @@
 # Developer Hub Skills Library
 
 A library of **skills for AI coding agents** that automate the most common TIBCO Developer Hub
-tasks — bootstrapping a local environment, authoring Software Templates and Import Flows,
-rebranding the portal with a custom theme, and testing it all end-to-end. Drop these skills into
-your Developer Hub checkout and your coding agent follows the same proven playbook every time.
+tasks — bootstrapping a local environment, authoring Software Templates, Import Flows, and Self
+Service Flows, rebranding the portal with a custom theme, and testing it all end-to-end. Drop
+these skills into your Developer Hub checkout and your coding agent follows the same proven
+playbook every time.
 
 The library bundles three things:
 
-- **Seven skills** (`SKILL.md` runbooks) covering the full Developer Hub lifecycle.
+- **Ten skills** (`SKILL.md` runbooks) covering the full Developer Hub lifecycle.
 - **`AGENTS.md`** — project documentation in the open AGENTS.md standard, auto-discovered by all
   major coding agents.
 - **`CLAUDE.md`** — a thin Claude Code entry point that imports `AGENTS.md` and lists the skills.
@@ -17,7 +18,8 @@ The library bundles three things:
 A self-service developer portal built on Backstage.io that centralises your TIBCO services,
 templates, and documentation in one place. It scaffolds new BWCE, Flogo, and EMS applications in
 minutes via **Software Templates**, automates ingestion of existing repositories via **Import
-Flows**, and offers a **Marketplace** of reusable integration patterns. It runs as a Yarn 4
+Flows**, drives the TIBCO Platform directly via **Self Service Flows**, and offers a
+**Marketplace** of reusable integration patterns. It runs as a Yarn 4
 monorepo (`packages/app` frontend on `:3000`, `packages/backend` on `:7007`) with in-repo
 Backstage plugins under the `@internal/*` scope.
 
@@ -57,20 +59,24 @@ description: <when the agent should use this skill>
 4. **Agent executes** all file creation, YAML generation, config wiring, and browser verification.
 5. **Developer gets** a fully wired, tested artefact in minutes — not hours.
 
-## The seven skills
+## The ten skills
 
 The library covers the full Developer Hub lifecycle — from a clean checkout, through authoring
-and testing templates and import flows, to rebranding the portal, to assessing the blast radius of a
-change before you make it.
+and testing templates, import flows, and self service flows, to rebranding the portal, to
+deciding whether to reuse or build a service, and assessing the blast radius of a change before
+you make it.
 
 | Skill | When to use | What it produces |
 |-------|-------------|------------------|
 | **`setup-dev-hub`** | Setting up for the first time, onboarding a new machine, or getting the app running locally. | A working local environment: config files created from templates, dependencies installed, backend on `:7007` and frontend on `:3000` (`http://localhost:3000/tibco/hub`). |
 | **`create-template`** | Adding a new BWCE, Flogo, or any service template to the `/create` page. | `templates/<slug>/<slug>.yaml` (the `Template` entity) plus a `skeleton/` with `catalog-info.yaml`, a `debug` parameter for safe dry-runs, and the catalog registration. |
 | **`create-import-flow`** | Ingesting an existing BWCE, BW6, BW5, Flogo, or EMS repository into the catalog. | An import-flow `Template` using the TIBCO custom actions (clone → extract-parameters → create-yaml → push), optionally with Nunjucks entity skeletons, visible at `/import-flow`. |
+| **`create-self-service-flow`** | Automating an action on the TIBCO Platform from a form — build & deploy an app to a Data Plane, provision a capability or connector, expose an endpoint. | A `self-service` `Template` built on `tibco:call-platform-api` and the platform-aware `CapabilitySelector` field, with idempotent check → provision → act steps, visible at `/self-service-flow`. |
 | **`create-theme`** | Adding a brand theme, rebranding for a customer, or changing the sidebar logo. | `packages/app/src/themes/<slug>ThemeLight.ts` (and a dark variant if requested), registered in `App.tsx`, with the logo swap wired in `Root.tsx` and type-checked. |
 | **`test-template`** | Testing a template, previewing output, or debugging `${{ values.* }}` substitutions. | A full rendered file tree under `template-workspace/dry-run-<N>/` via the scaffolder dry-run API — no GitHub repo created. |
 | **`test-import-flow`** | End-to-end validation of an import flow: structure check plus real catalog registration. | Phase 1 dry-run validation, then a real scaffolder task run and a catalog-API check confirming the imported entities were registered. |
+| **`test-self-service-flow`** | End-to-end validation of a self service flow: structure check, then a real run against your Control Plane. | Phase 1 dry-run validation, then a live scaffolder task, verified against the **platform** APIs (build exists, app running, endpoint public) and the catalog — plus a cleanup offer. |
+| **`reuse-or-build`** | Deciding whether an existing service already carries the data you need, or a new one must be built — "where can I get X from?", before scaffolding a new component. | A decision report (✅ Reuse / 🟡 Extend / 🔴 Build) with a field-level coverage matrix and color-coded topology diagrams under `reports/`, grounded in the live catalog read via the catalog REST API. |
 | **`impact-analysis`** | Assessing the blast radius before changing a catalog entity — "what breaks if I change this API/Component/Resource?". | A report plus color-coded integration-topology diagrams under `impact_analysis/`, grounded in the live catalog graph read via the catalog REST API. |
 
 ## Impact analysis — see it in action
@@ -83,14 +89,33 @@ neighbour as 🔴 breaks · 🟠 review · 🟢 safe. Two companion docs show it
 - [**Worked example**](./car-information-api-impact-analysis.md) — the full generated report for
   changing `car-information-api`, with the topology diagrams and notify list.
 
+## Reuse-or-build — see it in action
+
+The `reuse-or-build` skill answers *"can I get this data from a service that already exists, or must
+I build a new one?"* — matching your information need field-by-field against the live catalog and
+classifying the answer as ✅ **Reuse** · 🟡 **Extend** · 🔴 **Build**. Every report ships a
+candidate-map and a chosen-path diagram.
+
+A single run against the `sap-integration-hub` catalog produced six worked examples — one per
+question, spanning all three verdicts:
+
+- [**Index & sample questions**](./reuse-analysis-index.md) — the six questions asked, each verdict,
+  and the cross-cutting patterns (topic-vs-queue reuse cost, missing request/response APIs).
+- Worked examples by verdict:
+  - ✅ **Reuse** — [Below-reorder alert](./reuse-below-reorder-alert.md) · [Quality per production order](./reuse-quality-per-order.md)
+  - 🟡 **Extend / reuse-with-change** — [Carrier + tracking number](./reuse-carrier-tracking.md) · [Planned goods-issue date](./reuse-planned-gi-date.md) · [Material master](./reuse-material-master.md)
+  - 🔴 **Build** — [Reserved-vs-available stock on demand](./reuse-stock-on-demand.md)
+- [**Data snapshot**](./reuse-analysis-data-snapshot.md) — the shared catalog provenance behind all six.
+
 ## Business value
 
 Encoding these workflows as skills turns hours of expert work into minutes of guided automation.
 
-- **Speed** — new template: ~2 hrs → ~10 min; import flow: ~4 hrs → ~15 min; onboard a developer:
-  days → ~1 hr; theme rebrand: ~4 hrs → ~20 min.
+- **Speed** — new template: ~2 hrs → ~10 min; import flow: ~4 hrs → ~15 min; self service flow:
+  ~1 day → ~30 min; onboard a developer: days → ~1 hr; theme rebrand: ~4 hrs → ~20 min.
 - **Consistency** — every template follows the TIBCO tag and folder conventions, the `debug`
-  parameter is always added for safe dry-runs, and catalog entries are always registered correctly.
+  parameter is always added for safe dry-runs, self service flows always guard their provisioning
+  steps so re-runs are idempotent, and catalog entries are always registered correctly.
 - **Knowledge retention** — tribal knowledge becomes executable, version-controlled runbooks that
   keep working after the original author has moved on; new team members are productive on day one.
 - **Governance** — TIBCO tag conventions are enforced automatically, catalog metadata stays

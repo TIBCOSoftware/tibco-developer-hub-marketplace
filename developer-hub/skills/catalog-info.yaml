@@ -21,7 +21,7 @@ apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:
   name: developer-hub-skill-library
-  description: 'A library of skills for AI coding agents (Claude Code, Codex, Cursor, etc.) to set up, extend, and customize the TIBCO Developer Hub — create templates and import flows, build themes, and test them end-to-end.'
+  description: 'A library of skills for AI coding agents (Claude Code, Codex, Cursor, etc.) to set up, extend, and customize the TIBCO Developer Hub — create templates, import flows, and self service flows, build themes, and test them end-to-end.'
   annotations:
     backstage.io/techdocs-ref: dir:.
   tags:

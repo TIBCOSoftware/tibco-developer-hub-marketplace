@@ -9,15 +9,18 @@ Project documentation shared with all AI agents lives in `AGENTS.md` and is impo
 
 ### Skills
 
-Seven custom skills are available under `.claude/skills/` — invoke them with `/skill-name` in Claude Code:
+Ten custom skills are available under `.claude/skills/` — invoke them with `/skill-name` in Claude Code:
 
 | Skill | Purpose |
 |-------|---------|
 | `setup-dev-hub` | Bootstrap a fresh local dev environment end-to-end |
 | `create-template` | Author a new Backstage scaffolder template |
 | `create-import-flow` | Author a new import flow template |
+| `create-self-service-flow` | Author a new self service flow that drives the TIBCO Platform APIs |
 | `create-theme` | Create or replace a Backstage theme with optional custom logo |
 | `test-template` | Dry-run a scaffolder template and inspect rendered output |
 | `test-import-flow` | Validate an import flow (dry-run + live catalog verification) |
+| `test-self-service-flow` | Validate a self service flow (dry-run + live platform & catalog verification) |
+| `reuse-or-build` | Decide whether to reuse/extend an existing service or build a new one, via the catalog REST API |
 | `impact-analysis` | Assess the change blast radius of a catalog entity via the catalog REST API |
 
