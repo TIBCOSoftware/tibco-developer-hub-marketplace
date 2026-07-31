@@ -18,7 +18,7 @@ subscribe to that.
 
 Two caveats from the actual XSD:
 - `TrackingNumber` is **`minOccurs="0"`** — it can be absent at dispatch time; handle the gap or take late-binding updates from the carrier side.
-- The producer is the same entity involved in the pending `PlannedGoodsDeliveryDate` change (see [impact-DeliveryDate.md](./impact-DeliveryDate.md)) — coordinate timing with `logistics-team`.
+- The producer is the same entity involved in the pending `PlannedGoodsDeliveryDate` change — coordinate timing with `logistics-team`.
 
 ## Coverage matrix
 

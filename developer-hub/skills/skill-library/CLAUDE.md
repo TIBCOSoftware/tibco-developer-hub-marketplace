@@ -9,7 +9,7 @@ Project documentation shared with all AI agents lives in `AGENTS.md` and is impo
 
 ### Skills
 
-Ten custom skills are available under `.claude/skills/` — invoke them with `/skill-name` in Claude Code:
+Eleven custom skills are available under `.claude/skills/` — invoke them with `/skill-name` in Claude Code:
 
 | Skill | Purpose |
 |-------|---------|
@@ -23,4 +23,5 @@ Ten custom skills are available under `.claude/skills/` — invoke them with `/s
 | `test-self-service-flow` | Validate a self service flow (dry-run + live platform & catalog verification) |
 | `reuse-or-build` | Decide whether to reuse/extend an existing service or build a new one, via the catalog REST API |
 | `impact-analysis` | Assess the change blast radius of a catalog entity via the catalog REST API |
+| `data-lineage` | Trace where a field or message comes from and where it ends up, via the catalog REST API |
 

@@ -14,6 +14,13 @@ nav:
       - 'Extend: material master': reuse-material-master.md
       - 'Build: reserved-vs-available stock': reuse-stock-on-demand.md
       - Data snapshot: reuse-analysis-data-snapshot.md
+  - Data lineage examples:
+      - Index & sample questions: lineage-index.md
+      - 'Field: materialNumber end to end': lineage-materialnumber.md
+      - 'Message: inventory update': lineage-inventory-update-msg.md
+      - 'Field: quantity (semantics drift)': lineage-quantity.md
+      - 'Field: planned goods-issue date': lineage-planned-gi-date.md
+      - Data snapshot: lineage-data-snapshot.md
 
 plugins:
   - techdocs-core

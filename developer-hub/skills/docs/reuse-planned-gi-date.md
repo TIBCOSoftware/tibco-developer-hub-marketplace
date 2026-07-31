@@ -16,7 +16,7 @@ it needs the same **topic bridge / dual-publish** as any second reader (one plat
 serves both this need and [reuse-carrier-tracking](./reuse-carrier-tracking.md); batch them).
 
 Timing note: this schema is about to gain `PlannedGoodsDeliveryDate`
-(see [impact-DeliveryDate.md](./impact-DeliveryDate.md)). Build the dashboard consumer
+(an `/impact-analysis` on `shipment-dispatch-msg` covers that change). Build the dashboard consumer
 **schema-tolerant** (ignore unknown elements) so that addition lands without a dashboard release —
 and you get the delivery date for free once it ships.
 

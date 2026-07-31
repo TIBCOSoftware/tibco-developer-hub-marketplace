@@ -8,7 +8,7 @@ playbook every time.
 
 The library bundles three things:
 
-- **Ten skills** (`SKILL.md` runbooks) covering the full Developer Hub lifecycle.
+- **Eleven skills** (`SKILL.md` runbooks) covering the full Developer Hub lifecycle.
 - **`AGENTS.md`** — project documentation in the open AGENTS.md standard, auto-discovered by all
   major coding agents.
 - **`CLAUDE.md`** — a thin Claude Code entry point that imports `AGENTS.md` and lists the skills.
@@ -59,12 +59,12 @@ description: <when the agent should use this skill>
 4. **Agent executes** all file creation, YAML generation, config wiring, and browser verification.
 5. **Developer gets** a fully wired, tested artefact in minutes — not hours.
 
-## The ten skills
+## The eleven skills
 
 The library covers the full Developer Hub lifecycle — from a clean checkout, through authoring
 and testing templates, import flows, and self service flows, to rebranding the portal, to
-deciding whether to reuse or build a service, and assessing the blast radius of a change before
-you make it.
+deciding whether to reuse or build a service, assessing the blast radius of a change before you
+make it, and tracing where a data field comes from and where it ends up.
 
 | Skill | When to use | What it produces |
 |-------|-------------|------------------|
@@ -78,6 +78,7 @@ you make it.
 | **`test-self-service-flow`** | End-to-end validation of a self service flow: structure check, then a real run against your Control Plane. | Phase 1 dry-run validation, then a live scaffolder task, verified against the **platform** APIs (build exists, app running, endpoint public) and the catalog — plus a cleanup offer. |
 | **`reuse-or-build`** | Deciding whether an existing service already carries the data you need, or a new one must be built — "where can I get X from?", before scaffolding a new component. | A decision report (✅ Reuse / 🟡 Extend / 🔴 Build) with a field-level coverage matrix and color-coded topology diagrams under `reports/`, grounded in the live catalog read via the catalog REST API. |
 | **`impact-analysis`** | Assessing the blast radius before changing a catalog entity — "what breaks if I change this API/Component/Resource?". | A report plus color-coded integration-topology diagrams under `impact_analysis/`, grounded in the live catalog graph read via the catalog REST API. |
+| **`data-lineage`** | Tracing where a data field or message comes from and where it ends up — provenance, audit, and governance questions across the whole integration landscape. | A lineage report with a per-hop field table (🟢 carried · 🔵 renamed · 🟡 derived · ⚪ dropped), flow and field-propagation SVG diagrams under `reports/`, and the governance findings — team hand-offs, convention flips, and transformations the catalog cannot verify. |
 
 ## Impact analysis — see it in action
 
@@ -106,6 +107,31 @@ question, spanning all three verdicts:
   - 🟡 **Extend / reuse-with-change** — [Carrier + tracking number](./reuse-carrier-tracking.md) · [Planned goods-issue date](./reuse-planned-gi-date.md) · [Material master](./reuse-material-master.md)
   - 🔴 **Build** — [Reserved-vs-available stock on demand](./reuse-stock-on-demand.md)
 - [**Data snapshot**](./reuse-analysis-data-snapshot.md) — the shared catalog provenance behind all six.
+
+## Data lineage — see it in action
+
+The `data-lineage` skill answers the third question about the same catalog: *"where does this data
+come from, and where does it end up?"* It reads the **directed** graph (`providesApi` = writes,
+`consumesApi` = reads), extracts the fields from every contract on the path — JSON Schema for native
+events, XSD for SAP IDocs — and labels each field hop 🟢 **carried** · 🔵 **renamed** ·
+🟡 **derived** · ⚪ **dropped**, so the report is explicit about what the catalog can and cannot
+prove.
+
+One run against the `sap-integration-hub` catalog produced four worked examples:
+
+- [**Index & sample questions**](./lineage-index.md) — the four questions asked, the verdicts, and
+  the cross-cutting patterns (naming flips at every JSON↔XSD boundary, field names that lie about
+  semantics, topics that widen exposure invisibly).
+- Worked examples:
+  - [**`materialNumber` end to end**](./lineage-materialnumber.md) — enters from S/4HANA by two
+    doors, crosses 5 teams, leaves into Ariba and EWM under 5 different spellings.
+  - [**The inventory update message**](./lineage-inventory-update-msg.md) — full message lineage;
+    only 2 of 9 fields travel past the decision boundary.
+  - [**`quantity` — the semantics trap**](./lineage-quantity.md) — the field survives by name but
+    changes meaning four times; the delta→level aggregation is invisible to the catalog.
+  - [**`PlannedGoodsIssueDate`**](./lineage-planned-gi-date.md) — a required field with no
+    traceable upstream source, which is itself the audit finding.
+- [**Data snapshot**](./lineage-data-snapshot.md) — the shared catalog provenance behind all four.
 
 ## Business value
 
