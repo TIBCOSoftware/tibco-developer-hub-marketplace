@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: self-service-publish-markdown-doc-location
+  description: Publish a Markdown Document self service flow
+spec:
+  targets:
+    - ./self-service-publish-markdown-doc.yaml
+    - ../tibco-self-service-group.yaml

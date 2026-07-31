@@ -1,0 +1,35 @@
+site_name: 'BW6 Skill Library'
+site_description: 'A library of skills for AI coding agents to design, build, test, and automate TIBCO BusinessWorks 6.x projects from the command line.'
+
+nav:
+  - Introduction: index.md
+  - BW6 Design CLI:
+      - Overview: bw6design/SKILL.md
+      - Command reference: bw6design/reference.md
+  - BW6 Glossary: glossary/SKILL.md
+  - BW6 Quality Rules:
+      - Overview: bw6-rules/SKILL.md
+      - Rules index: bw6-rules/RULES.md
+      - Metrics: bw6-rules/METRICS.md
+      - Full reference: bw6-rules/reference.md
+  - BW6 Prompt Library:
+      - Catalog: bw6-prompt-library/SKILL.md
+      - Basic — RetailOrderLogger: basicRetailOrderLogger/SKILL.md
+      - File — RetailDailySales: fileRetailSalesFile/SKILL.md
+      - JDBC — InventoryUpdate: jdbcRetailInventoryDb/SKILL.md
+      - JMS — RetailOrderQueue: jmsRetailOrderQueue/SKILL.md
+      - REST — RetailProductService: restRetailProductService/SKILL.md
+      - SOAP — RetailLoyaltyService: soapRetailLoyaltyService/SKILL.md
+      - SubProcess — RetailReturnProcess: subprocessRetailReturns/SKILL.md
+  - Integration Patterns:
+      - EMS Subscribe → Target: pattern-ems-subscribe-to-target/SKILL.md
+      - REST Sync Backend Proxy: pattern-rest-sync-backend-proxy/SKILL.md
+      - REST → DB Command: pattern-rest-to-db-command/SKILL.md
+      - REST → DB Query: pattern-rest-to-db-query/SKILL.md
+      - REST → EMS: pattern-rest-to-ems/SKILL.md
+      - REST → SOAP Mediation: pattern-rest-to-soap-mediation/SKILL.md
+      - SOAP → REST Mediation: pattern-soap-to-rest-mediation/SKILL.md
+      - Source → EMS Publish: pattern-source-to-ems-publish/SKILL.md
+
+plugins:
+  - techdocs-core

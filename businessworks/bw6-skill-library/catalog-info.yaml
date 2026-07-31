@@ -1,0 +1,36 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: bw6-skill-library
+  description: BW6 Skill Library
+spec:
+  type: organization
+  profile:
+    displayName: BW6 Skill Library
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: bw6-skill-library
+  description: Skills for AI coding agents working with TIBCO BusinessWorks 6.x
+spec:
+  owner: bw6-skill-library
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: bw6-skill-library
+  description: 'A library of skills for AI coding agents (Claude Code, Codex, Cursor, etc.) to design, build, test, and automate TIBCO BusinessWorks 6.x projects from the command line via bwdesign.'
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - business-works
+    - bw6
+    - artificial-intelligence
+    - coding-agents
+    - skills
+    - claude-code
+spec:
+  owner: bw6-skill-library
+  domain: bw6-skill-library

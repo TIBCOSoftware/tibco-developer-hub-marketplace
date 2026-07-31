@@ -1,0 +1,169 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: self-service-publish-markdown-doc
+  title: Publish a Markdown Document
+  description: >-
+    Paste Markdown into the form, and this flow commits it as a TechDocs-enabled
+    document in an existing GitHub repository and registers it in the Developer Hub
+    catalog.
+  tags:
+    - self-service
+    - tibco
+    - documentation
+    - techdocs
+    - developer-hub
+spec:
+  owner: group:default/tibco-self-service
+  type: self-service
+
+  parameters:
+    - title: Document Details
+      required:
+        - doc_title
+        - filename
+        - content
+        - owner
+      properties:
+        doc_title:
+          title: Document Title
+          type: string
+          description: Shown as the catalog entity title and the TechDocs site name
+          default: 'My Document'
+        filename:
+          title: Markdown Filename
+          type: string
+          description: >-
+            The file that will hold your Markdown, inside the document's docs/ folder.
+            Letters, digits, dot, dash and underscore only, and it must end in .md.
+            It cannot be index.md — that name is taken by the generated landing page.
+          default: 'document.md'
+          maxLength: 60
+          pattern: '^(?!index\.md$)[a-zA-Z0-9._-]+\.md$'
+        description:
+          title: Description
+          type: string
+          description: One-line summary shown on the catalog card
+          default: 'Documentation published from the Developer Hub'
+        content:
+          title: Markdown Content
+          type: string
+          description: Paste the full Markdown body of the document
+          ui:widget: textarea
+          ui:options:
+            rows: 25
+          default: |
+            # My Document
+
+            Replace this with your content.
+        owner:
+          title: Owner
+          type: string
+          description: Group that will own the registered document
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+          default: group:default/tibco-self-service
+
+    - title: Repository Location
+      required:
+        - repoUrl
+        - branch
+        - target_path
+      properties:
+        repoUrl:
+          title: Existing GitHub Repository
+          type: string
+          description: The repository the document will be committed into — it must already exist
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+        branch:
+          title: Branch
+          type: string
+          description: Branch to clone and push to
+          default: 'main'
+        target_path:
+          title: Folder In The Repository
+          type: string
+          description: >-
+            Folder that will hold this document. Each document needs its own folder,
+            because it gets its own mkdocs.yml and catalog-info.yaml.
+          default: 'documents/my-doc'
+          pattern: '^[a-zA-Z0-9._/-]+$'
+
+  steps:
+    # ---------------------------------------------------------------- clone --
+    - id: clone
+      name: Clone The Target Repository
+      action: tibco:git:clone
+      input:
+        failOnError: true
+        branch: ${{ parameters.branch }}
+        repoUrl: ${{ "https://" + (parameters.repoUrl | parseRepoUrl).host + "/" + (parameters.repoUrl | parseRepoUrl).owner + "/" + (parameters.repoUrl | parseRepoUrl).repo }}
+
+    # ------------------------------------------------------------- generate --
+    # Everything the document needs, in one step:
+    #   catalog-info.yaml          the catalog entry
+    #   mkdocs.yml                 TechDocs config, no nav: block so mkdocs builds
+    #                              the navigation from whatever lands in docs/
+    #   docs/index.md              landing page — mkdocs emits no root index.html
+    #                              without it, so TechDocs would 404 at the doc root
+    #   docs/<filename>            the Markdown, from a skeleton file whose *name*
+    #                              is itself templated
+    - id: scaffold
+      name: Generate The Document
+      action: fetch:template
+      input:
+        url: ./skeleton/
+        targetPath: ${{ parameters.target_path }}
+        values:
+          entity_name: ${{ parameters.filename | replace(".md", "") | lower }}
+          doc_title: ${{ parameters.doc_title }}
+          description: ${{ parameters.description }}
+          filename: ${{ parameters.filename }}
+          content: ${{ parameters.content }}
+          owner: ${{ parameters.owner }}
+          branch: ${{ parameters.branch }}
+          target_path: ${{ parameters.target_path }}
+          repo_web_url: ${{ "https://" + (parameters.repoUrl | parseRepoUrl).host + "/" + (parameters.repoUrl | parseRepoUrl).owner + "/" + (parameters.repoUrl | parseRepoUrl).repo }}
+
+    - id: log
+      name: Show The Generated Workspace
+      action: debug:log
+      input:
+        message: ${{ "Generated document '" + parameters.doc_title + "' under " + parameters.target_path }}
+        listWorkspace: true
+
+    # ----------------------------------------------------------- publish -----
+    - id: push
+      name: Commit And Push The Document
+      action: tibco:git:push
+      input:
+        failOnError: true
+        branch: ${{ parameters.branch }}
+        commitMessage: '${{ "docs: publish " + parameters.doc_title + " from TIBCO Developer Hub" }}'
+
+    - id: register
+      name: Register The Document In The Catalog
+      action: catalog:register
+      input:
+        catalogInfoUrl: ${{ "https://" + (parameters.repoUrl | parseRepoUrl).host + "/" + (parameters.repoUrl | parseRepoUrl).owner + "/" + (parameters.repoUrl | parseRepoUrl).repo + "/blob/" + parameters.branch + "/" + parameters.target_path + "/catalog-info.yaml" }}
+
+  output:
+    text:
+      - title: Document published
+        content: |
+          **Title:** ${{ parameters.doc_title }}
+          **File:** ${{ parameters.target_path }}/docs/${{ parameters.filename }}
+
+          The document was committed and registered.
+    links:
+      - title: Document in the repository
+        icon: github
+        url: ${{ "https://" + (parameters.repoUrl | parseRepoUrl).host + "/" + (parameters.repoUrl | parseRepoUrl).owner + "/" + (parameters.repoUrl | parseRepoUrl).repo + "/blob/" + parameters.branch + "/" + parameters.target_path + "/docs/" + parameters.filename }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}

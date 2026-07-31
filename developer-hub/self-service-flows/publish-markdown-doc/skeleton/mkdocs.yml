@@ -1,0 +1,9 @@
+site_name: ${{ values.doc_title }}
+site_description: ${{ values.description }}
+
+# No nav: block on purpose — mkdocs builds the navigation from whatever the flow
+# wrote into docs/, so this works for index.md and for any other filename.
+docs_dir: docs
+
+plugins:
+  - techdocs-core

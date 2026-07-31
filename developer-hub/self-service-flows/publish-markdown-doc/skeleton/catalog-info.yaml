@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.entity_name }}
+  title: ${{ values.doc_title }}
+  description: ${{ values.description }}
+  tags:
+    - documentation
+    - markdown
+  annotations:
+    # dir:. resolves against the GitHub blob URL this file was registered from.
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/source-location: url:${{ values.repo_web_url }}/tree/${{ values.branch }}/${{ values.target_path }}/
+spec:
+  type: documentation
+  lifecycle: production
+  owner: ${{ values.owner }}
