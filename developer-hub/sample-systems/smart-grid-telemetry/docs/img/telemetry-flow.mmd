@@ -1,0 +1,31 @@
+flowchart TD
+    classDef device fill:#1b2a4a,stroke:#0b1733,color:#ffffff;
+    classDef broker fill:#ffe0b2,stroke:#c56f00,color:#000000;
+    classDef app    fill:#efe7fb,stroke:#6b3fa0,color:#000000;
+    classDef msg    fill:#fff4cc,stroke:#b8860b,color:#000000;
+    classDef target fill:#d8f3dc,stroke:#2d6a4f,color:#000000;
+
+    meters["smart-meter-fleet"]:::device
+    mqtt["mqtt-broker"]:::broker
+    ingest["meter-ingest-flogo<br/>(edge)"]:::app
+    ems["TIBCO EMS"]:::broker
+    reading["meter-reading-msg"]:::msg
+    normalizer["telemetry-normalizer-bw6"]:::app
+    grid["grid-event-msg"]:::msg
+    anomaly["anomaly-detector-flogo"]:::app
+    outage["outage-alert-msg"]:::msg
+    outageMgr["outage-manager-bw6"]:::app
+    forecast["demand-forecast-msg"]:::msg
+    forecaster["demand-forecaster-flogo"]:::app
+    billingMsg["billing-usage-msg"]:::msg
+    billing["usage-billing-bw6"]:::app
+    ops["GIS / SCADA outage operations"]:::target
+    analytics["analytics / planning"]:::target
+    billingSystem["grid-billing-system"]:::target
+
+    meters --> mqtt --> ingest --> ems --> reading
+    reading --> normalizer --> grid
+    reading --> anomaly
+    grid --> anomaly --> outage --> outageMgr --> ops
+    reading --> forecaster --> forecast --> analytics
+    reading --> billing --> billingMsg --> billingSystem

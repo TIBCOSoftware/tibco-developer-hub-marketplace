@@ -1,0 +1,225 @@
+# Integration apps — TIBCO BW6 / Flogo applications.
+# All graph edges are declared here (the TIBCO Developer Hub's built-in processor generates
+# provides/consumes/dependsOn relations from the Component side):
+#   providesApis / consumesApis -> message contract edges (drive impact analysis)
+#   dependsOn                    -> SAP backend + EMS destination infrastructure edges
+#
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: order-intake-bw6
+  description: BW6 app — receives sales orders from SAP S/4HANA and publishes production orders
+  tags:
+    - bw6
+    - integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Receipt
+      iconTooltip: Order Intake (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:manufacturing-order-management-team
+  system: sap-integration-hub
+  consumesApis:
+    - sales-order-msg
+    - material-master-msg
+  providesApis:
+    - production-order-msg
+  dependsOn:
+    - resource:sap-s4hana
+    - resource:manufacturing-ems-server
+    - resource:ems-q-sales-order-inbound
+    - resource:ems-t-production-order-created
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: production-orchestrator-bw6
+  description: BW6 app — orchestrates production in SAP MES and publishes goods movements
+  tags:
+    - bw6
+    - integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Settings
+      iconTooltip: Production Orchestrator (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:production-team
+  system: sap-integration-hub
+  consumesApis:
+    - production-order-msg
+  providesApis:
+    - goods-movement-msg
+  dependsOn:
+    - resource:sap-mes
+    - resource:manufacturing-ems-server
+    - resource:ems-t-production-order-created
+    - resource:ems-t-goods-movement-posted
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: material-master-sync-bw6
+  description: BW6 app — synchronizes material master data between SAP S/4HANA and SAP PLM
+  tags:
+    - bw6
+    - integration
+    - master-data
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Sync
+      iconTooltip: Material Master Sync (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:master-data-team
+  system: sap-integration-hub
+  providesApis:
+    - material-master-msg
+  dependsOn:
+    - resource:sap-s4hana
+    - resource:sap-plm
+    - resource:manufacturing-ems-server
+    - resource:ems-q-material-master-sync
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: inventory-updater-flogo
+  description: Flogo app — updates inventory in SAP EWM from goods movements and publishes inventory updates
+  tags:
+    - flogo
+    - integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inventory
+      iconTooltip: Inventory Updater (Flogo)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:logistics-team
+  system: sap-integration-hub
+  consumesApis:
+    - goods-movement-msg
+    - material-master-msg
+  providesApis:
+    - inventory-update-msg
+  dependsOn:
+    - resource:sap-ewm
+    - resource:manufacturing-ems-server
+    - resource:ems-t-goods-movement-posted
+    - resource:ems-t-inventory-updated
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: quality-gateway-flogo
+  description: Flogo app — runs quality inspections in SAP MES on goods movements and publishes results
+  tags:
+    - flogo
+    - integration
+    - quality
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: AssignmentTurnedIn
+      iconTooltip: Quality Gateway (Flogo)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:production-team
+  system: sap-integration-hub
+  consumesApis:
+    - goods-movement-msg
+  providesApis:
+    - quality-inspection-msg
+  dependsOn:
+    - resource:sap-mes
+    - resource:manufacturing-ems-server
+    - resource:ems-t-goods-movement-posted
+    - resource:ems-t-quality-inspection-result
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: shipment-dispatcher-bw6
+  description: BW6 app — dispatches shipments from SAP EWM on inventory updates
+  tags:
+    - bw6
+    - integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: LocalShipping
+      iconTooltip: Shipment Dispatcher (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:logistics-team
+  system: sap-integration-hub
+  consumesApis:
+    - inventory-update-msg
+  providesApis:
+    - shipment-dispatch-msg
+  dependsOn:
+    - resource:sap-ewm
+    - resource:manufacturing-ems-server
+    - resource:ems-t-inventory-updated
+    - resource:ems-q-shipment-dispatch
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: procurement-bridge-bw6
+  description: BW6 app — raises purchase orders in SAP Ariba when inventory falls below reorder point
+  tags:
+    - bw6
+    - integration
+    - procurement
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: AddShoppingCart
+      iconTooltip: Procurement Bridge (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:procurement-team
+  system: sap-integration-hub
+  consumesApis:
+    - inventory-update-msg
+  providesApis:
+    - purchase-order-msg
+  dependsOn:
+    - resource:sap-ariba
+    - resource:manufacturing-ems-server
+    - resource:ems-t-inventory-updated
+    - resource:ems-q-purchase-order-outbound

@@ -1,0 +1,168 @@
+# Foundation — Domain, System and the owning teams for the telecom
+# Order-to-Activate OSS/BSS integration landscape.
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: telecommunications
+  description: Telecommunications domain — OSS/BSS order-to-activate flows across TMF Open API message contracts
+  tags:
+    - telecommunications
+    - oss
+    - bss
+    - tmf
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: SettingsInputAntenna
+      iconTooltip: Telecommunications Domain
+spec:
+  owner: group:oss-bss-platform-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: order-to-activate-hub
+  description: OSS/BSS integration hub decomposing product orders into service orders, resource orders and activation requests
+  tags:
+    - telecommunications
+    - integration
+    - tmf
+    - oss-bss
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: SwapHoriz
+      iconTooltip: Order-to-Activate Hub
+    statusIcons:
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: Production Ready
+spec:
+  owner: group:oss-bss-platform-team
+  domain: telecommunications
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: oss-bss-platform-team
+  description: Owns the shared OSS/BSS platform, TMF API gateway and TIBCO EMS broker
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Hub
+      iconTooltip: OSS/BSS Platform Team
+spec:
+  type: team
+  profile:
+    displayName: OSS/BSS Platform Team
+    email: oss-bss-platform@telco.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: telecom-order-management-team
+  description: Owns product order capture and decomposition into service orders
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Receipt
+      iconTooltip: Order Management Team
+spec:
+  type: team
+  profile:
+    displayName: Order Management Team
+    email: order-management@telco.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: service-orchestration-team
+  description: Owns service order orchestration across OSS inventory and fulfillment domains
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: AccountTree
+      iconTooltip: Service Orchestration Team
+spec:
+  type: team
+  profile:
+    displayName: Service Orchestration Team
+    email: service-orchestration@telco.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: resource-provisioning-team
+  description: Owns resource order decomposition and provisioning coordination
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Router
+      iconTooltip: Resource Provisioning Team
+spec:
+  type: team
+  profile:
+    displayName: Resource Provisioning Team
+    email: resource-provisioning@telco.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: network-activation-team
+  description: Owns network activation and completion events
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: SettingsInputAntenna
+      iconTooltip: Network Activation Team
+spec:
+  type: team
+  profile:
+    displayName: Network Activation Team
+    email: network-activation@telco.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: telecom-billing-team
+  description: Owns billing activation and downstream charging integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Payment
+      iconTooltip: Billing Team
+spec:
+  type: team
+  profile:
+    displayName: Billing Team
+    email: billing@telco.example.com
+  children: []

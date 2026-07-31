@@ -1,0 +1,167 @@
+# Foundation — Domain, System and owning teams for the insurance
+# claims-processing orchestration landscape.
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: insurance
+  description: Insurance integration domain — claims intake, underwriting, assessment and payout orchestration
+  tags:
+    - insurance
+    - claims
+    - integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Shield
+      iconTooltip: Insurance Domain
+spec:
+  owner: group:claims-platform-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: claims-processing-hub
+  description: Claims processing hub connecting FNOL intake, underwriting, fraud, documents and payout over TIBCO EMS
+  tags:
+    - insurance
+    - claims
+    - orchestration
+    - ems
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: SwapHoriz
+      iconTooltip: Claims Processing Hub
+    statusIcons:
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: Production Ready
+spec:
+  owner: group:claims-platform-team
+  domain: insurance
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: claims-platform-team
+  description: Owns the claims-processing hub, TIBCO EMS broker and shared integration platform
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Group
+      iconTooltip: Claims Platform Team
+spec:
+  type: team
+  profile:
+    displayName: Claims Platform Team
+    email: claims-platform@insurer.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: claims-intake-team
+  description: Owns first notice of loss intake and claim registration integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Group
+      iconTooltip: Claims Intake Team
+spec:
+  type: team
+  profile:
+    displayName: Claims Intake Team
+    email: claims-intake@insurer.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: underwriting-team
+  description: Owns underwriting orchestration and claim assessment integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Group
+      iconTooltip: Underwriting Team
+spec:
+  type: team
+  profile:
+    displayName: Underwriting Team
+    email: underwriting@insurer.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: document-team
+  description: Owns claim document request and document-management integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Group
+      iconTooltip: Document Team
+spec:
+  type: team
+  profile:
+    displayName: Document Team
+    email: documents@insurer.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: insurance-payments-team
+  description: Owns payout instruction integration and payment handoff
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: pastelGreen
+    entityIcon:
+      icon: Group
+      iconTooltip: Payments Team
+spec:
+  type: team
+  profile:
+    displayName: Payments Team
+    email: payments@insurer.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: fraud-team
+  description: Owns fraud screening integration and risk-signal enrichment
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Group
+      iconTooltip: Fraud Team
+spec:
+  type: team
+  profile:
+    displayName: Fraud Team
+    email: fraud@insurer.example.com
+  children: []

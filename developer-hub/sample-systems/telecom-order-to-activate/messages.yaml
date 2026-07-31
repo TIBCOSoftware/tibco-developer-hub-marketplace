@@ -1,0 +1,346 @@
+# Message contracts — each TMF / activation message is modelled as a kind: API
+# whose definition holds the JSON Schema INLINE.
+#
+# type: tmf-message (a neutral custom type) — NOT 'asyncapi'/'openapi'. The api-docs
+# Definition tab picks a strict renderer by spec.type: 'asyncapi' would validate the
+# text as an AsyncAPI document and error ("not an AsyncAPI document") because our
+# payload is a JSON Schema, not an AsyncAPI spec. An unrecognized type falls
+# back to a plain raw view, which displays the schema as-is. Topology and impact
+# analysis don't depend on the type.
+#
+# NOTE: definitions are inlined (definition: |) rather than referenced via
+# `$text: ./schemas/..` because this local backend has no UrlReader for `file:`
+# URLs, so local-file $text placeholders silently drop the entity. ($text works
+# only when the catalog file is read from a Git URL.) Inlining is reliable for a
+# local sample — to demo impact analysis, edit the schema in the block below and
+# re-run the impact-analysis skill on the message.
+#
+# Modelling messages as APIs is what makes impact analysis work: every component
+# that consumesApis a message becomes an `apiConsumedBy` = direct-impact consumer.
+# (Provider/consumer relations are declared on the components in integration-apps.yaml.)
+#
+# ── TMF / activation JSON Schema contracts (yellow) ──────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: tmf622-product-order-msg
+  description: TMF622 Product Ordering message (JSON Schema) on q.product-order.inbound
+  tags:
+    - tmf
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: TMF Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: tmf-message
+  lifecycle: production
+  owner: group:telecom-order-management-team
+  system: order-to-activate-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:telco:tmf:product-order",
+      "title": "TMF622 ProductOrder",
+      "description": "Product order accepted at the TMF API gateway and queued on q.product-order.inbound.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state", "productOrderItem", "relatedParty"],
+      "properties": {
+        "id": { "type": "string" },
+        "href": { "type": "string", "format": "uri" },
+        "externalId": { "type": "string" },
+        "state": { "type": "string", "enum": ["acknowledged", "inProgress", "completed", "failed", "cancelled"] },
+        "priority": { "type": "string", "enum": ["low", "normal", "high", "urgent"], "default": "normal" },
+        "requestedStartDate": { "type": "string", "format": "date-time" },
+        "productOrderItem": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "action", "product"],
+            "properties": {
+              "id": { "type": "string" },
+              "action": { "type": "string", "enum": ["add", "modify", "delete", "noChange"] },
+              "state": { "type": "string" },
+              "productOffering": {
+                "type": "object",
+                "required": ["id", "name"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "name": { "type": "string" }
+                }
+              },
+              "product": {
+                "type": "object",
+                "required": ["id", "name"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "name": { "type": "string" },
+                  "place": { "type": "array", "items": { "type": "object" } },
+                  "productCharacteristic": { "type": "array", "items": { "type": "object" } }
+                }
+              }
+            }
+          }
+        },
+        "relatedParty": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "role"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "role": { "type": "string", "examples": ["customer", "accountOwner"] },
+              "@referredType": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: tmf641-service-order-msg
+  description: TMF641 Service Ordering message (JSON Schema) on t.service-order.created
+  tags:
+    - tmf
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: TMF Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: tmf-message
+  lifecycle: production
+  owner: group:service-orchestration-team
+  system: order-to-activate-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:telco:tmf:service-order",
+      "title": "TMF641 ServiceOrder",
+      "description": "Service order created by order-capture-bw6 and broadcast on t.service-order.created.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state", "serviceOrderItem"],
+      "properties": {
+        "id": { "type": "string" },
+        "href": { "type": "string", "format": "uri" },
+        "externalId": { "type": "string" },
+        "productOrderRef": { "type": "string" },
+        "state": { "type": "string", "enum": ["acknowledged", "inProgress", "completed", "failed", "cancelled"] },
+        "serviceOrderItem": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "action", "service"],
+            "properties": {
+              "id": { "type": "string" },
+              "action": { "type": "string", "enum": ["add", "modify", "delete", "noChange"] },
+              "state": { "type": "string" },
+              "service": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "name", "serviceType"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "name": { "type": "string" },
+                  "serviceType": { "type": "string", "examples": ["fiber-access", "mobile-data", "vpn"] },
+                  "serviceCharacteristic": { "type": "array", "items": { "type": "object" } },
+                  "place": { "type": "array", "items": { "type": "object" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: tmf652-resource-order-msg
+  description: TMF652 Resource Ordering message (JSON Schema) on t.resource-order.created
+  tags:
+    - tmf
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: TMF Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: tmf-message
+  lifecycle: production
+  owner: group:resource-provisioning-team
+  system: order-to-activate-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:telco:tmf:resource-order",
+      "title": "TMF652 ResourceOrder",
+      "description": "Resource order created by service-orchestrator-bw6 and broadcast on t.resource-order.created.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "state", "resourceOrderItem"],
+      "properties": {
+        "id": { "type": "string" },
+        "href": { "type": "string", "format": "uri" },
+        "serviceOrderRef": { "type": "string" },
+        "state": { "type": "string", "enum": ["acknowledged", "inProgress", "completed", "failed", "cancelled"] },
+        "resourceOrderItem": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "action", "resource"],
+            "properties": {
+              "id": { "type": "string" },
+              "action": { "type": "string", "enum": ["add", "modify", "delete", "noChange"] },
+              "resource": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "name", "resourceType"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "name": { "type": "string" },
+                  "resourceType": { "type": "string", "examples": ["ont", "router", "sim", "ip-address"] },
+                  "resourceSpecification": { "type": "object" },
+                  "resourceCharacteristic": { "type": "array", "items": { "type": "object" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: activation-request-msg
+  description: Network activation request message (JSON Schema) on q.activation.request
+  tags:
+    - tmf
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Activation Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: tmf-message
+  lifecycle: production
+  owner: group:network-activation-team
+  system: order-to-activate-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:telco:activation:request",
+      "title": "ActivationRequest",
+      "description": "Activation request produced from TMF652 resource orders and queued on q.activation.request.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["orderId", "resourceId", "activationType", "parameters"],
+      "properties": {
+        "orderId": { "type": "string" },
+        "resourceId": { "type": "string" },
+        "serviceOrderRef": { "type": "string" },
+        "productOrderRef": { "type": "string" },
+        "activationType": { "type": "string", "enum": ["fiber", "mobile", "vpn", "voice"] },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "number", "boolean"] },
+          "examples": [{ "vlan": "3102", "profile": "1G-FIBER" }]
+        }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: order-completion-msg
+  description: Product order completion message (JSON Schema) on t.order.completed and q.billing-activation.outbound
+  tags:
+    - tmf
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Completion Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: tmf-message
+  lifecycle: production
+  owner: group:network-activation-team
+  system: order-to-activate-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:telco:order:completion",
+      "title": "OrderCompletion",
+      "description": "Completion event emitted by activation-gateway-bw6 and consumed by billing activation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["productOrderId", "status", "completedAt"],
+      "properties": {
+        "productOrderId": { "type": "string" },
+        "serviceOrderId": { "type": "string" },
+        "resourceOrderId": { "type": "string" },
+        "status": { "type": "string", "enum": ["completed", "failed", "partiallyCompleted"] },
+        "completedAt": { "type": "string", "format": "date-time" },
+        "activationReference": { "type": "string" },
+        "billingAccountId": { "type": "string" }
+      }
+    }

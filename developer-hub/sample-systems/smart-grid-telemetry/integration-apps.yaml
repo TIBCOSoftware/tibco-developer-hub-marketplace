@@ -1,0 +1,196 @@
+# Integration apps — TIBCO Flogo Edge / Flogo / BW6 applications.
+# All graph edges are declared here (the TIBCO Developer Hub's built-in processor generates
+# provides/consumes/dependsOn relations from the Component side):
+#   providesApis / consumesApis -> message contract edges (drive impact analysis)
+#   dependsOn                    -> field devices, utility backends + messaging infrastructure edges
+#
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: meter-ingest-flogo
+  description: Flogo EDGE app — receives smart meter telemetry over MQTT and publishes normalized meter readings
+  tags:
+    - flogo
+    - edge
+    - iot
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Sensors
+      iconTooltip: Meter Ingest (Flogo EDGE)
+    statusIcons:
+      - icon: CloudDone
+        iconColor: forestgreen
+        iconTooltip: Edge Deployed
+spec:
+  type: service
+  lifecycle: production
+  owner: group:edge-integration-team
+  system: smart-grid-telemetry-system
+  providesApis:
+    - meter-reading-msg
+  dependsOn:
+    - resource:smart-meter-fleet
+    - resource:mqtt-broker
+    - resource:grid-ems-server
+    - resource:ems-q-meter-reading-inbound
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: telemetry-normalizer-bw6
+  description: BW6 app — validates meter readings, enriches with SCADA state and publishes grid events
+  tags:
+    - bw6
+    - integration
+    - telemetry
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: DeviceHub
+      iconTooltip: Telemetry Normalizer (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:telemetry-team
+  system: smart-grid-telemetry-system
+  consumesApis:
+    - meter-reading-msg
+  providesApis:
+    - grid-event-msg
+  dependsOn:
+    - resource:scada-system
+    - resource:time-series-historian
+    - resource:grid-ems-server
+    - resource:ems-q-meter-reading-inbound
+    - resource:ems-t-grid-event
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: anomaly-detector-flogo
+  description: Flogo app — correlates telemetry and grid events to detect probable outages
+  tags:
+    - flogo
+    - analytics
+    - outage
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: pastelGreen
+    entityIcon:
+      icon: Insights
+      iconTooltip: Anomaly Detector (Flogo)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:analytics-team
+  system: smart-grid-telemetry-system
+  consumesApis:
+    - meter-reading-msg
+    - grid-event-msg
+  providesApis:
+    - outage-alert-msg
+  dependsOn:
+    - resource:grid-ems-server
+    - resource:ems-t-grid-event
+    - resource:ems-t-outage-alert
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: outage-manager-bw6
+  description: BW6 app — opens outage incidents, correlates affected areas in GIS and updates SCADA operations
+  tags:
+    - bw6
+    - integration
+    - outage
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: ReportProblem
+      iconTooltip: Outage Manager (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:outage-management-team
+  system: smart-grid-telemetry-system
+  consumesApis:
+    - outage-alert-msg
+  dependsOn:
+    - resource:gis-system
+    - resource:scada-system
+    - resource:grid-ems-server
+    - resource:ems-t-outage-alert
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: demand-forecaster-flogo
+  description: Flogo app — builds short-horizon demand forecasts from meter readings and historian trends
+  tags:
+    - flogo
+    - analytics
+    - forecast
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Timeline
+      iconTooltip: Demand Forecaster (Flogo)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:analytics-team
+  system: smart-grid-telemetry-system
+  consumesApis:
+    - meter-reading-msg
+  providesApis:
+    - demand-forecast-msg
+  dependsOn:
+    - resource:time-series-historian
+    - resource:grid-ems-server
+    - resource:ems-t-demand-forecast
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: usage-billing-bw6
+  description: BW6 app — aggregates validated usage readings and sends billable totals to the billing platform
+  tags:
+    - bw6
+    - integration
+    - billing
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Receipt
+      iconTooltip: Usage Billing (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:grid-billing-team
+  system: smart-grid-telemetry-system
+  consumesApis:
+    - meter-reading-msg
+  providesApis:
+    - billing-usage-msg
+  dependsOn:
+    - resource:grid-billing-system
+    - resource:grid-ems-server
+    - resource:ems-q-billing-usage-outbound

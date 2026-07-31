@@ -1,0 +1,368 @@
+# Infrastructure — OSS/BSS backend systems and the TIBCO EMS broker + TMF API gateway.
+# These are modelled as Resources; integration apps reach them via `dependsOn`.
+#
+# Each EMS destination also declares `dependencyOf: [api:<message>]` — i.e. "the message
+# contract depends on this destination". This gives a clickable link from the queue/topic to
+# its message API (and an edge in the system topology). Note: the API's own overview page will
+# not list the destination back — TIBCO Developer Hub API entities only ever surface apiProvidedBy /
+# apiConsumedBy / ownedBy / partOf — so the message links back via its producer/consumer apps.
+#
+# ── OSS/BSS backends (navy = external systems) ───────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: crm-bss
+  title: CRM / BSS
+  description: Customer relationship and BSS system where commercial product orders originate
+  tags:
+    - bss
+    - crm
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: People
+      iconTooltip: CRM / BSS
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: bss-system
+  lifecycle: production
+  owner: group:telecom-order-management-team
+  system: order-to-activate-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: product-catalog-system
+  title: Product Catalog System
+  description: Commercial product catalog used to validate and enrich product order items
+  tags:
+    - bss
+    - catalog
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: MenuBook
+      iconTooltip: Product Catalog
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: catalog-system
+  lifecycle: production
+  owner: group:telecom-order-management-team
+  system: order-to-activate-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: oss-inventory
+  title: OSS Inventory
+  description: Service and resource inventory used by orchestration and provisioning
+  tags:
+    - oss
+    - inventory
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Storage
+      iconTooltip: OSS Inventory
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: inventory-system
+  lifecycle: production
+  owner: group:service-orchestration-team
+  system: order-to-activate-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: network-provisioning-system
+  title: Network Provisioning System
+  description: Network provisioning platform that turns resource orders into activation work
+  tags:
+    - oss
+    - provisioning
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: SettingsInputAntenna
+      iconTooltip: Network Provisioning
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: provisioning-system
+  lifecycle: production
+  owner: group:resource-provisioning-team
+  system: order-to-activate-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: telecom-billing-system
+  title: Billing System
+  description: Billing platform activated when an order completes successfully
+  tags:
+    - bss
+    - billing
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Payment
+      iconTooltip: Billing System
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: telecom-billing-system
+  lifecycle: production
+  owner: group:telecom-billing-team
+  system: order-to-activate-hub
+---
+# ── TIBCO EMS broker and TMF API gateway (orange = messaging / integration) ──
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: telecom-ems-server
+  title: TIBCO EMS Server
+  description: TIBCO Enterprise Message Service broker hosting order-to-activate topics and queues
+  tags:
+    - tibco
+    - ems
+    - messaging
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: CloudQueue
+      iconTooltip: TIBCO EMS Broker
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: TLS Enabled
+spec:
+  type: message-broker
+  lifecycle: production
+  owner: group:oss-bss-platform-team
+  system: order-to-activate-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: tmf-api-gateway
+  title: TMF API Gateway
+  description: API gateway exposing TMF Open API endpoints and routing product orders into the integration fabric
+  tags:
+    - tmf
+    - api-gateway
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Language
+      iconTooltip: TMF API Gateway
+    statusIcons:
+      - icon: Public
+        iconColor: darkorange
+        iconTooltip: Public TMF API Edge
+spec:
+  type: api-gateway
+  lifecycle: production
+  owner: group:oss-bss-platform-team
+  system: order-to-activate-hub
+  dependsOn:
+    - resource:telecom-ems-server
+  dependencyOf:
+    - api:tmf622-product-order-msg
+---
+# ── EMS destinations — queues (icon Inbox) ───────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-product-order-inbound
+  title: q.product-order.inbound
+  description: EMS queue carrying inbound TMF622 product orders from the TMF API gateway
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:oss-bss-platform-team
+  system: order-to-activate-hub
+  dependsOn:
+    - resource:telecom-ems-server
+  dependencyOf:
+    - api:tmf622-product-order-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-activation-request
+  title: q.activation.request
+  description: EMS queue carrying network activation requests to the activation gateway
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:oss-bss-platform-team
+  system: order-to-activate-hub
+  dependsOn:
+    - resource:telecom-ems-server
+  dependencyOf:
+    - api:activation-request-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-billing-activation-outbound
+  title: q.billing-activation.outbound
+  description: EMS queue carrying completed order notifications to billing activation
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:oss-bss-platform-team
+  system: order-to-activate-hub
+  dependsOn:
+    - resource:telecom-ems-server
+  dependencyOf:
+    - api:order-completion-msg
+---
+# ── EMS destinations — topics (icon RssFeed) ─────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-service-order-created
+  title: t.service-order.created
+  description: EMS topic broadcasting TMF641 service order created events
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:oss-bss-platform-team
+  system: order-to-activate-hub
+  dependsOn:
+    - resource:telecom-ems-server
+  dependencyOf:
+    - api:tmf641-service-order-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-resource-order-created
+  title: t.resource-order.created
+  description: EMS topic broadcasting TMF652 resource order created events
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:oss-bss-platform-team
+  system: order-to-activate-hub
+  dependsOn:
+    - resource:telecom-ems-server
+  dependencyOf:
+    - api:tmf652-resource-order-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-order-completed
+  title: t.order.completed
+  description: EMS topic broadcasting completed product order events
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:oss-bss-platform-team
+  system: order-to-activate-hub
+  dependsOn:
+    - resource:telecom-ems-server
+  dependencyOf:
+    - api:order-completion-msg

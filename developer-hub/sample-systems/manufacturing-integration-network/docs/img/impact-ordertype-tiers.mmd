@@ -1,0 +1,29 @@
+flowchart TD
+    classDef change fill:#ff4d4f,stroke:#a8071a,color:#ffffff,stroke-width:3px;
+    classDef high   fill:#ffccc7,stroke:#cf1322,color:#000000,stroke-width:2px;
+    classDef cond   fill:#ffe7ba,stroke:#d46b08,color:#000000,stroke-width:1px,stroke-dasharray:5 3;
+    classDef safe   fill:#d9f7be,stroke:#389e0d,color:#000000;
+
+    subgraph T0["Tier 0 — the change"]
+        som["sales-order-msg<br/>OrderType → enum"]
+    end
+    subgraph T1["Tier 1 — direct"]
+        oi["order-intake-bw6<br/>validates/parses OrderType"]
+        s4["sap-s4hana<br/>must emit only enum values"]
+    end
+    subgraph T2["Tier 2 — conditional"]
+        po["production-orchestrator-bw6<br/>only if an in-use value is dropped"]
+    end
+    subgraph SAFE["Not impacted"]
+        rest["material-master flow · goods-movement ·<br/>inventory · quality · shipping · procurement ·<br/>EMS broker & other destinations"]
+    end
+
+    som --> oi
+    som --> s4
+    oi -. "fewer orders if enum drops a used value" .-> po
+    po --- rest
+
+    class som change
+    class oi,s4 high
+    class po cond
+    class rest safe

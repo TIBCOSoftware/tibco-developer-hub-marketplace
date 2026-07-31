@@ -1,0 +1,386 @@
+# Infrastructure — clinical backends (external systems), the TIBCO EMS broker,
+# FHIR API gateway and EMS destinations.
+#
+# Each EMS destination also declares `dependencyOf: [api:<message>]` — i.e. "the message
+# contract depends on this destination". This gives a clickable link from the queue/topic to
+# its message API (and an edge in the system topology). Note: the API's own overview page will
+# not list the destination back — TIBCO Developer Hub API entities only ever surface apiProvidedBy /
+# apiConsumedBy / ownedBy / partOf — so the message links back via its producer/consumer apps.
+#
+# ── Clinical backends (navy = external systems) ──────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: epic-ehr
+  title: Epic EHR
+  description: Epic electronic health record — ADT source of truth for patient demographics and encounters
+  tags:
+    - healthcare
+    - ehr
+    - clinical
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: LocalHospital
+      iconTooltip: Epic EHR
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: clinical-system
+  lifecycle: production
+  owner: group:clinical-integration-team
+  system: patient-data-exchange
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: laboratory-system
+  title: Laboratory Information System (LIS)
+  description: Laboratory information system producing HL7 ORU result messages
+  tags:
+    - healthcare
+    - laboratory
+    - clinical
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Science
+      iconTooltip: Laboratory Information System
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: clinical-system
+  lifecycle: production
+  owner: group:lab-integration-team
+  system: patient-data-exchange
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: healthcare-billing-system
+  title: Billing System
+  description: Billing platform receiving claim summaries generated from clinical observations
+  tags:
+    - healthcare
+    - billing
+    - claims
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Payment
+      iconTooltip: Billing System
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: clinical-system
+  lifecycle: production
+  owner: group:billing-integration-team
+  system: patient-data-exchange
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: consent-service
+  title: Consent Service
+  description: Consent and authorization service used to enforce patient sharing preferences before data fan-out
+  tags:
+    - healthcare
+    - consent
+    - phi
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: VerifiedUser
+      iconTooltip: Consent Service
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: HIPAA Compliant
+spec:
+  type: clinical-system
+  lifecycle: production
+  owner: group:consent-team
+  system: patient-data-exchange
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: master-patient-index
+  title: Master Patient Index
+  description: Enterprise MPI used for patient identity matching and golden-record updates
+  tags:
+    - healthcare
+    - mpi
+    - patient-identity
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: AccountCircle
+      iconTooltip: Master Patient Index
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: HIPAA Compliant
+spec:
+  type: clinical-system
+  lifecycle: production
+  owner: group:patient-index-team
+  system: patient-data-exchange
+---
+# ── TIBCO EMS broker and FHIR gateway (orange = messaging) ──────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: healthcare-ems-server
+  title: TIBCO EMS Server
+  description: TIBCO Enterprise Message Service broker hosting patient exchange topics and queues
+  tags:
+    - tibco
+    - ems
+    - messaging
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: CloudQueue
+      iconTooltip: TIBCO EMS Broker
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: TLS Enabled
+spec:
+  type: message-broker
+  lifecycle: production
+  owner: group:healthcare-integration-platform-team
+  system: patient-data-exchange
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: fhir-api-gateway
+  title: FHIR API Gateway
+  description: Secure FHIR API gateway for Patient and Observation resources exposed to approved consumers
+  tags:
+    - healthcare
+    - fhir
+    - api
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Api
+      iconTooltip: FHIR API Gateway
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: Public API Gateway
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: HIPAA Compliant
+spec:
+  type: api-gateway
+  lifecycle: production
+  owner: group:healthcare-integration-platform-team
+  system: patient-data-exchange
+---
+# ── EMS destinations — queues (icon Inbox) ───────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-adt-inbound
+  title: q.adt.inbound
+  description: EMS queue carrying inbound HL7 ADT messages (hl7-adt-msg) from Epic EHR
+  tags:
+    - ems
+    - queue
+    - hl7
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:healthcare-integration-platform-team
+  system: patient-data-exchange
+  dependsOn:
+    - resource:healthcare-ems-server
+  dependencyOf:
+    - api:hl7-adt-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-lab-result-inbound
+  title: q.lab-result.inbound
+  description: EMS queue carrying inbound HL7 lab results (lab-result-msg) from the LIS
+  tags:
+    - ems
+    - queue
+    - hl7
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:healthcare-integration-platform-team
+  system: patient-data-exchange
+  dependsOn:
+    - resource:healthcare-ems-server
+  dependencyOf:
+    - api:lab-result-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-claim-outbound
+  title: q.claim.outbound
+  description: EMS queue carrying outbound FHIR claim summaries (claim-msg) to the billing system
+  tags:
+    - ems
+    - queue
+    - fhir
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:healthcare-integration-platform-team
+  system: patient-data-exchange
+  dependsOn:
+    - resource:healthcare-ems-server
+  dependencyOf:
+    - api:claim-msg
+---
+# ── EMS destinations — topics (icon RssFeed) ─────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-patient-updated
+  title: t.patient.updated
+  description: EMS topic broadcasting FHIR Patient updates (fhir-patient-msg)
+  tags:
+    - ems
+    - topic
+    - fhir
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:healthcare-integration-platform-team
+  system: patient-data-exchange
+  dependsOn:
+    - resource:healthcare-ems-server
+  dependencyOf:
+    - api:fhir-patient-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-observation-created
+  title: t.observation.created
+  description: EMS topic broadcasting FHIR Observation updates (fhir-observation-msg)
+  tags:
+    - ems
+    - topic
+    - fhir
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:healthcare-integration-platform-team
+  system: patient-data-exchange
+  dependsOn:
+    - resource:healthcare-ems-server
+  dependencyOf:
+    - api:fhir-observation-msg

@@ -1,0 +1,162 @@
+# Integration apps — TIBCO BW6 / Flogo applications.
+# All graph edges are declared here (the TIBCO Developer Hub's built-in processor generates
+# provides/consumes/dependsOn relations from the Component side):
+#   providesApis / consumesApis -> message contract edges (drive impact analysis)
+#   dependsOn                    -> banking backend + EMS destination infrastructure edges
+#
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: payment-gateway-bw6
+  description: BW6 app — receives customer payment initiations through the API gateway and publishes FI-to-FI credit transfers
+  tags:
+    - bw6
+    - integration
+    - payments
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Payments
+      iconTooltip: Payment Gateway (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:payments-engineering-team
+  system: payments-integration-hub
+  consumesApis:
+    - pain001-payment-initiation-msg
+  providesApis:
+    - pacs008-credit-transfer-msg
+  dependsOn:
+    - resource:core-banking-system
+    - resource:payments-api-gateway
+    - resource:banking-ems-server
+    - resource:ems-q-payment-initiation.inbound
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: fraud-scoring-flogo
+  description: Flogo app — scores credit transfers against fraud and sanctions services and publishes fraud decisions
+  tags:
+    - flogo
+    - integration
+    - fraud
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Security
+      iconTooltip: Fraud Scoring (Flogo)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:fraud-risk-team
+  system: payments-integration-hub
+  consumesApis:
+    - pacs008-credit-transfer-msg
+  providesApis:
+    - fraud-score-msg
+  dependsOn:
+    - resource:fraud-detection-engine
+    - resource:sanctions-screening
+    - resource:banking-ems-server
+    - resource:ems-t-fraud-alert
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: clearing-orchestrator-bw6
+  description: BW6 app — orchestrates clearing after fraud decisions and raises ledger posting requests
+  tags:
+    - bw6
+    - integration
+    - clearing
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: AccountTree
+      iconTooltip: Clearing Orchestrator (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:payments-engineering-team
+  system: payments-integration-hub
+  consumesApis:
+    - pacs008-credit-transfer-msg
+    - fraud-score-msg
+  providesApis:
+    - ledger-posting-msg
+  dependsOn:
+    - resource:card-network
+    - resource:banking-ems-server
+    - resource:ems-t-payment-cleared
+    - resource:ems-q-ledger-posting
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ledger-poster-bw6
+  description: BW6 app — posts cleared payment entries to the general ledger and creates customer notifications
+  tags:
+    - bw6
+    - integration
+    - ledger
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: MenuBook
+      iconTooltip: Ledger Poster (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:ledger-team
+  system: payments-integration-hub
+  consumesApis:
+    - ledger-posting-msg
+  providesApis:
+    - payment-notification-msg
+  dependsOn:
+    - resource:general-ledger
+    - resource:banking-ems-server
+    - resource:ems-q-ledger-posting
+    - resource:ems-q-notification-outbound
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: notification-service-flogo
+  description: Flogo app — sends customer payment status notifications from outbound notification messages
+  tags:
+    - flogo
+    - integration
+    - notifications
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: pastelGreen
+    entityIcon:
+      icon: Notifications
+      iconTooltip: Notification Service (Flogo)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:notifications-team
+  system: payments-integration-hub
+  consumesApis:
+    - payment-notification-msg
+  dependsOn:
+    - resource:banking-ems-server
+    - resource:ems-q-notification-outbound

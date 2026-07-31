@@ -1,0 +1,168 @@
+# Foundation — Domain, System and the owning teams for the healthcare
+# HL7 / FHIR patient data exchange landscape.
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: healthcare
+  description: Healthcare integration domain — clinical systems bridged through HL7, FHIR and TIBCO EMS messaging
+  tags:
+    - healthcare
+    - integration
+    - fhir
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: LocalHospital
+      iconTooltip: Healthcare Domain
+spec:
+  owner: group:healthcare-integration-platform-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: patient-data-exchange
+  description: Patient data exchange connecting clinical, lab, billing, consent and MPI systems via HL7, FHIR, TIBCO EMS and TIBCO integration apps
+  tags:
+    - healthcare
+    - integration
+    - fhir
+    - hl7
+    - ems
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: SwapHoriz
+      iconTooltip: Patient Data Exchange
+    statusIcons:
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: HIPAA Ready
+spec:
+  owner: group:healthcare-integration-platform-team
+  domain: healthcare
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: healthcare-integration-platform-team
+  description: Owns the TIBCO EMS broker, destinations, FHIR gateway and shared integration platform
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Integration Platform Team
+spec:
+  type: team
+  profile:
+    displayName: Integration Platform Team
+    email: integration-platform@healthcare.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: clinical-integration-team
+  description: Owns EHR integration and HL7 to FHIR patient exchange
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Clinical Integration Team
+spec:
+  type: team
+  profile:
+    displayName: Clinical Integration Team
+    email: clinical-integration@healthcare.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: lab-integration-team
+  description: Owns laboratory result ingestion and observation publishing
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Lab Integration Team
+spec:
+  type: team
+  profile:
+    displayName: Lab Integration Team
+    email: lab-integration@healthcare.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: billing-integration-team
+  description: Owns billing and claims integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Billing Integration Team
+spec:
+  type: team
+  profile:
+    displayName: Billing Integration Team
+    email: billing-integration@healthcare.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: patient-index-team
+  description: Owns master patient index matching and patient identity updates
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Patient Index Team
+spec:
+  type: team
+  profile:
+    displayName: Patient Index Team
+    email: patient-index@healthcare.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: consent-team
+  description: Owns patient consent enforcement and PHI access controls
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Consent Team
+spec:
+  type: team
+  profile:
+    displayName: Consent Team
+    email: consent@healthcare.example.com
+  children: []

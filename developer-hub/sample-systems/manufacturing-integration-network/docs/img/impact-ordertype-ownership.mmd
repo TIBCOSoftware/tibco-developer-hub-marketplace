@@ -1,0 +1,22 @@
+flowchart TD
+    classDef change fill:#ff4d4f,stroke:#a8071a,color:#ffffff,stroke-width:3px;
+    classDef high   fill:#ffccc7,stroke:#cf1322,color:#000000,stroke-width:2px;
+    classDef cond   fill:#ffe7ba,stroke:#d46b08,color:#000000,stroke-width:1px,stroke-dasharray:5 3;
+    classDef owner  fill:#bae0ff,stroke:#0958d9,color:#000000,stroke-width:2px;
+
+    subgraph OM["Order Management"]
+        som["sales-order-msg (contract)"]:::change
+        oi["order-intake-bw6"]:::high
+    end
+    subgraph MD["Master Data"]
+        s4["sap-s4hana (emitter)"]:::high
+    end
+    subgraph PR["Production"]
+        po["production-orchestrator-bw6"]:::cond
+    end
+
+    s4 -. "must constrain OrderType output" .-> som
+    som --> oi
+    oi -. "blocked orders ripple" .-> po
+
+    class OM,MD,PR owner

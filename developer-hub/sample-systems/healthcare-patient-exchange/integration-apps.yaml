@@ -1,0 +1,183 @@
+# Integration apps — TIBCO BW6 / Flogo applications.
+# All graph edges are declared here (the TIBCO Developer Hub's built-in processor generates
+# provides/consumes/dependsOn relations from the Component side):
+#   providesApis / consumesApis -> message contract edges (drive impact analysis)
+#   dependsOn                    -> clinical backend + EMS destination infrastructure edges
+#
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: hl7-fhir-bridge-bw6
+  description: BW6 app — receives HL7 ADT messages from Epic and publishes normalized FHIR Patient updates
+  tags:
+    - bw6
+    - integration
+    - hl7
+    - fhir
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: SwapHoriz
+      iconTooltip: HL7 to FHIR Bridge (BW6)
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: service
+  lifecycle: production
+  owner: group:clinical-integration-team
+  system: patient-data-exchange
+  consumesApis:
+    - hl7-adt-msg
+  providesApis:
+    - fhir-patient-msg
+  dependsOn:
+    - resource:epic-ehr
+    - resource:fhir-api-gateway
+    - resource:healthcare-ems-server
+    - resource:ems-q-adt-inbound
+    - resource:ems-t-patient-updated
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: patient-index-flogo
+  description: Flogo app — consumes FHIR Patient updates and updates the master patient index
+  tags:
+    - flogo
+    - integration
+    - mpi
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: AccountCircle
+      iconTooltip: Patient Index Updater (Flogo)
+    statusIcons:
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: HIPAA Compliant
+spec:
+  type: service
+  lifecycle: production
+  owner: group:patient-index-team
+  system: patient-data-exchange
+  consumesApis:
+    - fhir-patient-msg
+  dependsOn:
+    - resource:master-patient-index
+    - resource:healthcare-ems-server
+    - resource:ems-t-patient-updated
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: lab-ingest-bw6
+  description: BW6 app — receives HL7 lab results from the LIS and publishes normalized FHIR Observations
+  tags:
+    - bw6
+    - integration
+    - lab
+    - fhir
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Science
+      iconTooltip: Lab Ingest (BW6)
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: service
+  lifecycle: production
+  owner: group:lab-integration-team
+  system: patient-data-exchange
+  consumesApis:
+    - lab-result-msg
+  providesApis:
+    - fhir-observation-msg
+  dependsOn:
+    - resource:laboratory-system
+    - resource:healthcare-ems-server
+    - resource:ems-q-lab-result-inbound
+    - resource:ems-t-observation-created
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: consent-gateway-flogo
+  description: Flogo app — enforces consent on Patient and Observation events before downstream use
+  tags:
+    - flogo
+    - integration
+    - consent
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: pastelGreen
+    entityIcon:
+      icon: VerifiedUser
+      iconTooltip: Consent Gateway (Flogo)
+    statusIcons:
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: HIPAA Compliant
+spec:
+  type: service
+  lifecycle: production
+  owner: group:consent-team
+  system: patient-data-exchange
+  consumesApis:
+    - fhir-patient-msg
+    - fhir-observation-msg
+  dependsOn:
+    - resource:consent-service
+    - resource:healthcare-ems-server
+    - resource:ems-t-patient-updated
+    - resource:ems-t-observation-created
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: billing-bridge-bw6
+  description: BW6 app — converts eligible FHIR Observations into claim summaries for billing
+  tags:
+    - bw6
+    - integration
+    - billing
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Payment
+      iconTooltip: Billing Bridge (BW6)
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: PHI Encrypted
+spec:
+  type: service
+  lifecycle: production
+  owner: group:billing-integration-team
+  system: patient-data-exchange
+  consumesApis:
+    - fhir-observation-msg
+  providesApis:
+    - claim-msg
+  dependsOn:
+    - resource:healthcare-billing-system
+    - resource:healthcare-ems-server
+    - resource:ems-q-claim-outbound

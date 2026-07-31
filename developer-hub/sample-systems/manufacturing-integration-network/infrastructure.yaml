@@ -1,0 +1,391 @@
+# Infrastructure — SAP backends (external systems) and the TIBCO EMS broker + destinations.
+# These are modelled as Resources; integration apps reach them via `dependsOn`.
+#
+# Each EMS destination also declares `dependencyOf: [api:<message>]` — i.e. "the message
+# contract depends on this destination". This gives a clickable link from the queue/topic to
+# its message API (and an edge in the system topology). Note: the API's own overview page will
+# not list the destination back — TIBCO Developer Hub API entities only ever surface apiProvidedBy /
+# apiConsumedBy / ownedBy / partOf — so the message links back via its producer/consumer apps.
+#
+# ── SAP backends (navy = external systems) ───────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: sap-s4hana
+  title: SAP S/4HANA (ERP)
+  description: SAP S/4HANA ERP — sales orders, material master, financials
+  tags:
+    - sap
+    - erp
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: AccountBalance
+      iconTooltip: SAP S/4HANA ERP
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External SAP System
+spec:
+  type: sap-system
+  lifecycle: production
+  owner: group:master-data-team
+  system: sap-integration-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: sap-mes
+  title: SAP MES (Manufacturing Execution)
+  description: SAP Manufacturing Execution System — shop-floor production and quality
+  tags:
+    - sap
+    - mes
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Build
+      iconTooltip: SAP MES
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External SAP System
+spec:
+  type: sap-system
+  lifecycle: production
+  owner: group:production-team
+  system: sap-integration-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: sap-ewm
+  title: SAP EWM (Extended Warehouse Management)
+  description: SAP Extended Warehouse Management — inventory and warehouse operations
+  tags:
+    - sap
+    - ewm
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Inventory
+      iconTooltip: SAP EWM
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External SAP System
+spec:
+  type: sap-system
+  lifecycle: production
+  owner: group:logistics-team
+  system: sap-integration-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: sap-ariba
+  title: SAP Ariba (Procurement)
+  description: SAP Ariba — supplier and procurement network
+  tags:
+    - sap
+    - procurement
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: ShoppingCart
+      iconTooltip: SAP Ariba
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External SAP System
+spec:
+  type: sap-system
+  lifecycle: production
+  owner: group:procurement-team
+  system: sap-integration-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: sap-plm
+  title: SAP PLM (Product Lifecycle Management)
+  description: SAP Product Lifecycle Management — product and material engineering data
+  tags:
+    - sap
+    - plm
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Category
+      iconTooltip: SAP PLM
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External SAP System
+spec:
+  type: sap-system
+  lifecycle: production
+  owner: group:master-data-team
+  system: sap-integration-hub
+---
+# ── TIBCO EMS broker (orange = messaging) ────────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: manufacturing-ems-server
+  title: TIBCO EMS Server
+  description: TIBCO Enterprise Message Service broker hosting all topics and queues
+  tags:
+    - tibco
+    - ems
+    - messaging
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: CloudQueue
+      iconTooltip: TIBCO EMS Broker
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: TLS Enabled
+spec:
+  type: message-broker
+  lifecycle: production
+  owner: group:manufacturing-integration-platform-team
+  system: sap-integration-hub
+---
+# ── EMS destinations — queues (icon Inbox) ───────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-sales-order-inbound
+  title: q.sales-order.inbound
+  description: EMS queue carrying inbound sales orders (sales-order-msg) from SAP S/4HANA
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:manufacturing-integration-platform-team
+  system: sap-integration-hub
+  dependsOn:
+    - resource:manufacturing-ems-server
+  dependencyOf:
+    - api:sales-order-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-material-master-sync
+  title: q.material-master.sync
+  description: EMS queue carrying material master sync messages (material-master-msg)
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:manufacturing-integration-platform-team
+  system: sap-integration-hub
+  dependsOn:
+    - resource:manufacturing-ems-server
+  dependencyOf:
+    - api:material-master-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-shipment-dispatch
+  title: q.shipment.dispatch
+  description: EMS queue carrying outbound shipment dispatch messages (shipment-dispatch-msg)
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:manufacturing-integration-platform-team
+  system: sap-integration-hub
+  dependsOn:
+    - resource:manufacturing-ems-server
+  dependencyOf:
+    - api:shipment-dispatch-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-purchase-order-outbound
+  title: q.purchase-order.outbound
+  description: EMS queue carrying outbound purchase orders (purchase-order-msg) to SAP Ariba
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:manufacturing-integration-platform-team
+  system: sap-integration-hub
+  dependsOn:
+    - resource:manufacturing-ems-server
+  dependencyOf:
+    - api:purchase-order-msg
+---
+# ── EMS destinations — topics (icon RssFeed) ─────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-production-order-created
+  title: t.production-order.created
+  description: EMS topic broadcasting production order created events (production-order-msg)
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:manufacturing-integration-platform-team
+  system: sap-integration-hub
+  dependsOn:
+    - resource:manufacturing-ems-server
+  dependencyOf:
+    - api:production-order-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-goods-movement-posted
+  title: t.goods-movement.posted
+  description: EMS topic broadcasting goods movement posted events (goods-movement-msg)
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:manufacturing-integration-platform-team
+  system: sap-integration-hub
+  dependsOn:
+    - resource:manufacturing-ems-server
+  dependencyOf:
+    - api:goods-movement-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-inventory-updated
+  title: t.inventory.updated
+  description: EMS topic broadcasting inventory update events (inventory-update-msg)
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:manufacturing-integration-platform-team
+  system: sap-integration-hub
+  dependsOn:
+    - resource:manufacturing-ems-server
+  dependencyOf:
+    - api:inventory-update-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-quality-inspection-result
+  title: t.quality-inspection.result
+  description: EMS topic broadcasting quality inspection results (quality-inspection-msg)
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:manufacturing-integration-platform-team
+  system: sap-integration-hub
+  dependsOn:
+    - resource:manufacturing-ems-server
+  dependencyOf:
+    - api:quality-inspection-msg

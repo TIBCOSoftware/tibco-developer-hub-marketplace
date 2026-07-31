@@ -1,0 +1,27 @@
+flowchart TD
+    classDef backend fill:#1b2a4a,stroke:#0b1733,color:#ffffff;
+    classDef app     fill:#efe7fb,stroke:#6b3fa0,color:#000000;
+    classDef msg     fill:#fff4cc,stroke:#b8860b,color:#000000;
+
+    gw["Payments API Gateway"]:::backend
+    cb["Core Banking"]:::backend
+    pg["payment-gateway<br/>(BW6)"]:::app
+    pain["pain.001 initiation"]:::msg
+    pacs["pacs.008 credit transfer"]:::msg
+    fs["fraud-scoring<br/>(Flogo)"]:::app
+    fraud["fraud-score"]:::msg
+    co["clearing-orchestrator<br/>(BW6)"]:::app
+    ledgerMsg["ledger-posting"]:::msg
+    lp["ledger-poster<br/>(BW6)"]:::app
+    notifyMsg["payment-notification"]:::msg
+    ns["notification-service<br/>(Flogo)"]:::app
+    gl["General Ledger"]:::backend
+
+    gw --> pain --> pg
+    pg --> cb
+    pg --> pacs
+    pacs --> fs --> fraud
+    pacs --> co
+    fraud --> co --> ledgerMsg --> lp
+    lp --> gl
+    lp --> notifyMsg --> ns

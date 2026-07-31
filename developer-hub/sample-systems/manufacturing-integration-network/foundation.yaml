@@ -1,0 +1,123 @@
+# Foundation — Domain, System and the owning teams for the manufacturer's
+# SAP <-> TIBCO EMS integration landscape.
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: manufacturing
+  description: Manufacturing integration domain — SAP backends bridged to TIBCO EMS messaging
+  tags:
+    - manufacturing
+    - integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Build
+      iconTooltip: Manufacturing Domain
+spec:
+  owner: group:manufacturing-integration-platform-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: sap-integration-hub
+  description: Integration hub connecting SAP backends to TIBCO EMS topics and queues via BW6 / Flogo apps
+  tags:
+    - manufacturing
+    - integration
+    - sap
+    - ems
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: SwapHoriz
+      iconTooltip: SAP Integration Hub
+    statusIcons:
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: Production Ready
+spec:
+  owner: group:manufacturing-integration-platform-team
+  domain: manufacturing
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: manufacturing-integration-platform-team
+  description: Owns the TIBCO EMS broker, destinations and shared integration platform
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+spec:
+  type: team
+  profile:
+    displayName: Integration Platform Team
+    email: integration-platform@manufacturer.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: manufacturing-order-management-team
+  description: Owns order intake integration
+spec:
+  type: team
+  profile:
+    displayName: Order Management Team
+    email: order-management@manufacturer.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: production-team
+  description: Owns production orchestration and quality integration
+spec:
+  type: team
+  profile:
+    displayName: Production Team
+    email: production@manufacturer.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: logistics-team
+  description: Owns inventory and shipment integration
+spec:
+  type: team
+  profile:
+    displayName: Logistics Team
+    email: logistics@manufacturer.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: procurement-team
+  description: Owns procurement integration to SAP Ariba
+spec:
+  type: team
+  profile:
+    displayName: Procurement Team
+    email: procurement@manufacturer.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: master-data-team
+  description: Owns material master data synchronization
+spec:
+  type: team
+  profile:
+    displayName: Master Data Team
+    email: master-data@manufacturer.example.com
+  children: []

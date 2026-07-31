@@ -1,0 +1,238 @@
+# Message contracts — each IoT / EMS topic or queue message is modelled as a kind: API
+# whose definition holds the JSON Schema INLINE.
+#
+# type: iot-message (a neutral custom type) — NOT 'asyncapi'/'openapi'. The api-docs
+# Definition tab picks a strict renderer by spec.type: 'asyncapi' would validate the
+# text as an AsyncAPI document and error because our payload is a JSON Schema, not an
+# AsyncAPI spec. An unrecognized type falls back to a plain raw view, which displays
+# the schema as-is. Topology and impact analysis don't depend on the type.
+#
+# NOTE: definitions are inlined (definition: |) rather than referenced via
+# `$text: ./schemas/..` because this local backend has no UrlReader for `file:`
+# URLs, so local-file $text placeholders silently drop the entity. Inlining is reliable
+# for a local sample — to demo impact analysis, edit the schema in the block below and
+# re-run the impact-analysis skill on the message.
+#
+# Modelling messages as APIs is what makes impact analysis work: every component
+# that consumesApis a message becomes an `apiConsumedBy` = direct-impact consumer.
+# Provider/consumer relations are declared on the components in integration-apps.yaml.
+#
+# ── JSON Schema contracts (smart grid telemetry, yellow) ─────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: meter-reading-msg
+  description: Smart meter reading message (JSON Schema) on q.meter-reading.inbound
+  tags:
+    - iot
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: iot-message
+  lifecycle: production
+  owner: group:telemetry-team
+  system: smart-grid-telemetry-system
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:utility:iot:meter-reading",
+      "title": "MeterReading",
+      "description": "Normalized smart meter reading from edge ingest on q.meter-reading.inbound. Consumed by telemetry, analytics and billing apps.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["meterId", "timestamp", "kWh", "voltage", "quality"],
+      "properties": {
+        "meterId": { "type": "string", "minLength": 1 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "kWh": { "type": "number", "minimum": 0 },
+        "voltage": { "type": "number", "minimum": 0 },
+        "quality": { "type": "string", "enum": ["GOOD", "ESTIMATED", "MISSING", "SUSPECT"] }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: grid-event-msg
+  description: Grid event message (JSON Schema) on t.grid.event
+  tags:
+    - iot
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: iot-message
+  lifecycle: production
+  owner: group:telemetry-team
+  system: smart-grid-telemetry-system
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:utility:iot:grid-event",
+      "title": "GridEvent",
+      "description": "Grid event derived from meter telemetry and SCADA state on t.grid.event.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventId", "deviceId", "eventType", "severity", "timestamp"],
+      "properties": {
+        "eventId": { "type": "string", "minLength": 1 },
+        "deviceId": { "type": "string", "minLength": 1 },
+        "eventType": { "type": "string", "enum": ["VOLTAGE_SAG", "VOLTAGE_SWELL", "METER_OFFLINE", "FEEDER_FAULT", "TAMPER"] },
+        "severity": { "type": "string", "enum": ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: outage-alert-msg
+  description: Outage alert message (JSON Schema) on t.outage.alert
+  tags:
+    - iot
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: iot-message
+  lifecycle: production
+  owner: group:outage-management-team
+  system: smart-grid-telemetry-system
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:utility:iot:outage-alert",
+      "title": "OutageAlert",
+      "description": "Probable outage alert for operations and GIS correlation on t.outage.alert.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outageId", "affectedArea", "startTime", "estimatedCustomers", "cause"],
+      "properties": {
+        "outageId": { "type": "string", "minLength": 1 },
+        "affectedArea": { "type": "string", "minLength": 1 },
+        "startTime": { "type": "string", "format": "date-time" },
+        "estimatedCustomers": { "type": "integer", "minimum": 0 },
+        "cause": { "type": "string", "enum": ["UNKNOWN", "WEATHER", "EQUIPMENT_FAILURE", "VEGETATION", "PLANNED", "CYBER"] }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: demand-forecast-msg
+  description: Demand forecast message (JSON Schema) on t.demand.forecast
+  tags:
+    - iot
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: iot-message
+  lifecycle: production
+  owner: group:analytics-team
+  system: smart-grid-telemetry-system
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:utility:iot:demand-forecast",
+      "title": "DemandForecast",
+      "description": "Short-horizon regional load forecast on t.demand.forecast.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["region", "horizonHours", "predictedLoadMW", "generatedAt"],
+      "properties": {
+        "region": { "type": "string", "minLength": 1 },
+        "horizonHours": { "type": "integer", "minimum": 1, "maximum": 168 },
+        "predictedLoadMW": { "type": "number", "minimum": 0 },
+        "generatedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: billing-usage-msg
+  description: Billing usage message (JSON Schema) on q.billing-usage.outbound
+  tags:
+    - iot
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: iot-message
+  lifecycle: production
+  owner: group:grid-billing-team
+  system: smart-grid-telemetry-system
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:utility:iot:billing-usage",
+      "title": "BillingUsage",
+      "description": "Validated usage total for billing on q.billing-usage.outbound.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accountId", "meterId", "periodStart", "periodEnd", "totalKWh"],
+      "properties": {
+        "accountId": { "type": "string", "minLength": 1 },
+        "meterId": { "type": "string", "minLength": 1 },
+        "periodStart": { "type": "string", "format": "date-time" },
+        "periodEnd": { "type": "string", "format": "date-time" },
+        "totalKWh": { "type": "number", "minimum": 0 }
+      }
+    }

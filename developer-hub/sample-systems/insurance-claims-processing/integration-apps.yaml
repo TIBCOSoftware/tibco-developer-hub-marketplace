@@ -1,0 +1,163 @@
+# Integration apps — TIBCO BW6 / Flogo applications.
+# All graph edges are declared here (the TIBCO Developer Hub's built-in processor generates
+# provides/consumes/dependsOn relations from the Component side):
+#   providesApis / consumesApis -> message contract edges (drive impact analysis)
+#   dependsOn                    -> backend + EMS destination infrastructure edges
+#
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: claims-intake-bw6
+  description: BW6 app — receives FNOL messages, validates policy coverage and publishes registered claims
+  tags:
+    - bw6
+    - integration
+    - claims
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Receipt
+      iconTooltip: Claims Intake (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:claims-intake-team
+  system: claims-processing-hub
+  consumesApis:
+    - fnol-msg
+  providesApis:
+    - claim-registered-msg
+  dependsOn:
+    - resource:policy-admin-system
+    - resource:insurance-ems-server
+    - resource:ems-q-fnol-inbound
+    - resource:ems-t-claim-registered
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: underwriting-orchestrator-bw6
+  description: BW6 app — central orchestrator for underwriting decisions, assessment and document requests
+  tags:
+    - bw6
+    - integration
+    - orchestration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Gavel
+      iconTooltip: Underwriting Orchestrator (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:underwriting-team
+  system: claims-processing-hub
+  consumesApis:
+    - claim-registered-msg
+  providesApis:
+    - claim-assessment-msg
+    - document-request-msg
+  dependsOn:
+    - resource:underwriting-engine
+    - resource:insurance-ems-server
+    - resource:ems-t-claim-registered
+    - resource:ems-t-assessment-completed
+    - resource:ems-q-document-request
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: fraud-check-flogo
+  description: Flogo app — screens registered claims through the fraud detection service
+  tags:
+    - flogo
+    - integration
+    - fraud
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Security
+      iconTooltip: Fraud Check (Flogo)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:fraud-team
+  system: claims-processing-hub
+  consumesApis:
+    - claim-registered-msg
+  dependsOn:
+    - resource:fraud-detection-service
+    - resource:insurance-ems-server
+    - resource:ems-t-claim-registered
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: document-processor-flogo
+  description: Flogo app — requests and reconciles supporting claim documents for assessment and payout
+  tags:
+    - flogo
+    - integration
+    - documents
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Folder
+      iconTooltip: Document Processor (Flogo)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:document-team
+  system: claims-processing-hub
+  consumesApis:
+    - document-request-msg
+    - claim-assessment-msg
+  dependsOn:
+    - resource:document-management-system
+    - resource:insurance-ems-server
+    - resource:ems-q-document-request
+    - resource:ems-t-assessment-completed
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: payout-service-bw6
+  description: BW6 app — converts approved claim assessments into outbound payout instructions
+  tags:
+    - bw6
+    - integration
+    - payments
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: pastelGreen
+    entityIcon:
+      icon: Payment
+      iconTooltip: Payout Service (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:insurance-payments-team
+  system: claims-processing-hub
+  consumesApis:
+    - claim-assessment-msg
+  providesApis:
+    - payout-instruction-msg
+  dependsOn:
+    - resource:payments-system
+    - resource:insurance-ems-server
+    - resource:ems-t-assessment-completed
+    - resource:ems-q-payout-outbound

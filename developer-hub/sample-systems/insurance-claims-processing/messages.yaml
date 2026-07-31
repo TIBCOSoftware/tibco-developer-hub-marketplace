@@ -1,0 +1,260 @@
+# Message contracts — each EMS topic/queue message is modelled as a kind: API
+# whose definition holds the JSON Schema INLINE.
+#
+# type: claims-message (a neutral custom type) — NOT 'asyncapi'/'openapi'. The api-docs
+# Definition tab picks a strict renderer by spec.type: 'asyncapi' would validate the
+# text as an AsyncAPI document and error ("not an AsyncAPI document") because our
+# payload is a JSON Schema, not an AsyncAPI spec. An unrecognized type falls
+# back to a plain raw view, which displays the schema as-is. Topology and impact
+# analysis don't depend on the type.
+#
+# NOTE: definitions are inlined (definition: |) rather than referenced via
+# `$text: ./schemas/..` because this local backend has no UrlReader for `file:`
+# URLs, so local-file $text placeholders silently drop the entity. Inlining is
+# reliable for a local sample — to demo impact analysis, edit the schema in the
+# block below and re-run the impact-analysis skill on the message.
+#
+# Modelling messages as APIs is what makes impact analysis work: every component
+# that consumesApis a message becomes an `apiConsumedBy` = direct-impact consumer.
+# (Provider/consumer relations are declared on the components in integration-apps.yaml.)
+#
+# ── JSON Schema contracts (claims orchestration messages, yellow) ────────────
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: fnol-msg
+  description: First Notice Of Loss message (JSON Schema) on q.fnol.inbound
+  tags:
+    - ems
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: claims-message
+  lifecycle: production
+  owner: group:claims-intake-team
+  system: claims-processing-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:insurer:claims:fnol",
+      "title": "FirstNoticeOfLoss",
+      "description": "First Notice Of Loss message on q.fnol.inbound (external channel -> claims-intake-bw6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claimId", "policyNumber", "lossDate", "lossType", "description", "claimant"],
+      "properties": {
+        "claimId": { "type": "string" },
+        "policyNumber": { "type": "string" },
+        "lossDate": { "type": "string", "format": "date" },
+        "lossType": { "type": "string", "enum": ["AUTO", "HOME", "TRAVEL", "PROPERTY", "LIABILITY"] },
+        "description": { "type": "string" },
+        "claimant": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "contactEmail"],
+          "properties": {
+            "name": { "type": "string" },
+            "contactEmail": { "type": "string", "format": "email" },
+            "phone": { "type": "string" }
+          }
+        }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: claim-registered-msg
+  description: Claim registered event (JSON Schema) on t.claim.registered
+  tags:
+    - ems
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: claims-message
+  lifecycle: production
+  owner: group:claims-intake-team
+  system: claims-processing-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:insurer:claims:claim-registered",
+      "title": "ClaimRegistered",
+      "description": "Claim registered event on t.claim.registered (claims-intake-bw6 -> underwriting-orchestrator-bw6, fraud-check-flogo).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claimId", "policyNumber", "coverageConfirmed", "reserveAmount"],
+      "properties": {
+        "claimId": { "type": "string" },
+        "policyNumber": { "type": "string" },
+        "coverageConfirmed": { "type": "boolean" },
+        "reserveAmount": { "type": "number", "minimum": 0 }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: claim-assessment-msg
+  description: Claim assessment completed event (JSON Schema) on t.assessment.completed — consumed cross-team
+  tags:
+    - ems
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: claims-message
+  lifecycle: production
+  owner: group:underwriting-team
+  system: claims-processing-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:insurer:claims:claim-assessment",
+      "title": "ClaimAssessment",
+      "description": "Claim assessment completed event on t.assessment.completed (underwriting-orchestrator-bw6). Consumed cross-team by payout-service-bw6 and document-processor-flogo.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claimId", "assessedAmount", "decision", "adjuster", "supportingDocs"],
+      "properties": {
+        "claimId": { "type": "string" },
+        "assessedAmount": { "type": "number", "minimum": 0 },
+        "decision": { "type": "string", "enum": ["APPROVED", "PARTIAL", "DENIED", "NEEDS_REVIEW"] },
+        "adjuster": { "type": "string" },
+        "supportingDocs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["documentId", "documentType"],
+            "properties": {
+              "documentId": { "type": "string" },
+              "documentType": { "type": "string" },
+              "receivedDate": { "type": "string", "format": "date" }
+            }
+          }
+        }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: payout-instruction-msg
+  description: Payout instruction message (JSON Schema) on q.payout.outbound
+  tags:
+    - ems
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: claims-message
+  lifecycle: production
+  owner: group:insurance-payments-team
+  system: claims-processing-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:insurer:claims:payout-instruction",
+      "title": "PayoutInstruction",
+      "description": "Payout instruction message on q.payout.outbound (payout-service-bw6 -> payments-system).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claimId", "payeeAccount", "amount", "currency", "method"],
+      "properties": {
+        "claimId": { "type": "string" },
+        "payeeAccount": { "type": "string" },
+        "amount": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+        "method": { "type": "string", "enum": ["ACH", "WIRE", "CHECK", "CARD"] }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: document-request-msg
+  description: Document request message (JSON Schema) on q.document.request
+  tags:
+    - ems
+    - message
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: claims-message
+  lifecycle: production
+  owner: group:document-team
+  system: claims-processing-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:insurer:claims:document-request",
+      "title": "DocumentRequest",
+      "description": "Document request message on q.document.request (underwriting-orchestrator-bw6 -> document-processor-flogo).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claimId", "documentType", "requestedFrom", "dueDate"],
+      "properties": {
+        "claimId": { "type": "string" },
+        "documentType": { "type": "string", "enum": ["POLICE_REPORT", "PHOTO", "INVOICE", "MEDICAL_REPORT", "PROOF_OF_OWNERSHIP"] },
+        "requestedFrom": { "type": "string", "enum": ["CLAIMANT", "ADJUSTER", "REPAIR_SHOP", "THIRD_PARTY"] },
+        "dueDate": { "type": "string", "format": "date" }
+      }
+    }

@@ -1,0 +1,339 @@
+# Infrastructure — field devices, utility backends and the MQTT / TIBCO EMS streaming fabric.
+# These are modelled as Resources; integration apps reach them via `dependsOn`.
+#
+# Each messaging destination declares `dependencyOf: [api:<message>]` — i.e. "the message
+# contract depends on this destination". This gives a clickable link from the queue/topic to
+# its message API (and an edge in the system topology). Message links back are surfaced through
+# producer/consumer apps in integration-apps.yaml.
+#
+# ── Field devices and utility backends (navy = external systems) ─────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: smart-meter-fleet
+  title: Smart Meter Fleet
+  description: Field smart meters publishing interval consumption and power quality telemetry
+  tags:
+    - smart-grid
+    - device-fleet
+    - iot
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Bolt
+      iconTooltip: Smart Meter Fleet
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: Field Devices
+spec:
+  type: device-fleet
+  lifecycle: production
+  owner: group:edge-integration-team
+  system: smart-grid-telemetry-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: scada-system
+  title: SCADA System
+  description: Supervisory control system for substations, feeders and switching equipment
+  tags:
+    - scada
+    - operations
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Settings
+      iconTooltip: SCADA System
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: scada-system
+  lifecycle: production
+  owner: group:outage-management-team
+  system: smart-grid-telemetry-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: time-series-historian
+  title: Time-Series Historian
+  description: Historian storing telemetry, grid events and aggregated load profiles
+  tags:
+    - historian
+    - telemetry
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Storage
+      iconTooltip: Time-Series Historian
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: historian
+  lifecycle: production
+  owner: group:telemetry-team
+  system: smart-grid-telemetry-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: gis-system
+  title: GIS System
+  description: Geographic information system for service territories, feeders and affected areas
+  tags:
+    - gis
+    - outage
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Map
+      iconTooltip: GIS System
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: gis-system
+  lifecycle: production
+  owner: group:outage-management-team
+  system: smart-grid-telemetry-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: grid-billing-system
+  title: Billing System
+  description: Customer billing platform receiving validated usage totals
+  tags:
+    - billing
+    - usage
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Payment
+      iconTooltip: Billing System
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: grid-billing-system
+  lifecycle: production
+  owner: group:grid-billing-team
+  system: smart-grid-telemetry-system
+---
+# ── Messaging brokers (orange = messaging) ──────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: mqtt-broker
+  title: MQTT Broker
+  description: Edge ingest broker receiving telemetry from field meters over TLS
+  tags:
+    - mqtt
+    - messaging
+    - edge
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: CloudQueue
+      iconTooltip: MQTT Broker
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: TLS Enabled
+spec:
+  type: message-broker
+  lifecycle: production
+  owner: group:grid-platform-team
+  system: smart-grid-telemetry-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: grid-ems-server
+  title: TIBCO EMS Broker
+  description: TIBCO EMS and streaming fabric hosting grid telemetry queues and topics
+  tags:
+    - tibco
+    - ems
+    - streaming
+    - messaging
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: CloudQueue
+      iconTooltip: TIBCO EMS Broker
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: TLS Enabled
+spec:
+  type: message-broker
+  lifecycle: production
+  owner: group:grid-platform-team
+  system: smart-grid-telemetry-system
+---
+# ── EMS destinations — queues (icon Inbox) ──────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-meter-reading-inbound
+  title: q.meter-reading.inbound
+  description: EMS queue carrying normalized meter readings (meter-reading-msg) from edge ingest
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:grid-platform-team
+  system: smart-grid-telemetry-system
+  dependsOn:
+    - resource:grid-ems-server
+  dependencyOf:
+    - api:meter-reading-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-billing-usage-outbound
+  title: q.billing-usage.outbound
+  description: EMS queue carrying billing usage totals (billing-usage-msg) to the billing system
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:grid-platform-team
+  system: smart-grid-telemetry-system
+  dependsOn:
+    - resource:grid-ems-server
+  dependencyOf:
+    - api:billing-usage-msg
+---
+# ── EMS destinations — topics (icon RssFeed) ────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-grid-event
+  title: t.grid.event
+  description: EMS topic broadcasting grid events derived from telemetry and SCADA state
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:grid-platform-team
+  system: smart-grid-telemetry-system
+  dependsOn:
+    - resource:grid-ems-server
+  dependencyOf:
+    - api:grid-event-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-outage-alert
+  title: t.outage.alert
+  description: EMS topic broadcasting probable outage alerts for operations and GIS correlation
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:grid-platform-team
+  system: smart-grid-telemetry-system
+  dependsOn:
+    - resource:grid-ems-server
+  dependencyOf:
+    - api:outage-alert-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-demand-forecast
+  title: t.demand.forecast
+  description: EMS topic broadcasting short-horizon demand forecasts for grid planning
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:grid-platform-team
+  system: smart-grid-telemetry-system
+  dependsOn:
+    - resource:grid-ems-server
+  dependencyOf:
+    - api:demand-forecast-msg

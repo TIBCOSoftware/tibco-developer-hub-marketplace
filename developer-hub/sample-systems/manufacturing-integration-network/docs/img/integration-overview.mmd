@@ -1,0 +1,26 @@
+flowchart TD
+    classDef sap  fill:#1b2a4a,stroke:#0b1733,color:#ffffff;
+    classDef app  fill:#efe7fb,stroke:#6b3fa0,color:#000000;
+    classDef msg  fill:#fff4cc,stroke:#b8860b,color:#000000;
+
+    s4["SAP S/4HANA"]:::sap
+    oi["order-intake"]:::app
+    pom["production-order"]:::msg
+    po["production-orchestrator"]:::app
+    gm["goods-movement"]:::msg
+    iu["inventory-updater<br/>(EWM)"]:::app
+    qg["quality-gateway<br/>(MES)"]:::app
+    invm["inventory-update"]:::msg
+    qm["quality-inspection-result"]:::msg
+    sd["shipment-dispatcher<br/>(EWM)"]:::app
+    pb["procurement-bridge<br/>(Ariba)"]:::app
+    shm["shipment-dispatch"]:::msg
+    pum["purchase-order"]:::msg
+
+    s4 -- "sales order" --> oi --> pom --> po --> gm
+    gm --> iu
+    gm --> qg
+    qg --> qm
+    iu --> invm
+    invm --> sd --> shm
+    invm --> pb --> pum

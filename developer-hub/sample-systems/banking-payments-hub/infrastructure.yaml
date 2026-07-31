@@ -1,0 +1,339 @@
+# Infrastructure — banking backends (external systems), the API gateway and the TIBCO EMS broker + destinations.
+# These are modelled as Resources; integration apps reach them via `dependsOn`.
+#
+# Each EMS destination also declares `dependencyOf: [api:<message>]` — i.e. "the message
+# contract depends on this destination". This gives a clickable link from the queue/topic to
+# its message API (and an edge in the system topology). Note: the API's own overview page will
+# not list the destination back — TIBCO Developer Hub API entities only ever surface apiProvidedBy /
+# apiConsumedBy / ownedBy / partOf — so the message links back via its producer/consumer apps.
+#
+# ── Banking backends (navy = external systems) ───────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: core-banking-system
+  title: Core Banking System
+  description: Temenos-style core banking platform — accounts, balances and payment validation
+  tags:
+    - banking
+    - core-banking
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: AccountBalance
+      iconTooltip: Core Banking System
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: banking-system
+  lifecycle: production
+  owner: group:core-banking-team
+  system: payments-integration-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: card-network
+  title: Card Network
+  description: External card network for clearing and settlement rails
+  tags:
+    - banking
+    - cards
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: CreditCard
+      iconTooltip: Card Network
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: banking-system
+  lifecycle: production
+  owner: group:payments-engineering-team
+  system: payments-integration-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: fraud-detection-engine
+  title: Fraud Detection Engine
+  description: Risk scoring service for payment fraud detection and transaction monitoring
+  tags:
+    - banking
+    - fraud
+    - risk
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Security
+      iconTooltip: Fraud Detection Engine
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: banking-system
+  lifecycle: production
+  owner: group:fraud-risk-team
+  system: payments-integration-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: general-ledger
+  title: General Ledger
+  description: Accounting ledger for debit and credit posting after payment clearing
+  tags:
+    - banking
+    - ledger
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: MenuBook
+      iconTooltip: General Ledger
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: banking-system
+  lifecycle: production
+  owner: group:ledger-team
+  system: payments-integration-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: sanctions-screening
+  title: Sanctions Screening
+  description: Watchlist and sanctions screening service for payment parties
+  tags:
+    - banking
+    - sanctions
+    - risk
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: VerifiedUser
+      iconTooltip: Sanctions Screening
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: banking-system
+  lifecycle: production
+  owner: group:fraud-risk-team
+  system: payments-integration-hub
+---
+# ── TIBCO EMS broker and API gateway (orange = messaging / ingress) ──────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: banking-ems-server
+  title: TIBCO EMS Server
+  description: TIBCO Enterprise Message Service broker hosting all payment topics and queues
+  tags:
+    - tibco
+    - ems
+    - messaging
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: CloudQueue
+      iconTooltip: TIBCO EMS Broker
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: TLS Enabled
+spec:
+  type: message-broker
+  lifecycle: production
+  owner: group:payments-platform-team
+  system: payments-integration-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: payments-api-gateway
+  title: Payments API Gateway
+  description: Public API gateway for customer payment initiation requests
+  tags:
+    - tibco
+    - api-gateway
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Api
+      iconTooltip: API Gateway
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: Public API Gateway
+spec:
+  type: api-gateway
+  lifecycle: production
+  owner: group:payments-platform-team
+  system: payments-integration-hub
+---
+# ── EMS destinations — queues (icon Inbox) ───────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-payment-initiation.inbound
+  title: q.payment-initiation.inbound
+  description: EMS queue carrying inbound ISO 20022 payment initiations (pain001-payment-initiation-msg)
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:payments-platform-team
+  system: payments-integration-hub
+  dependsOn:
+    - resource:banking-ems-server
+  dependencyOf:
+    - api:pain001-payment-initiation-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-ledger-posting
+  title: q.ledger.posting
+  description: EMS queue carrying ledger posting requests (ledger-posting-msg)
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:payments-platform-team
+  system: payments-integration-hub
+  dependsOn:
+    - resource:banking-ems-server
+  dependencyOf:
+    - api:ledger-posting-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-notification-outbound
+  title: q.notification.outbound
+  description: EMS queue carrying outbound customer notifications (payment-notification-msg)
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:payments-platform-team
+  system: payments-integration-hub
+  dependsOn:
+    - resource:banking-ems-server
+  dependencyOf:
+    - api:payment-notification-msg
+---
+# ── EMS destinations — topics (icon RssFeed) ─────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-payment-cleared
+  title: t.payment.cleared
+  description: EMS topic broadcasting FI-to-FI credit transfer events (pacs008-credit-transfer-msg)
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:payments-platform-team
+  system: payments-integration-hub
+  dependsOn:
+    - resource:banking-ems-server
+  dependencyOf:
+    - api:pacs008-credit-transfer-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-fraud-alert
+  title: t.fraud.alert
+  description: EMS topic broadcasting fraud scoring results (fraud-score-msg)
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:payments-platform-team
+  system: payments-integration-hub
+  dependsOn:
+    - resource:banking-ems-server
+  dependencyOf:
+    - api:fraud-score-msg

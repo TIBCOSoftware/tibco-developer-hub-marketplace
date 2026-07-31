@@ -1,0 +1,19 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: smart-grid-telemetry-locations
+  description: Energy & utilities edge-to-cloud IoT telemetry pipeline (impact-analysis sample topology)
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: AccountTree
+      iconTooltip: Smart Grid Telemetry Locations
+spec:
+  targets:
+    - ./foundation.yaml
+    - ./infrastructure.yaml
+    - ./messages.yaml
+    - ./integration-apps.yaml

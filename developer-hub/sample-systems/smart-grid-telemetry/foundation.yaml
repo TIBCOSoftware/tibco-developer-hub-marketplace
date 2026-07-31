@@ -1,0 +1,167 @@
+# Foundation — Domain, System and the owning teams for the smart grid
+# edge-to-cloud IoT telemetry pipeline.
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: energy-utilities
+  description: Energy & utilities domain — smart grid telemetry, outage and usage integrations
+  tags:
+    - energy
+    - utilities
+    - iot
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Bolt
+      iconTooltip: Energy & Utilities Domain
+spec:
+  owner: group:grid-platform-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: smart-grid-telemetry-system
+  description: Edge-to-cloud telemetry pipeline connecting smart meters, SCADA, EMS messaging and analytics applications
+  tags:
+    - energy
+    - utilities
+    - telemetry
+    - iot
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Hub
+      iconTooltip: Smart Grid Telemetry System
+    statusIcons:
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: Production Ready
+spec:
+  owner: group:grid-platform-team
+  domain: energy-utilities
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: grid-platform-team
+  description: Owns the shared grid integration platform, brokers and destinations
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Grid Platform Team
+spec:
+  type: team
+  profile:
+    displayName: Grid Platform Team
+    email: grid-platform@utility.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: edge-integration-team
+  description: Owns edge-deployed Flogo telemetry ingestion
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Groups
+      iconTooltip: Edge Integration Team
+spec:
+  type: team
+  profile:
+    displayName: Edge Integration Team
+    email: edge-integration@utility.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: telemetry-team
+  description: Owns telemetry normalization and historian integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Groups
+      iconTooltip: Telemetry Team
+spec:
+  type: team
+  profile:
+    displayName: Telemetry Team
+    email: telemetry@utility.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: outage-management-team
+  description: Owns outage alerting and field operations integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Groups
+      iconTooltip: Outage Management Team
+spec:
+  type: team
+  profile:
+    displayName: Outage Management Team
+    email: outage-management@utility.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: analytics-team
+  description: Owns telemetry analytics and demand forecasting
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: pastelGreen
+    entityIcon:
+      icon: Groups
+      iconTooltip: Analytics Team
+spec:
+  type: team
+  profile:
+    displayName: Analytics Team
+    email: analytics@utility.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: grid-billing-team
+  description: Owns usage aggregation and billing integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Groups
+      iconTooltip: Billing Team
+spec:
+  type: team
+  profile:
+    displayName: Billing Team
+    email: billing@utility.example.com
+  children: []

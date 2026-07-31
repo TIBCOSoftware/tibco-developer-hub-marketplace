@@ -1,0 +1,167 @@
+# Foundation — Domain, System and the owning teams for the banking
+# payments integration landscape.
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: financial-services
+  description: Financial services integration domain — banking payments bridged through TIBCO messaging
+  tags:
+    - banking
+    - payments
+    - integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: AccountBalance
+      iconTooltip: Financial Services Domain
+spec:
+  owner: group:payments-platform-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: payments-integration-hub
+  description: Payments integration hub connecting banking systems, fraud checks, clearing, ledger posting and customer notifications
+  tags:
+    - banking
+    - payments
+    - integration
+    - ems
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: SwapHoriz
+      iconTooltip: Payments Integration Hub
+    statusIcons:
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: Production Ready
+spec:
+  owner: group:payments-platform-team
+  domain: financial-services
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: payments-platform-team
+  description: Owns the shared payments platform, EMS broker and API gateway
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Payments Platform Team
+spec:
+  type: team
+  profile:
+    displayName: Payments Platform Team
+    email: payments-platform@bank.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: payments-engineering-team
+  description: Owns payment gateway and clearing orchestration integrations
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Payments Engineering Team
+spec:
+  type: team
+  profile:
+    displayName: Payments Engineering Team
+    email: payments-engineering@bank.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: fraud-risk-team
+  description: Owns fraud scoring and sanctions screening integration
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Fraud & Risk Team
+spec:
+  type: team
+  profile:
+    displayName: Fraud & Risk Team
+    email: fraud-risk@bank.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: core-banking-team
+  description: Owns the core banking platform integration boundary
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Core Banking Team
+spec:
+  type: team
+  profile:
+    displayName: Core Banking Team
+    email: core-banking@bank.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: ledger-team
+  description: Owns ledger posting integrations and accounting handoff
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Ledger Team
+spec:
+  type: team
+  profile:
+    displayName: Ledger Team
+    email: ledger@bank.example.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: notifications-team
+  description: Owns customer payment notification integrations
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: Groups
+      iconTooltip: Notifications Team
+spec:
+  type: team
+  profile:
+    displayName: Notifications Team
+    email: notifications@bank.example.com
+  children: []

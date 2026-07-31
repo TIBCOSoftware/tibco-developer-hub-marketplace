@@ -1,0 +1,24 @@
+flowchart TD
+    classDef bss  fill:#1b2a4a,stroke:#0b1733,color:#ffffff;
+    classDef app  fill:#efe7fb,stroke:#6b3fa0,color:#000000;
+    classDef msg  fill:#fff4cc,stroke:#b8860b,color:#000000;
+    classDef oss  fill:#e2f3e8,stroke:#2d6b3f,color:#000000;
+
+    crm["CRM / BSS"]:::bss
+    catalog["Product Catalog"]:::bss
+    gateway["TMF API Gateway"]:::oss
+    po["tmf622-product-order-msg"]:::msg
+    capture["order-capture-bw6"]:::app
+    so["tmf641-service-order-msg"]:::msg
+    orchestrator["service-orchestrator-bw6"]:::app
+    ro["tmf652-resource-order-msg"]:::msg
+    provisioner["resource-provisioner-flogo"]:::app
+    ar["activation-request-msg"]:::msg
+    activation["activation-gateway-bw6"]:::app
+    oc["order-completion-msg"]:::msg
+    billing["billing-activation-flogo"]:::app
+    billingsys["Billing System"]:::bss
+
+    crm --> capture
+    catalog --> capture
+    gateway --> po --> capture --> so --> orchestrator --> ro --> provisioner --> ar --> activation --> oc --> billing --> billingsys

@@ -1,0 +1,19 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: insurance-claims-processing-locations
+  description: Insurance claims-processing orchestration sample topology
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: SwapHoriz
+      iconTooltip: Claims Processing Location
+spec:
+  targets:
+    - ./foundation.yaml
+    - ./infrastructure.yaml
+    - ./messages.yaml
+    - ./integration-apps.yaml

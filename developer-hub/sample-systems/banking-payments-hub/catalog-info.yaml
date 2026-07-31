@@ -1,0 +1,19 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: banking-payments-hub-locations
+  description: Banking payments integration hub (impact-analysis sample topology)
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: blue
+    entityIcon:
+      icon: AccountTree
+      iconTooltip: Banking Payments Hub Locations
+spec:
+  targets:
+    - ./foundation.yaml
+    - ./infrastructure.yaml
+    - ./messages.yaml
+    - ./integration-apps.yaml

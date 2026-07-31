@@ -1,0 +1,21 @@
+site_name: Claims Processing Hub
+site_description: >-
+  Insurance claims-processing orchestration landscape — FNOL, underwriting,
+  document handling and payout integrated over TIBCO EMS via BW6 / Flogo apps.
+docs_dir: docs
+site_dir: site
+nav:
+  - Overview: index.md
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - content.code.annotate
+    - search.highlight
+    - search.suggest
+plugins:
+  - techdocs-core

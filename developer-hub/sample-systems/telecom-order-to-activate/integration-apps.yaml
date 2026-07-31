@@ -1,0 +1,166 @@
+# Integration apps — TIBCO BW6 / Flogo applications.
+# All graph edges are declared here (the TIBCO Developer Hub's built-in processor generates
+# provides/consumes/dependsOn relations from the Component side):
+#   providesApis / consumesApis -> message contract edges (drive impact analysis)
+#   dependsOn                    -> OSS/BSS backend + EMS destination infrastructure edges
+#
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: order-capture-bw6
+  description: BW6 app — receives TMF622 product orders, validates CRM/catalog context and publishes TMF641 service orders
+  tags:
+    - bw6
+    - integration
+    - tmf622
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: Receipt
+      iconTooltip: Order Capture (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:telecom-order-management-team
+  system: order-to-activate-hub
+  consumesApis:
+    - tmf622-product-order-msg
+  providesApis:
+    - tmf641-service-order-msg
+  dependsOn:
+    - resource:crm-bss
+    - resource:product-catalog-system
+    - resource:tmf-api-gateway
+    - resource:telecom-ems-server
+    - resource:ems-q-product-order-inbound
+    - resource:ems-t-service-order-created
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: service-orchestrator-bw6
+  description: BW6 app — decomposes TMF641 service orders into TMF652 resource orders using OSS inventory
+  tags:
+    - bw6
+    - integration
+    - tmf641
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: AccountTree
+      iconTooltip: Service Orchestrator (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:service-orchestration-team
+  system: order-to-activate-hub
+  consumesApis:
+    - tmf641-service-order-msg
+  providesApis:
+    - tmf652-resource-order-msg
+  dependsOn:
+    - resource:oss-inventory
+    - resource:telecom-ems-server
+    - resource:ems-t-service-order-created
+    - resource:ems-t-resource-order-created
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: resource-provisioner-flogo
+  description: Flogo app — maps TMF652 resource orders to activation requests and provisioning calls
+  tags:
+    - flogo
+    - integration
+    - tmf652
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: Router
+      iconTooltip: Resource Provisioner (Flogo)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:resource-provisioning-team
+  system: order-to-activate-hub
+  consumesApis:
+    - tmf652-resource-order-msg
+  providesApis:
+    - activation-request-msg
+  dependsOn:
+    - resource:oss-inventory
+    - resource:network-provisioning-system
+    - resource:telecom-ems-server
+    - resource:ems-t-resource-order-created
+    - resource:ems-q-activation-request
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: activation-gateway-bw6
+  description: BW6 app — executes network activation requests and publishes order completion events
+  tags:
+    - bw6
+    - integration
+    - activation
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: green
+    entityIcon:
+      icon: SettingsInputAntenna
+      iconTooltip: Activation Gateway (BW6)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:network-activation-team
+  system: order-to-activate-hub
+  consumesApis:
+    - activation-request-msg
+  providesApis:
+    - order-completion-msg
+  dependsOn:
+    - resource:network-provisioning-system
+    - resource:telecom-ems-server
+    - resource:ems-q-activation-request
+    - resource:ems-t-order-completed
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: billing-activation-flogo
+  description: Flogo app — consumes completed order events and activates billing for the customer account
+  tags:
+    - flogo
+    - integration
+    - billing
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Payment
+      iconTooltip: Billing Activation (Flogo)
+spec:
+  type: service
+  lifecycle: production
+  owner: group:telecom-billing-team
+  system: order-to-activate-hub
+  consumesApis:
+    - order-completion-msg
+  dependsOn:
+    - resource:telecom-billing-system
+    - resource:telecom-ems-server
+    - resource:ems-t-order-completed
+    - resource:ems-q-billing-activation-outbound

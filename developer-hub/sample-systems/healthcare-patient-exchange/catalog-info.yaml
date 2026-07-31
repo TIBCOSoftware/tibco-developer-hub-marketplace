@@ -1,0 +1,19 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: healthcare-patient-exchange-locations
+  description: Healthcare patient data exchange integration network (impact-analysis sample topology)
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: purple
+    entityIcon:
+      icon: LocalHospital
+      iconTooltip: Patient Data Exchange Catalog Location
+spec:
+  targets:
+    - ./foundation.yaml
+    - ./infrastructure.yaml
+    - ./messages.yaml
+    - ./integration-apps.yaml

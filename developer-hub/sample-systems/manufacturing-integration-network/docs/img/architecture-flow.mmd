@@ -1,0 +1,51 @@
+flowchart TD
+    classDef sap  fill:#1b2a4a,stroke:#0b1733,color:#ffffff;
+    classDef app  fill:#efe7fb,stroke:#6b3fa0,color:#000000;
+    classDef msg  fill:#fff4cc,stroke:#b8860b,color:#000000;
+
+    %% SAP backends
+    s4["SAP S/4HANA"]:::sap
+    mes["SAP MES"]:::sap
+    ewm["SAP EWM"]:::sap
+    ariba["SAP Ariba"]:::sap
+    plm["SAP PLM"]:::sap
+
+    %% messages
+    som["sales-order-msg"]:::msg
+    mmm["material-master-msg"]:::msg
+    pom["production-order-msg"]:::msg
+    gmm["goods-movement-msg"]:::msg
+    ium["inventory-update-msg"]:::msg
+    qim["quality-inspection-msg"]:::msg
+    sdm["shipment-dispatch-msg"]:::msg
+    pum["purchase-order-msg"]:::msg
+
+    %% apps
+    oi["order-intake-bw6"]:::app
+    po["production-orchestrator-bw6"]:::app
+    mm["material-master-sync-bw6"]:::app
+    iu["inventory-updater-flogo"]:::app
+    qg["quality-gateway-flogo"]:::app
+    sd["shipment-dispatcher-bw6"]:::app
+    pb["procurement-bridge-bw6"]:::app
+
+    s4 -- "ORDERS05" --> som --> oi
+    mmm --> oi
+    oi -- "provides" --> pom --> po
+    po --> mes
+    po -- "provides" --> gmm
+    gmm --> iu
+    gmm --> qg
+    iu --> ewm
+    iu -- "provides" --> ium
+    qg --> mes
+    qg -- "provides" --> qim
+    ium --> sd
+    ium --> pb
+    sd --> ewm
+    sd -- "provides" --> sdm
+    pb --> ariba
+    pb -- "provides" --> pum
+    mm -- "provides" --> mmm
+    mm --> s4
+    mm --> plm

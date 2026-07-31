@@ -1,0 +1,310 @@
+# Infrastructure — insurance backend systems and the TIBCO EMS broker + destinations.
+# These are modelled as Resources; integration apps reach them via `dependsOn`.
+#
+# Each EMS destination also declares `dependencyOf: [api:<message>]` — i.e. "the message
+# contract depends on this destination". This gives a clickable link from the queue/topic to
+# its message API (and an edge in the system topology).
+#
+# ── Insurance backends (navy = external systems) ─────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: policy-admin-system
+  title: Policy Admin System
+  description: Core policy administration system used to confirm coverage and policy status
+  tags:
+    - insurance
+    - policy
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Description
+      iconTooltip: Policy Admin System
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: policy-system
+  lifecycle: production
+  owner: group:claims-platform-team
+  system: claims-processing-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: underwriting-engine
+  title: Underwriting Engine
+  description: Decision engine for coverage rules, reserve calculation and claim assessment
+  tags:
+    - insurance
+    - underwriting
+    - rules
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Rule
+      iconTooltip: Underwriting Engine
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: decision-engine
+  lifecycle: production
+  owner: group:underwriting-team
+  system: claims-processing-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: document-management-system
+  title: Document Management System
+  description: Stores claim evidence, correspondence and requested supporting documents
+  tags:
+    - insurance
+    - documents
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Folder
+      iconTooltip: Document Management System
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: document-system
+  lifecycle: production
+  owner: group:document-team
+  system: claims-processing-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: payments-system
+  title: Payments System
+  description: Payment rail integration for approved claim payouts
+  tags:
+    - insurance
+    - payments
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Payment
+      iconTooltip: Payments System
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: payment-system
+  lifecycle: production
+  owner: group:insurance-payments-team
+  system: claims-processing-hub
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: fraud-detection-service
+  title: Fraud Detection Service
+  description: External fraud scoring service used during claim registration and assessment
+  tags:
+    - insurance
+    - fraud
+    - risk
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: navy
+    entityIcon:
+      icon: Security
+      iconTooltip: Fraud Detection Service
+    statusIcons:
+      - icon: Public
+        iconColor: steelblue
+        iconTooltip: External System
+spec:
+  type: fraud-system
+  lifecycle: production
+  owner: group:fraud-team
+  system: claims-processing-hub
+---
+# ── TIBCO EMS broker (orange = messaging) ────────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: insurance-ems-server
+  title: TIBCO EMS Server
+  description: TIBCO Enterprise Message Service broker hosting all claims-processing topics and queues
+  tags:
+    - tibco
+    - ems
+    - messaging
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: CloudQueue
+      iconTooltip: TIBCO EMS Broker
+    statusIcons:
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: TLS Enabled
+spec:
+  type: message-broker
+  lifecycle: production
+  owner: group:claims-platform-team
+  system: claims-processing-hub
+---
+# ── EMS destinations — queues (icon Inbox) ───────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-fnol-inbound
+  title: q.fnol.inbound
+  description: EMS queue carrying first notice of loss messages (fnol-msg)
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:claims-platform-team
+  system: claims-processing-hub
+  dependsOn:
+    - resource:insurance-ems-server
+  dependencyOf:
+    - api:fnol-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-payout-outbound
+  title: q.payout.outbound
+  description: EMS queue carrying payout instruction messages (payout-instruction-msg)
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:claims-platform-team
+  system: claims-processing-hub
+  dependsOn:
+    - resource:insurance-ems-server
+  dependencyOf:
+    - api:payout-instruction-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-q-document-request
+  title: q.document.request
+  description: EMS queue carrying supporting document request messages (document-request-msg)
+  tags:
+    - ems
+    - queue
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: Inbox
+      iconTooltip: EMS Queue
+spec:
+  type: queue
+  lifecycle: production
+  owner: group:claims-platform-team
+  system: claims-processing-hub
+  dependsOn:
+    - resource:insurance-ems-server
+  dependencyOf:
+    - api:document-request-msg
+---
+# ── EMS destinations — topics (icon RssFeed) ─────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-claim-registered
+  title: t.claim.registered
+  description: EMS topic broadcasting claim registered events (claim-registered-msg)
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:claims-platform-team
+  system: claims-processing-hub
+  dependsOn:
+    - resource:insurance-ems-server
+  dependencyOf:
+    - api:claim-registered-msg
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ems-t-assessment-completed
+  title: t.assessment.completed
+  description: EMS topic broadcasting claim assessment completed events (claim-assessment-msg)
+  tags:
+    - ems
+    - topic
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: orange
+    entityIcon:
+      icon: RssFeed
+      iconTooltip: EMS Topic
+spec:
+  type: topic
+  lifecycle: production
+  owner: group:claims-platform-team
+  system: claims-processing-hub
+  dependsOn:
+    - resource:insurance-ems-server
+  dependencyOf:
+    - api:claim-assessment-msg

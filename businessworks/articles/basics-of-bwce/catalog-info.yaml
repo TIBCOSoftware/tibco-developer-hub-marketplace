@@ -7,4 +7,4 @@ spec:
   targets:
     - ./bwce-basics-learning-guide.yaml
     - ./template-bwce-basics.yaml
-    - ./../../../developer-hub/e-commerce-platform/team.yaml
+    - ./../../../developer-hub/sample-systems/e-commerce-platform/team.yaml

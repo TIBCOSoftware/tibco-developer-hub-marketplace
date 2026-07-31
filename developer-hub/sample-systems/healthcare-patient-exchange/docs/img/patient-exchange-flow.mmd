@@ -1,0 +1,30 @@
+flowchart LR
+    classDef clinical fill:#1b2a4a,stroke:#0b1733,color:#ffffff;
+    classDef app      fill:#efe7fb,stroke:#6b3fa0,color:#000000;
+    classDef msg      fill:#fff4cc,stroke:#b8860b,color:#000000;
+    classDef guard    fill:#dff5e1,stroke:#2e7d32,color:#000000;
+
+    ehr["Epic EHR"]:::clinical
+    lis["Laboratory System"]:::clinical
+    mpi["Master Patient Index"]:::clinical
+    consent["Consent Service"]:::clinical
+    billing["Billing System"]:::clinical
+
+    adt["hl7-adt-msg<br/>(ADT^A01)"]:::msg
+    patient["fhir-patient-msg<br/>(Patient)"]:::msg
+    lab["lab-result-msg<br/>(ORU^R01)"]:::msg
+    obs["fhir-observation-msg<br/>(Observation)"]:::msg
+    claim["claim-msg<br/>(Claim summary)"]:::msg
+
+    bridge["hl7-fhir-bridge-bw6"]:::app
+    indexer["patient-index-flogo"]:::app
+    ingest["lab-ingest-bw6"]:::app
+    gate["consent-gateway-flogo"]:::guard
+    bill["billing-bridge-bw6"]:::app
+
+    ehr --> adt --> bridge --> patient
+    patient --> indexer --> mpi
+    patient --> gate --> consent
+    lis --> lab --> ingest --> obs
+    obs --> gate
+    obs --> bill --> claim --> billing

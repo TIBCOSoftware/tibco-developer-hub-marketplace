@@ -1,0 +1,349 @@
+# Message contracts — each EMS topic/queue payment message is modelled as a kind: API
+# whose definition holds the XSD / JSON Schema INLINE.
+#
+# type: iso20022-message (a neutral custom type) — NOT 'asyncapi'/'openapi'. The api-docs
+# Definition tab picks a strict renderer by spec.type: 'asyncapi' would validate the
+# text as an AsyncAPI document and error ("not an AsyncAPI document") because our
+# payload is an XSD / JSON Schema, not an AsyncAPI spec. An unrecognized type falls
+# back to a plain raw view, which displays the schema as-is. Topology and impact
+# analysis don't depend on the type.
+#
+# NOTE: definitions are inlined (definition: |) rather than referenced via
+# `$text: ./schemas/..` because this local backend has no UrlReader for `file:`
+# URLs, so local-file $text placeholders silently drop the entity. ($text works
+# only when the catalog file is read from a Git URL.) Inlining is reliable for a
+# local sample — to demo impact analysis, edit the schema in the block below and
+# re-run the impact-analysis skill on the message.
+#
+# Modelling messages as APIs is what makes impact analysis work: every component
+# that consumesApis a message becomes an `apiConsumedBy` = direct-impact consumer.
+# (Provider/consumer relations are declared on the components in integration-apps.yaml.)
+#
+# ── XSD contracts (ISO 20022-style, yellow) ──────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: pain001-payment-initiation-msg
+  description: ISO 20022 pain.001 customer credit transfer initiation on q.payment-initiation.inbound
+  tags:
+    - iso20022
+    - payment
+    - xsd
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (XSD)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: XSD Schema
+spec:
+  type: iso20022-message
+  lifecycle: production
+  owner: group:payments-engineering-team
+  system: payments-integration-hub
+  definition: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!-- Customer Credit Transfer Initiation — ISO 20022 pain.001 (q.payment-initiation.inbound) -->
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                targetNamespace="urn:iso:std:iso:20022:tech:xsd:pain.001.001.09"
+                xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.09"
+                elementFormDefault="qualified">
+      <xsd:element name="Document">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="CstmrCdtTrfInitn" type="CustomerCreditTransferInitiationV09"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:complexType name="CustomerCreditTransferInitiationV09">
+        <xsd:sequence>
+          <xsd:element name="GrpHdr" type="GroupHeader"/>
+          <xsd:element name="PmtInf" type="PaymentInstruction" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="GroupHeader">
+        <xsd:sequence>
+          <xsd:element name="MsgId" type="xsd:string"/>
+          <xsd:element name="CreDtTm" type="xsd:dateTime"/>
+          <xsd:element name="NbOfTxs" type="xsd:positiveInteger"/>
+          <xsd:element name="CtrlSum" type="xsd:decimal" minOccurs="0"/>
+          <xsd:element name="InitgPty" type="PartyIdentification"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="PaymentInstruction">
+        <xsd:sequence>
+          <xsd:element name="PmtInfId" type="xsd:string"/>
+          <xsd:element name="Dbtr" type="PartyIdentification"/>
+          <xsd:element name="DbtrAcct" type="AccountIdentification"/>
+          <xsd:element name="CdtTrfTxInf" type="CreditTransferTransaction" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="CreditTransferTransaction">
+        <xsd:sequence>
+          <xsd:element name="EndToEndId" type="xsd:string"/>
+          <xsd:element name="InstdAmt" type="xsd:decimal"/>
+          <xsd:element name="Ccy" type="xsd:string"/>
+          <xsd:element name="Cdtr" type="PartyIdentification"/>
+          <xsd:element name="CdtrAcct" type="AccountIdentification"/>
+          <xsd:element name="RmtInf" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="PartyIdentification">
+        <xsd:sequence>
+          <xsd:element name="Nm" type="xsd:string"/>
+          <xsd:element name="BIC" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="AccountIdentification">
+        <xsd:sequence>
+          <xsd:element name="IBAN" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: pacs008-credit-transfer-msg
+  description: ISO 20022 pacs.008 FI-to-FI customer credit transfer on t.payment.cleared
+  tags:
+    - iso20022
+    - payment
+    - xsd
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (XSD)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: XSD Schema
+spec:
+  type: iso20022-message
+  lifecycle: production
+  owner: group:payments-engineering-team
+  system: payments-integration-hub
+  definition: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!-- FI-to-FI Customer Credit Transfer — ISO 20022 pacs.008 (t.payment.cleared) -->
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                targetNamespace="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08"
+                xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08"
+                elementFormDefault="qualified">
+      <xsd:element name="Document">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="FIToFICstmrCdtTrf" type="FIToFICustomerCreditTransfer"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:complexType name="FIToFICustomerCreditTransfer">
+        <xsd:sequence>
+          <xsd:element name="GrpHdr" type="GroupHeader"/>
+          <xsd:element name="CdtTrfTxInf" type="CreditTransferTransaction" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="GroupHeader">
+        <xsd:sequence>
+          <xsd:element name="MsgId" type="xsd:string"/>
+          <xsd:element name="CreDtTm" type="xsd:dateTime"/>
+          <xsd:element name="NbOfTxs" type="xsd:positiveInteger"/>
+          <xsd:element name="InstgAgt" type="FinancialInstitution"/>
+          <xsd:element name="InstdAgt" type="FinancialInstitution"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="CreditTransferTransaction">
+        <xsd:sequence>
+          <xsd:element name="PmtId" type="PaymentIdentification"/>
+          <xsd:element name="IntrBkSttlmAmt" type="xsd:decimal"/>
+          <xsd:element name="IntrBkSttlmCcy" type="xsd:string"/>
+          <xsd:element name="IntrBkSttlmDt" type="xsd:date"/>
+          <xsd:element name="Dbtr" type="PartyIdentification"/>
+          <xsd:element name="Cdtr" type="PartyIdentification"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="PaymentIdentification">
+        <xsd:sequence>
+          <xsd:element name="InstrId" type="xsd:string" minOccurs="0"/>
+          <xsd:element name="EndToEndId" type="xsd:string"/>
+          <xsd:element name="TxId" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="PartyIdentification">
+        <xsd:sequence>
+          <xsd:element name="Nm" type="xsd:string"/>
+          <xsd:element name="Acct" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="FinancialInstitution">
+        <xsd:sequence>
+          <xsd:element name="BICFI" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+---
+# ── JSON Schema contracts (internal banking events, yellow) ──────────────────
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: fraud-score-msg
+  description: Fraud scoring result (JSON Schema) on t.fraud.alert
+  tags:
+    - payment
+    - fraud
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: iso20022-message
+  lifecycle: production
+  owner: group:fraud-risk-team
+  system: payments-integration-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:banking:ems:fraud-score",
+      "title": "FraudScore",
+      "description": "Fraud scoring result on t.fraud.alert (fraud-scoring-flogo -> clearing-orchestrator-bw6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paymentId", "score", "decision", "scoredAt"],
+      "properties": {
+        "paymentId": { "type": "string" },
+        "endToEndId": { "type": "string" },
+        "score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "decision": { "type": "string", "enum": ["APPROVE", "REVIEW", "REJECT"] },
+        "reasons": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "sanctionsHit": { "type": "boolean", "default": false },
+        "modelVersion": { "type": "string" },
+        "scoredAt": { "type": "string", "format": "date-time" }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ledger-posting-msg
+  description: Debit/credit ledger entry (JSON Schema) on q.ledger.posting
+  tags:
+    - payment
+    - ledger
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: iso20022-message
+  lifecycle: production
+  owner: group:ledger-team
+  system: payments-integration-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:banking:ems:ledger-posting",
+      "title": "LedgerPosting",
+      "description": "Debit and credit ledger posting request on q.ledger.posting (clearing-orchestrator-bw6 -> ledger-poster-bw6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["postingId", "paymentId", "postingDate", "currency", "entries"],
+      "properties": {
+        "postingId": { "type": "string" },
+        "paymentId": { "type": "string" },
+        "postingDate": { "type": "string", "format": "date" },
+        "currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+        "entries": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["account", "direction", "amount"],
+            "properties": {
+              "account": { "type": "string" },
+              "direction": { "type": "string", "enum": ["DEBIT", "CREDIT"] },
+              "amount": { "type": "number", "exclusiveMinimum": 0 },
+              "costCenter": { "type": "string" },
+              "narrative": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: payment-notification-msg
+  description: Customer payment notification (JSON Schema) on q.notification.outbound
+  tags:
+    - payment
+    - notification
+    - json-schema
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (JSON Schema)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+spec:
+  type: iso20022-message
+  lifecycle: production
+  owner: group:notifications-team
+  system: payments-integration-hub
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:banking:ems:payment-notification",
+      "title": "PaymentNotification",
+      "description": "Customer payment notification on q.notification.outbound (ledger-poster-bw6 -> notification-service-flogo).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["notificationId", "paymentId", "customerId", "status", "channel", "createdAt"],
+      "properties": {
+        "notificationId": { "type": "string" },
+        "paymentId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACCEPTED", "CLEARED", "POSTED", "REJECTED"] },
+        "channel": { "type": "string", "enum": ["EMAIL", "SMS", "PUSH", "WEBHOOK"] },
+        "recipient": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    }

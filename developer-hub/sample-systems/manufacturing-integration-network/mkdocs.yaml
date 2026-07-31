@@ -1,0 +1,29 @@
+site_name: SAP <-> TIBCO EMS Integration Network
+site_description: >-
+  Manufacturer integration landscape — SAP backends bridged to TIBCO EMS
+  topics/queues via BW6 / Flogo apps, with versioned message contracts.
+docs_dir: docs
+site_dir: site
+nav:
+  - Overview: index.md
+  - Architecture & Flows: architecture.md
+  - Message Catalog: messages.md
+  - Integration Apps: integration-apps.md
+  - SAP Backends: sap-backends.md
+  - EMS Destinations: ems-destinations.md
+  - Teams & Ownership: teams.md
+  - Impact Analyses:
+      - OrderType restriction: impact-analysis-order-type.md
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - content.code.annotate
+    - search.highlight
+    - search.suggest
+plugins:
+  - techdocs-core

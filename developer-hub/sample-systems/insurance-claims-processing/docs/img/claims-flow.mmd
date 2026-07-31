@@ -1,0 +1,29 @@
+flowchart TD
+    classDef backend fill:#1b2a4a,stroke:#0b1733,color:#ffffff;
+    classDef app     fill:#efe7fb,stroke:#6b3fa0,color:#000000;
+    classDef msg     fill:#fff4cc,stroke:#b8860b,color:#000000;
+
+    fnol["fnol-msg"]:::msg
+    intake["claims-intake-bw6"]:::app
+    policy["policy-admin-system"]:::backend
+    registered["claim-registered-msg"]:::msg
+    fraud["fraud-check-flogo"]:::app
+    fraudsvc["fraud-detection-service"]:::backend
+    uw["underwriting-orchestrator-bw6"]:::app
+    engine["underwriting-engine"]:::backend
+    docreq["document-request-msg"]:::msg
+    docproc["document-processor-flogo"]:::app
+    dms["document-management-system"]:::backend
+    assessment["claim-assessment-msg"]:::msg
+    payout["payout-service-bw6"]:::app
+    pay["payments-system"]:::backend
+    instruction["payout-instruction-msg"]:::msg
+
+    fnol --> intake --> registered
+    intake --> policy
+    registered --> fraud --> fraudsvc
+    registered --> uw --> engine
+    uw --> docreq --> docproc --> dms
+    uw --> assessment
+    assessment --> docproc
+    assessment --> payout --> instruction --> pay

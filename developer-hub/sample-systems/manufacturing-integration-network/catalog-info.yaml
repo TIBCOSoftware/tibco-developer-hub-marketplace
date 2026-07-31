@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: manufacturing-integration-network-locations
+  description: Manufacturer SAP <-> TIBCO EMS integration network (impact-analysis sample topology)
+spec:
+  targets:
+    - ./foundation.yaml
+    - ./infrastructure.yaml
+    - ./messages.yaml
+    - ./integration-apps.yaml

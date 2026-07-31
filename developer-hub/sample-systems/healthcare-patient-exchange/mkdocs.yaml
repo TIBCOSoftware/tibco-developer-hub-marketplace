@@ -1,0 +1,21 @@
+site_name: Patient Data Exchange
+site_description: >-
+  Healthcare integration landscape — HL7 and FHIR patient data bridged through
+  TIBCO EMS, FHIR gateway and TIBCO BW6 / Flogo apps.
+docs_dir: docs
+site_dir: site
+nav:
+  - Overview: index.md
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - content.code.annotate
+    - search.highlight
+    - search.suggest
+plugins:
+  - techdocs-core

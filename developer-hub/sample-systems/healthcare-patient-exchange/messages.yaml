@@ -1,0 +1,406 @@
+# Message contracts — each EMS topic/queue message is modelled as a kind: API
+# whose definition holds the HL7 v2 sample / FHIR JSON Schema INLINE.
+#
+# type: hl7-message / fhir-resource — neutral custom types for catalog display.
+# The api-docs Definition tab picks strict renderers for built-in types such as
+# openapi/asyncapi; these custom types fall back to a raw view, which displays
+# HL7 pipe-delimited samples and JSON Schema as-is. Topology and impact analysis
+# don't depend on the type.
+#
+# NOTE: definitions are inlined (definition: |) rather than referenced via
+# `$text: ./schemas/..` because this local backend has no UrlReader for `file:`
+# URLs, so local-file $text placeholders silently drop the entity. ($text works
+# only when the catalog file is read from a Git URL.) Inlining is reliable for a
+# local sample — to demo impact analysis, edit the schema in the block below and
+# re-run the impact-analysis skill on the message.
+#
+# Modelling messages as APIs is what makes impact analysis work: every component
+# that consumesApis a message becomes an `apiConsumedBy` = direct-impact consumer.
+# (Provider/consumer relations are declared on the components in integration-apps.yaml.)
+#
+# ── HL7 v2 contracts (yellow) ────────────────────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: hl7-adt-msg
+  description: HL7 v2 ADT^A01 patient admit message on q.adt.inbound
+  tags:
+    - hl7
+    - message
+    - phi
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (HL7 v2)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: HL7 v2 Schema
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: Contains PHI
+spec:
+  type: hl7-message
+  lifecycle: production
+  owner: group:clinical-integration-team
+  system: patient-data-exchange
+  definition: |
+    # HL7 v2 ADT^A01 — inpatient admission from Epic EHR on q.adt.inbound.
+    # Key fields:
+    #   PID-3 patient identifiers, PID-5 patient name, PID-7 date of birth,
+    #   PID-8 administrative sex, PID-11 address, PV1-19 visit number.
+    MSH|^~\&|EPIC|HOSPITAL|TIBCO|PX|20260720143000||ADT^A01|MSG00001|P|2.5.1
+    EVN|A01|20260720143000|||12345^REGISTRAR^ROBIN
+    PID|1||MRN123456^^^HOSPITAL^MR~NHS999888^^^NATIONAL^PI||DOE^JANE^A||19800412|F|||100 CLINIC WAY^^BOSTON^MA^02115^USA||+1-555-0100|||S||123456789
+    PV1|1|I|WARD^302^A^HOSPITAL||||998877^SMITH^ALAN||||MED|||||||998877^SMITH^ALAN|INP20260720001|||||||||||||||||||||||||20260720143000
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: lab-result-msg
+  description: HL7 v2 ORU^R01 laboratory result message on q.lab-result.inbound
+  tags:
+    - hl7
+    - message
+    - lab
+    - phi
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (HL7 v2)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: HL7 v2 Schema
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: Contains PHI
+spec:
+  type: hl7-message
+  lifecycle: production
+  owner: group:lab-integration-team
+  system: patient-data-exchange
+  definition: |
+    # HL7 v2 ORU^R01 — lab result from LIS on q.lab-result.inbound.
+    # Key fields: PID identifies the patient, OBR identifies the order,
+    # OBX carries the observation code, value, unit, reference range and status.
+    MSH|^~\&|LIS|HOSPITAL|TIBCO|PX|20260720150000||ORU^R01|LAB00001|P|2.5.1
+    PID|1||MRN123456^^^HOSPITAL^MR||DOE^JANE^A||19800412|F
+    OBR|1|ORD4488|FILL4488|718-7^Hemoglobin^LN|||20260720145500|||||||||998877^SMITH^ALAN
+    OBX|1|NM|718-7^Hemoglobin^LN||13.2|g/dL|12.0-16.0|N|||F|||20260720145500
+---
+# ── FHIR JSON Schema contracts (yellow) ─────────────────────────────────────
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: fhir-patient-msg
+  description: FHIR Patient resource JSON Schema on t.patient.updated
+  tags:
+    - fhir
+    - json-schema
+    - patient
+    - phi
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (FHIR Patient)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: HIPAA Compliant
+spec:
+  type: fhir-resource
+  lifecycle: production
+  owner: group:clinical-integration-team
+  system: patient-data-exchange
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:healthcare:fhir:patient",
+      "title": "FHIR Patient",
+      "description": "FHIR Patient resource published on t.patient.updated after HL7 ADT normalization.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resourceType", "id", "identifier", "name", "birthDate", "gender"],
+      "properties": {
+        "resourceType": { "const": "Patient" },
+        "id": { "type": "string", "minLength": 1 },
+        "identifier": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["system", "value"],
+            "properties": {
+              "system": { "type": "string", "format": "uri" },
+              "value": { "type": "string" },
+              "type": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "text": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "name": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["family"],
+            "properties": {
+              "use": { "type": "string", "enum": ["usual", "official", "temp", "nickname", "anonymous", "old", "maiden"] },
+              "family": { "type": "string" },
+              "given": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        },
+        "birthDate": { "type": "string", "format": "date" },
+        "gender": { "type": "string", "enum": ["male", "female", "other", "unknown"] },
+        "address": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "line": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "city": { "type": "string" },
+              "state": { "type": "string" },
+              "postalCode": { "type": "string" },
+              "country": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: fhir-observation-msg
+  description: FHIR Observation resource JSON Schema on t.observation.created
+  tags:
+    - fhir
+    - json-schema
+    - observation
+    - phi
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (FHIR Observation)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+      - icon: VerifiedUser
+        iconColor: forestgreen
+        iconTooltip: HIPAA Compliant
+spec:
+  type: fhir-resource
+  lifecycle: production
+  owner: group:lab-integration-team
+  system: patient-data-exchange
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:healthcare:fhir:observation",
+      "title": "FHIR Observation",
+      "description": "FHIR Observation resource published on t.observation.created after HL7 ORU normalization.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resourceType", "status", "code", "subject", "effectiveDateTime"],
+      "properties": {
+        "resourceType": { "const": "Observation" },
+        "status": { "type": "string", "enum": ["registered", "preliminary", "final", "amended", "corrected", "cancelled", "entered-in-error", "unknown"] },
+        "code": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["coding"],
+          "properties": {
+            "coding": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["system", "code"],
+                "properties": {
+                  "system": { "type": "string", "format": "uri" },
+                  "code": { "type": "string" },
+                  "display": { "type": "string" }
+                }
+              }
+            },
+            "text": { "type": "string" }
+          }
+        },
+        "subject": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reference"],
+          "properties": {
+            "reference": { "type": "string", "pattern": "^Patient/.+" },
+            "display": { "type": "string" }
+          }
+        },
+        "valueQuantity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "unit"],
+          "properties": {
+            "value": { "type": "number" },
+            "unit": { "type": "string" },
+            "system": { "type": "string", "format": "uri" },
+            "code": { "type": "string" }
+          }
+        },
+        "effectiveDateTime": { "type": "string", "format": "date-time" }
+      }
+    }
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: claim-msg
+  description: FHIR Claim summary JSON Schema on q.claim.outbound
+  tags:
+    - fhir
+    - json-schema
+    - claim
+    - phi
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tibco.developer.hub/topology:
+    theme:
+      name: yellow
+    entityIcon:
+      icon: Description
+      iconTooltip: Message Contract (FHIR Claim)
+    statusIcons:
+      - icon: Code
+        iconColor: darkorange
+        iconTooltip: JSON Schema
+      - icon: Lock
+        iconColor: forestgreen
+        iconTooltip: Contains PHI
+spec:
+  type: fhir-resource
+  lifecycle: production
+  owner: group:billing-integration-team
+  system: patient-data-exchange
+  definition: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "urn:healthcare:fhir:claim-summary",
+      "title": "FHIR Claim Summary",
+      "description": "FHIR Claim summary emitted to q.claim.outbound for billing after eligible observations are processed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resourceType", "id", "status", "type", "patient", "created", "provider", "diagnosis", "item"],
+      "properties": {
+        "resourceType": { "const": "Claim" },
+        "id": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "cancelled", "draft", "entered-in-error"] },
+        "type": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "text": { "type": "string" }
+          }
+        },
+        "patient": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reference"],
+          "properties": {
+            "reference": { "type": "string", "pattern": "^Patient/.+" }
+          }
+        },
+        "created": { "type": "string", "format": "date-time" },
+        "provider": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["identifier"],
+          "properties": {
+            "identifier": { "type": "string" },
+            "display": { "type": "string" }
+          }
+        },
+        "diagnosis": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sequence", "diagnosisCodeableConcept"],
+            "properties": {
+              "sequence": { "type": "integer", "minimum": 1 },
+              "diagnosisCodeableConcept": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "text": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "item": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sequence", "productOrService"],
+            "properties": {
+              "sequence": { "type": "integer", "minimum": 1 },
+              "productOrService": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "text": { "type": "string" }
+                }
+              },
+              "servicedDate": { "type": "string", "format": "date" },
+              "net": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "value": { "type": "number", "minimum": 0 },
+                  "currency": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }

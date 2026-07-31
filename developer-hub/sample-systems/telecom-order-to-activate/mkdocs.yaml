@@ -1,0 +1,21 @@
+site_name: Telecom Order-to-Activate
+site_description: >-
+  Telecommunications OSS/BSS order-to-activate landscape using TMF Open API
+  message contracts, TIBCO EMS and BW6 / Flogo integration apps.
+docs_dir: docs
+site_dir: site
+nav:
+  - Overview: index.md
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - content.code.annotate
+    - search.highlight
+    - search.suggest
+plugins:
+  - techdocs-core
