@@ -1,11 +1,11 @@
-# Project Specification: Retail_Order_Logger
+# Project Specification: RetailOrderLogger
 
 ## Project Overview
 
 | Field | Value |
 | :---- | :---- |
-| **Application Module Name** | `Retail_Order_Logger` |
-| **Application Name** | `Retail_Order_Logger.application` |
+| **Application Module Name** | `RetailOrderLogger` |
+| **Application Name** | `RetailOrderLogger.application` |
 
 !!! note "Prompt 1"
     ```
@@ -106,15 +106,15 @@ Copy the following schema into the project:
 
 !!! note "Prompt 4"
     ```
-    Can you create two processes, OrderProcess.bwp and ValidateOrder.bwp, in the package retail_order_logger ?
+    Can you create two processes, OrderProcess.bwp and ValidateOrder.bwp, in the package retailorderlogger ?
     ```
 
 ### Process Inventory
 
 | Package Name | Process Name |
 | :---- | :---- |
-| `retail_order_logger` | `OrderProcess.bwp` |
-| `retail_order_logger` | `ValidateOrder.bwp` |
+| `retailorderlogger` | `OrderProcess.bwp` |
+| `retailorderlogger` | `ValidateOrder.bwp` |
 
 ---
 
@@ -126,7 +126,7 @@ Copy the following schema into the project:
     ```
     In OrderProcess.bwp, can you add the activities Timer → Log → Mapper → Log1 → CallProcess → Log2 and link them in sequence, then configure:
     - Log: Input message = $Timer/Time
-    - Mapper: use schema RetailOrderSchema.xsd, set orderName = $_processContext/ApplicationName and orderId = xsd:integer(bw:getModuleProperty("defaultOrderId"))
+    - Mapper: use schema RetailOrderSchema.xsd, set orderName = $processContext/ApplicationName and orderId = xsd:integer(bw:getModuleProperty("defaultOrderId"))
     - Log1: Input message = $Mapper/tns:orderName
     - CallProcess: call ValidateOrder.bwp
     - Log2: Input message = bw:getModuleProperty("orderApiPassword")
@@ -145,7 +145,7 @@ Link all activities in sequence.
 * **Mapper:**
   * Configure schema: `RetailOrderSchema.xsd`
   * After schema configuration, configure nodes:
-    * **orderName:** `$_processContext/ApplicationName`
+    * **orderName:** `$processContext/ApplicationName`
     * **orderId:** `xsd:integer(bw:getModuleProperty("defaultOrderId"))`
 
 * **Log1:**

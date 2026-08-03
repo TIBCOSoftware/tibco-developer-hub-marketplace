@@ -1,4 +1,4 @@
-# Retail_Order_Queue
+# RetailOrderQueue
 
 **Target Runtime:** TIBCO ActiveMatrix BusinessWorks™ 6.x
 
@@ -10,12 +10,12 @@
 
 | Component Type | Name |
 | :---- | :---- |
-| **Application Module** | `Retail_Order_Queue` |
-| **Application Project** | `Retail_Order_Queue.application` |
+| **Application Module** | `RetailOrderQueue` |
+| **Application Project** | `RetailOrderQueue.application` |
 
 !!! note "Prompt 1"
     ```
-    Can you create an application called Retail_Order_Queue ?
+    Can you create an application called RetailOrderQueue ?
     ```
 
 
@@ -43,7 +43,7 @@ Create and Configure the following module properties:
     ```
     Can you create the following shared resources:
     - A JNDI configuration called EMSConfig (retail.jms.EMSConfig) with Provider = TIBCO EMS, Initial Context Factory = com.tibco.tibjms.naming.TibjmsInitialContextFactory, Provider URL = tibjmsnaming://localhost:7222
-    - A JMS connection called RetailJMSConnection (Retail_Order_Queue.RetailJMSConnection) with Messaging Style = Queue and JNDI Configuration = retail.jms.EMSConfig
+    - A JMS connection called RetailJMSConnection (RetailOrderQueue.RetailJMSConnection) with Messaging Style = Queue and JNDI Configuration = retail.jms.EMSConfig
     ```
 
 ### JNDI Configuration
@@ -59,7 +59,7 @@ Create and Configure the following module properties:
 
 **Name:** RetailJMSConnection
 
-* **Configure attributes in shared resource `Retail_Order_Queue.RetailJMSConnection`**
+* **Configure attributes in shared resource `RetailOrderQueue.RetailJMSConnection`**
   * "Messaging Style" with value `Queue`
   * "JNDI Configuration" with value `retail.jms.EMSConfig`
 
@@ -87,7 +87,7 @@ Create and Configure the following module properties:
 #### Activity 1: JMS Receive Message (Starter)
 
 * **Configure attribute**
-  * "JMS Connection" with `Retail_Order_Queue.RetailJMSConnection`
+  * "JMS Connection" with `RetailOrderQueue.RetailJMSConnection`
   * "Messaging Style" with value `Queue`
   * "Destination" with module property `QUEUE_NAME`
 

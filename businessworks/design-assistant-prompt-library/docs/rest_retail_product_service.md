@@ -1,4 +1,4 @@
-# Retail_Product_Service
+# RetailProductService
 
 **Target Runtime:** TIBCO ActiveMatrix BusinessWorks™ 6.x
 
@@ -10,12 +10,12 @@
 
 | Component Type | Name |
 | :---- | :---- |
-| **Application Module** | `Retail_Product_Service` |
-| **Application Project** | `Retail_Product_Service.application` |
+| **Application Module** | `RetailProductService` |
+| **Application Project** | `RetailProductService.application` |
 
 !!! note "Prompt 1"
     ```
-    Can you create an application called Retail_Product_Service ?
+    Can you create an application called RetailProductService ?
     ```
 
 
@@ -115,7 +115,7 @@ Create the following schema file and add it to the project:
 !!! note "Prompt 4"
     ```
     In the process ProductAPIProcess.bwp, can you add the activities Receive HTTP Request → Mapper → Log → Send HTTP Response and link them in sequence, then configure:
-    - Receive HTTP Request: REST Service = Retail_Product_Service.ProductService, Operation = the respective GET or POST operation
+    - Receive HTTP Request: REST Service = RetailProductService.ProductService, Operation = the respective GET or POST operation
     - Mapper: use schema Product.xsd and map the fields per the GET or POST operation (see below)
     - Log: message = concat("Retail product request: ", $ReceiveHTTPRequest/Body/tns:Product/tns:productName)
     - Send HTTP Response: Response Code = 200, Body = $Mapper/tns:Product
@@ -132,7 +132,7 @@ Create the following schema file and add it to the project:
 #### Activity 1: Receive HTTP Request (Starter)
 
 * **Configure attribute**
-  * "REST Service" with `Retail_Product_Service.ProductService`
+  * "REST Service" with `RetailProductService.ProductService`
   * "Operation" with the respective GET or POST operation
 
 #### Activity 2: Mapper
