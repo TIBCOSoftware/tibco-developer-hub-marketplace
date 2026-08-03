@@ -70,7 +70,7 @@ Create and Configure the following module properties:
 !!! note "Prompt 4"
     ```
     In the process ReceiveRetailOrder.bwp, can you add the activities JMS Receive Message → Log → Write File → Reply to JMS Message and link them in sequence, then configure:
-    - JMS Receive Message: JMS Connection = Retail_Order_Queue.RetailJMSConnection, Messaging Style = Queue, Destination = module property QUEUE_NAME
+    - JMS Receive Message: JMS Connection = RetailOrderQueue.RetailJMSConnection, Messaging Style = Queue, Destination = module property QUEUE_NAME
     - Log: message = concat("Retail order received: ", $JMSReceiveMessage/Body)
     - Write File: FileName = module property OUTPUT_FILE, Append = true, Create Non Existing Directories = true
     - Reply to JMS Message: Body = "Retail order processed successfully"
