@@ -1,0 +1,36 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: tessa-prompt-library
+  description: TESSA Prompt Library
+spec:
+  type: organization
+  profile:
+    displayName: TESSA Prompt Library
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: tessa-prompt-library
+  description: Prompts for working with TESSA, the TIBCO Enterprise Smart System Agent
+spec:
+  owner: tessa-prompt-library
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: tessa-prompt-library
+  description: 'A curated prompt library for TESSA, the TIBCO Enterprise Smart System Agent — inventory and discovery, environment health checks, observability charts, trend and anomaly analysis, root cause investigation, and governance reporting.'
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - artificial-intelligence
+    - tessa
+    - prompts
+    - observability
+    - ai-ops
+    - mcp
+spec:
+  owner: tessa-prompt-library
+  domain: tessa-prompt-library

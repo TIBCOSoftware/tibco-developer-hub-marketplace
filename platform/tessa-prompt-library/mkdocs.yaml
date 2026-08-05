@@ -1,0 +1,17 @@
+site_name: 'TESSA Prompt Library'
+site_description: 'Curated prompts for TESSA, the TIBCO Enterprise Smart System Agent — discovery, health, charts, trends, root cause and reporting'
+
+nav:
+  - Introduction: index.md
+  - Set Up TESSA: setup.md
+  - Inventory and Discovery: inventory.md
+  - Health and Diagnosis: health.md
+  - Charts and Dashboards: charts.md
+  - Trends and Anomalies: trends-anomalies.md
+  - Troubleshooting: troubleshooting.md
+  - Reporting and Governance: reporting.md
+  - Prompting Tips: prompting-tips.md
+  - Reference Table: reference_table.md
+
+plugins:
+  - techdocs-core
