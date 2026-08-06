@@ -6,12 +6,65 @@ Service Flows, rebranding the portal with a custom theme, and testing it all end
 these skills into your Developer Hub checkout and your coding agent follows the same proven
 playbook every time.
 
-The library bundles three things:
+Each skill set bundles three things:
 
-- **Eleven skills** (`SKILL.md` runbooks) covering the full Developer Hub lifecycle.
+- **The skills** (`SKILL.md` runbooks) covering the full Developer Hub lifecycle — twelve for the
+  open-source repo, ten for the portable distribution.
 - **`AGENTS.md`** — project documentation in the open AGENTS.md standard, auto-discovered by all
   major coding agents.
 - **`CLAUDE.md`** — a thin Claude Code entry point that imports `AGENTS.md` and lists the skills.
+
+## Pick your variant
+
+The library ships **four skill sets**, one per Developer Hub flavour. They differ in how the agent
+reaches the Hub, not in what the skills achieve — pick the folder that matches what you run, copy
+that one, and ignore the rest.
+
+| Folder | Developer Hub | Backstage | Catalog & scaffolder access | Skills |
+|---|---|---|---|---|
+| **`developer-hub-118/`** | 1.18, open-source repo | 1.41.1 | REST API | 12 |
+| **`developer-hub-119/`** | 1.19, open-source repo | 1.51.0 | **MCP server**, REST fallback | 12 |
+| **`developer-hub-portable-118/`** | DevHub Portable (current) | 1.41.x | REST API, token required | 10 |
+| **`developer-hub-portable-119/`** | DevHub Portable (future) | 1.51.0 | **MCP server**, REST fallback | 10 |
+
+**Not sure which?** Run `node -e "console.log(require('@backstage/plugin-catalog-backend/package.json').version)"`
+in your checkout: `3.4.x` → the 118 sets, `3.8.x` → the 119 sets. If you unzipped a bundle and run it
+with `./devhub`, you are on portable; if you run `yarn start` in a monorepo, you are on the
+open-source repo.
+
+### What changes between 118 and 119
+
+Developer Hub 1.19 ships `@backstage/plugin-mcp-actions-backend`, exposing the catalog and scaffolder
+as **eleven MCP tools** (`catalog.query-catalog-entities`, `scaffolder.dry-run-template`,
+`scaffolder.execute-template`, …) at `/api/mcp-actions/v1`. The 119 sets use those tools as the
+primary path — typed calls and predicate queries instead of hand-assembled REST — and add a shared
+`MCP-TOOLS.md` reference.
+
+The MCP server ships **disabled** (`tibco.mcpActions.enabled: false`), so every 119 skill keeps its
+REST path. The set works either way; you just get the terser route once you switch it on.
+
+One honest limit: MCP's `scaffolder.dry-run-template` returns validation only, **not** the rendered
+file tree. `test-template` therefore uses it as a fast structural gate and still calls the REST
+dry-run for the actual output.
+
+### What changes for portable
+
+DevHub Portable is a single-process download — no Docker, no Postgres, no monorepo, no build step —
+so two skills are **deliberately absent**:
+
+- **`setup-dev-hub`** — there is nothing to install or build. You unzip and run `./devhub`.
+- **`create-theme`** — the frontend is a prebuilt `index.js`. With no `packages/app` source and no
+  build step, a theme cannot be applied at all. Rebranding needs the open-source repo.
+
+The remaining ten are adapted rather than copied: the hub may not be on port 7007 (the launcher moves
+up to 7016 if it is taken), and **guest mode is not anonymous** — every `/api/*` call needs a bearer
+token minted from `/api/auth/guest/refresh`, or it fails with HTTP 500
+`AuthenticationError: Missing credentials`.
+
+**`developer-hub-portable-119/` is forward-looking.** The bundle available today is Backstage 1.41.x
+with no MCP plugin installed; that set is prepared for a portable build on the 1.19 line and says so
+on its first page. Use `developer-hub-portable-118/` until such a bundle ships.
+
 
 ## What is the TIBCO Developer Hub?
 
@@ -59,12 +112,13 @@ description: <when the agent should use this skill>
 4. **Agent executes** all file creation, YAML generation, config wiring, and browser verification.
 5. **Developer gets** a fully wired, tested artefact in minutes — not hours.
 
-## The eleven skills
+## The twelve skills
 
 The library covers the full Developer Hub lifecycle — from a clean checkout, through authoring
 and testing templates, import flows, and self service flows, to rebranding the portal, to
 deciding whether to reuse or build a service, assessing the blast radius of a change before you
-make it, and tracing where a data field comes from and where it ends up.
+make it, tracing where a data field comes from and where it ends up, and documenting what changed
+between two versions of an API.
 
 | Skill | When to use | What it produces |
 |-------|-------------|------------------|
@@ -79,6 +133,7 @@ make it, and tracing where a data field comes from and where it ends up.
 | **`reuse-or-build`** | Deciding whether an existing service already carries the data you need, or a new one must be built — "where can I get X from?", before scaffolding a new component. | A decision report (✅ Reuse / 🟡 Extend / 🔴 Build) with a field-level coverage matrix and color-coded topology diagrams under `reports/`, grounded in the live catalog read via the catalog REST API. |
 | **`impact-analysis`** | Assessing the blast radius before changing a catalog entity — "what breaks if I change this API/Component/Resource?". | A report plus color-coded integration-topology diagrams under `impact_analysis/`, grounded in the live catalog graph read via the catalog REST API. |
 | **`data-lineage`** | Tracing where a data field or message comes from and where it ends up — provenance, audit, and governance questions across the whole integration landscape. | A lineage report with a per-hop field table (🟢 carried · 🔵 renamed · 🟡 derived · ⚪ dropped), flow and field-propagation SVG diagrams under `reports/`, and the governance findings — team hand-offs, convention flips, and transformations the catalog cannot verify. |
+| **`api-version-diff`** | Publishing a new version of an API — "what changed between 1.18 and 1.19?", generating a changelog or migration guide, or gating CI on breaking changes. | A TechDocs changelog page in the version's folder, wired into its `mkdocs.yaml` nav, with every change classified 🔴 breaking / 🟢 additive / 🔵 note — plus a reusable `apidiff.mjs` that exits `1` on a breaking change so the same command works as a CI gate. |
 
 ## Business value
 
@@ -114,13 +169,15 @@ is available everywhere.
 The [skill library assets](https://github.com/TIBCOSoftware/tibco-developer-hub/tree/main/tibco-examples/developer-hub-marketplace-content/developer-hub-skills/developer-hub-skill-library/skill-library)
 are in this entry's repository folder. To use them in your Developer Hub checkout:
 
-1. Copy the `skills/` folder into your project's **`.claude/skills/`** directory (so each skill
-   lives at `.claude/skills/<name>/SKILL.md`).
-2. Copy **`AGENTS.md`** and **`CLAUDE.md`** to your repository root. If you already have these
-   files, merge the **Workflows** / **Skills** sections in rather than overwriting.
-3. Open the project in a coding agent (Claude Code, or any agent that reads `AGENTS.md`).
-4. Invoke a skill — e.g. `/setup-dev-hub` to bootstrap the environment, or `/create-template` to
-   author your first template.
+1. **Pick your variant folder** — see the table above.
+2. Copy that folder's `skills/` into your project's **`.claude/skills/`** directory (so each skill
+   lives at `.claude/skills/<name>/SKILL.md`). Do not mix skills from two variants.
+3. Copy the same folder's **`AGENTS.md`** and **`CLAUDE.md`** to your repository root. If you already
+   have these files, merge the **Workflows** / **Skills** sections in rather than overwriting.
+   For the 119 variants, copy **`MCP-TOOLS.md`** alongside them — the skills reference it.
+4. Open the project in a coding agent (Claude Code, or any agent that reads `AGENTS.md`).
+5. Invoke a skill — e.g. `/setup-dev-hub` to bootstrap the environment (open-source variants), or
+   `/create-template` to author your first template.
 
 That's it — the agent reads the runbook and drives the task to completion, asking you for any
 inputs it needs along the way.

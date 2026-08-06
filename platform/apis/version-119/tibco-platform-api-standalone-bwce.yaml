@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: "bwce-capability-api-119"
+  description: "API of the BW6 Capability (1.19)"
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - tibco-platform
+    - capability
+spec:
+  type: openapi
+  lifecycle: production
+  owner: TIBCO
+  definition:
+    $text: ./bwce-capability-api-119.json

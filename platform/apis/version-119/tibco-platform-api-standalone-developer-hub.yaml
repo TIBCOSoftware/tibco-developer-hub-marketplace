@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: "developer-hub-api-119"
+  description: "API of the TIBCO Developer Hub (catalog API, Backstage 1.51.0)"
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - tibco-platform
+    - customer-hosted
+    - capability
+  links:
+    - url: https://backstage.io/
+      title: Backstage
+      icon: code
+spec:
+  type: openapi
+  lifecycle: production
+  owner: TIBCO
+  definition:
+    $text: ./backstage-api-1.51.0.yaml
