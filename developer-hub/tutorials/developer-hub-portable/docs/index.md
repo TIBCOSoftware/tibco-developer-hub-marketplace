@@ -21,18 +21,16 @@ This tutorial walks through it end to end:
 Open a terminal in the folder where you want the hub to live, then run the line for your
 operating system. It downloads the right build for your machine, unpacks it, and starts the hub.
 
-### macOS / Linux
+!!! note "macOS / Linux"
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/TIBCOSoftware/tibco-developer-hub/main/DevHub_Portable/install.sh | bash
+    ```
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/TIBCOSoftware/tibco-developer-hub/main/DevHub_Portable/install.sh | bash
-```
-
-### Windows (PowerShell)
-
-```powershell
-irm https://raw.githubusercontent.com/TIBCOSoftware/tibco-developer-hub/main/DevHub_Portable/install.ps1 -OutFile "$env:TEMP\devhub-install.ps1"
-powershell -ExecutionPolicy Bypass -File "$env:TEMP\devhub-install.ps1"
-```
+!!! note "Windows (PowerShell)"
+    ```powershell
+    irm https://raw.githubusercontent.com/TIBCOSoftware/tibco-developer-hub/main/DevHub_Portable/install.ps1 -OutFile "$env:TEMP\devhub-install.ps1"
+    powershell -ExecutionPolicy Bypass -File "$env:TEMP\devhub-install.ps1"
+    ```
 
 When it finishes you will see `Listening on 127.0.0.1:7007`. Open
 **[http://localhost:7007](http://localhost:7007)** in your browser and sign in as **Guest**.
@@ -58,16 +56,16 @@ the TechDocs pages are affected.
 
 To install the self-contained TechDocs build, set `DEVHUB_TECHDOCS=1`:
 
-```bash
-# macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/TIBCOSoftware/tibco-developer-hub/main/DevHub_Portable/install.sh | DEVHUB_TECHDOCS=1 bash
-```
+!!! note "macOS / Linux"
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/TIBCOSoftware/tibco-developer-hub/main/DevHub_Portable/install.sh | DEVHUB_TECHDOCS=1 bash
+    ```
 
-```powershell
-# Windows
-$env:DEVHUB_TECHDOCS = "1"
-powershell -ExecutionPolicy Bypass -File "$env:TEMP\devhub-install.ps1"
-```
+!!! note "Windows (PowerShell)"
+    ```powershell
+    $env:DEVHUB_TECHDOCS = "1"
+    powershell -ExecutionPolicy Bypass -File "$env:TEMP\devhub-install.ps1"
+    ```
 
 ## 3. Choose a port
 
@@ -76,48 +74,49 @@ next free one and tells you which — read the startup log rather than assuming 
 
 To set the port yourself at install time:
 
-```bash
-# macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/TIBCOSoftware/tibco-developer-hub/main/DevHub_Portable/install.sh | bash -s -- --port 8088
-```
+!!! note "macOS / Linux"
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/TIBCOSoftware/tibco-developer-hub/main/DevHub_Portable/install.sh | bash -s -- --port 8088
+    ```
 
-```powershell
-# Windows
-powershell -ExecutionPolicy Bypass -File "$env:TEMP\devhub-install.ps1" -Port 8088
-```
+!!! note "Windows (PowerShell)"
+    ```powershell
+    powershell -ExecutionPolicy Bypass -File "$env:TEMP\devhub-install.ps1" -Port 8088
+    ```
 
 If you have already downloaded the hub, run the launcher inside the extracted folder directly:
 
-```bash
-# macOS / Linux  (folder: ./devhub-bundled-<os>-<arch>/)
-./devhub --port 8088
-```
+!!! note "macOS / Linux — inside ./devhub-bundled-<os>-<arch>/"
+    ```bash
+    ./devhub --port 8088
+    ```
 
-```bat
-:: Windows  (folder: .\devhub-bundled-win32-x64\)
-devhub.cmd --port 8088
-```
+!!! note "Windows — inside .\devhub-bundled-win32-x64\"
+    ```bat
+    devhub.cmd --port 8088
+    ```
 
 ## 4. Load your own catalog
 
 Out of the box the hub shows a small example catalog. To point it at your own entities, create a
 small YAML file and pass it with `--config`:
 
-```yaml
-# my.yaml
-catalog:
-  locations:
-    - type: file
-      target: /absolute/path/to/catalog-info.yaml
-    - type: url
-      target: https://github.com/acme/repo/blob/main/catalog-info.yaml
-```
+!!! note "my.yaml"
+    ```yaml
+    catalog:
+      locations:
+        - type: file
+          target: /absolute/path/to/catalog-info.yaml
+        - type: url
+          target: https://github.com/acme/repo/blob/main/catalog-info.yaml
+    ```
 
-```bash
-./devhub --config ./my.yaml
-```
+!!! note "Start the hub with it"
+    ```bash
+    ./devhub --config ./my.yaml
+    ```
 
-You can pass `--config` more than once. The same flag accepts anything valid in a Backstage
+You can pass `--config` more than once. The same flag accepts anything valid in a Developer Hub
 `app-config` — integrations, auth providers, and so on — layered on top of the built-in portable
 config. That makes it the hook for most customization you will want to do.
 
@@ -135,17 +134,17 @@ Setting a token lifts that limit and enables catalog imports and scaffolder publ
 
 Set it before launching:
 
-```bash
-# macOS / Linux
-export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxx
-./devhub
-```
+!!! note "macOS / Linux"
+    ```bash
+    export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxx
+    ./devhub
+    ```
 
-```powershell
-# Windows
-$env:GITHUB_TOKEN = "ghp_xxxxxxxxxxxxxxxx"
-.\devhub.cmd
-```
+!!! note "Windows (PowerShell)"
+    ```powershell
+    $env:GITHUB_TOKEN = "ghp_xxxxxxxxxxxxxxxx"
+    .\devhub.cmd
+    ```
 
 ## 7. Troubleshooting
 
