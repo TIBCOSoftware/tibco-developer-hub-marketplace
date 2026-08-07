@@ -76,6 +76,29 @@ to you.
 
 ---
 
+## Ask for a table when you want to keep the answer
+
+Adding **"in a table"** or **"in table format"** to a prompt is the cheapest upgrade in this library.
+It costs four words and changes prose you have to read into structured data you can sort, share and
+export.
+
+| Prose | Table |
+| :---- | :---- |
+| "Show me all running applications" | "Show me all running applications **in a table**" |
+| "What is the health of my apps?" | "Show me health for all my applications across all products **in a table**" |
+
+TESSA formats results as a table automatically when the data is naturally tabular, but asking for one
+explicitly is reliable where the automatic behaviour is not. Deeply nested results may not flatten
+perfectly — that is a known rough edge in preview.
+
+The point is what a table lets you do next. Any table in the chat can be exported as **CSV**, and from
+session history a conversation downloads as **PDF, CSV or Markdown** — so an answer becomes an
+attachment on a ticket or a slide in a review without anyone retyping it. That is also why
+[the executive report](reporting.md#32-turn-the-session-into-an-executive-report) is worth running at
+the end of an investigation rather than writing one yourself.
+
+---
+
 ## Give instructions, not questions
 
 *"Show it as a line chart"* renders a line chart. *"Is it possible to plot a line chart?"* gets you
@@ -152,6 +175,10 @@ placeholders left in the prompt are taken literally and end up in the output.
 
 In **Settings → TESSA → LLM**, enable **Show TESSA Thoughts**. It reveals reasoning summaries, which
 tools were invoked, execution timing per pipeline stage and other metadata, with secrets redacted.
+
+Only the **subscription owner** can turn this on, and it applies to everyone in the subscription — so
+if you are not one, this is a request to make rather than a setting to change. It takes effect on the
+next page load.
 
 When a prompt does not do what you expected, this tells you whether TESSA misunderstood the question,
 was refused by the scope guard, or simply could not reach the data — three different problems with

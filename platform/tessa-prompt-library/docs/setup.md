@@ -7,36 +7,51 @@ provider with a valid API key, and at least one MCP server connected.
     TESSA appears in the Control Plane with a **PREVIEW** badge. Screens and options shown here may
     differ slightly from the build in your environment.
 
----
+Check availability before you start:
+
+TESSA is currently available on the TIBCO-operated Control Plane in the US region only. It is
+not available on a self-hosted TIBCO Control Plane. If your Control Plane is self-hosted or
+operated in another region, there is no TESSA entry in the navigation and none of the steps
+below apply yet.
+
+
 
 ## Prerequisites
 
 | Requirement | Details |
 | :---- | :---- |
-| **Subscription access** | Permission to open **Settings** in the TIBCO Control Plane |
-| **Model provider API key** | A valid key for a supported provider, entered during setup |
+| **Availability** | A TIBCO-operated Control Plane in the US region — see the note above |
+| **Subscription owner** | Only the subscription owner can activate TESSA and change its settings. Settings are per-subscription and apply to every user in it |
+| **OpenAI API key** | A valid OpenAI key, entered during setup |
 
 ---
 
 ## Step 1: Activate TESSA and configure the model
 
-Go to **Settings → TESSA**, then turn on **Activate TESSA**. The status should read **Active**.
+This step is performed by the **subscription owner**. Go to **Settings → TESSA**, then turn on
+**Activate TESSA**. The status should read **Active**.
 
 On the **LLM** tab:
 
-* Choose your **Provider**.
-* Choose a **Model** from the list available for that provider.
-* Paste your API key into **Credentials**. TESSA validates it and confirms the key is configured and
-  valid.
+* Select **OpenAI** as the **Provider** — it is the supported provider in preview.
+* Choose a **Model**. **GPT-5.4-mini** is the recommended choice: it gives the best balance of cost and
+  response speed, and it is the model most of TIBCO's testing and optimisation was done on.
+* Paste your OpenAI API key into **Credentials**. TESSA validates it and confirms the key is configured
+  and valid.
 * Optionally enable **Show TESSA Thoughts** — see the tip below.
 * Click **Test Connection** and confirm **LLM Status** shows **Healthy**.
 
 ![TESSA LLM configuration in Control Plane settings](images/tessa-settings-llm.webp)
 
+Once activated, every user in the subscription who has access to TESSA can start using it.
+
 !!! tip "Turn on Show TESSA Thoughts while you are learning"
     It reveals reasoning summaries, which tools were invoked, timing and metadata — secrets are always
     redacted. It is the fastest way to understand why a prompt did or did not work, and which MCP
     server answered it. Once you are comfortable, turn it off for a cleaner conversation.
+
+    This is a subscription-wide setting and only the subscription owner can change it — if you are not
+    one, ask them to enable it. It takes effect on the next page load; no restart is needed.
 
 ---
 

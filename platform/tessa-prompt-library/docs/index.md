@@ -15,6 +15,16 @@ curated set of prompts that are known to work, organised by what you are trying 
 
 ---
 
+## Watch: Talk to Your Whole TIBCO Platform
+
+See TESSA in action — asking plain-language questions across the platform and getting analysis back.
+
+[![Talk to Your Whole TIBCO Platform — Meet TESSA](images/tessa-overview.webp)](https://www.youtube.com/watch?v=3FPMPI5eRas&t=86s)
+
+*Click the image to watch on YouTube.*
+
+---
+
 ## What the prompt library gives you
 
 | Benefit | Description |
@@ -84,9 +94,8 @@ resources?"* finds the one you did not suspect, which naming an app yourself nev
 
 ### These prompts have been tested
 
-Every prompt in this library was run against a live TIBCO Platform environment. Two chart prompts could
-not be confirmed working and are marked with a **Not yet verified** admonition explaining what happened
-— everything else did what its page says it does.
+Every prompt in this library was run against a live TIBCO Platform environment and did what its page
+says it does.
 
 ---
 

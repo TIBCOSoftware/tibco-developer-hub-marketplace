@@ -98,6 +98,28 @@ the whole investigation to summarise.
 
 ---
 
+## When the problem is TESSA itself
+
+Everything above assumes TESSA is working and your platform is not. When it is the other way round —
+a response is plainly wrong, a tool call fails, or an answer never arrives — there is a reference that
+makes the difference between a useful support ticket and a vague one.
+
+Every response carries an **info icon**. It always shows the **Conversation ID**, **Session ID** and
+timestamp, whether or not Show TESSA Thoughts is enabled. Copy the Conversation ID into your support
+ticket: it lets the support team pull the exact trace rather than trying to reproduce what you saw.
+
+| Symptom | What to do |
+| :---- | :---- |
+| No response, or unusually slow | Usually an MCP server that is slow or unreachable. Enable Show TESSA Thoughts to see which step is taking the time |
+| A tool call failed | TESSA names the failing tool when thoughts are enabled. Transient network and timeout failures often clear on a retry — ask the same question again |
+| The answer looks wrong | Rephrase first, since responses are non-deterministic and the same question can land differently. If it is consistently wrong, report it with the Conversation ID |
+
+Responses also carry thumbs up / thumbs down. A thumbs down lets you say what was wrong —
+inaccurate, incomplete or unhelpful — and that feedback is retained for quality analysis, so it is
+worth the two seconds.
+
+---
+
 ## Where next
 
 [Reporting and Governance](reporting.md) — turning what you found into something you can send to
