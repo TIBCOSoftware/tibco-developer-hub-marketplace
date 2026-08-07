@@ -79,8 +79,7 @@ can go and investigate. A short window hides it entirely, because the whole wind
 step.
 
 !!! warning "A flat line over a short window proves nothing"
-    Before concluding that a metric is stable, widen the window at least once. If the pattern changes
-    when you do, the short window was lying to you.
+    Before concluding that a metric is stable, widen the window at least once. 
 
 !!! note "Needs telemetry in both windows"
     In testing, the wider window came back empty because the application was stopped and had no series

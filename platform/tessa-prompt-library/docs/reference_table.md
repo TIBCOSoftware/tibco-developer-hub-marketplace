@@ -6,9 +6,6 @@ back.
 Replace `<app-name>`, `<data-plane-name>` and `<owner-a>` / `<owner-b>` with values from your own
 environment — see the [placeholder convention](index.md#placeholder-convention).
 
-Two prompts are marked ⚠️ — they could not be confirmed working in a live environment. Everything else
-on this page was run and verified.
-
 ---
 
 ## Inventory and Discovery
@@ -37,15 +34,15 @@ on this page was run and verified.
 
 ## Charts and Dashboards
 
-| # | Ask | Prompt |
-| :---- | :---- | :---- |
-| 15 ⚠️ | One metric, one app | [Show me CPU usage for `<app-name>` for 24H](charts.md#15-a-single-metric) |
-| 16 | Two metrics, one app | [Show me CPU and memory side by side for `<app-name>` for 24H](charts.md#16-two-metrics-side-by-side) |
-| 17 | Everything at once | [Show me CPU, memory, request count and execution time for all apps as a dashboard](charts.md#17-the-full-dashboard) |
-| 18 | Compare runtimes | [Show me CPU and memory for all BusinessWorks 6 and Flogo apps on all dataplanes](charts.md#18-compare-runtimes-across-your-data-planes) |
-| 19 ⚠️ | Request vs limit | [Compare CPU request ratio and CPU limit ratio for all apps](charts.md#19-request-ratio-against-limit-ratio) |
-| 20 | Find the worst | [Which apps are using the most resources? Show me as a chart](charts.md#20-let-tessa-pick-the-subject) |
-| 21 | Change the chart | [Show it as a line chart](charts.md#21-refine-the-chart-conversationally) |
+| #   | Ask | Prompt |
+|:----| :---- | :---- |
+| 15  | One metric, one app | [Show me CPU usage for `<app-name>` for 24H](charts.md#15-a-single-metric) |
+| 16  | Two metrics, one app | [Show me CPU and memory side by side for `<app-name>` for 24H](charts.md#16-two-metrics-side-by-side) |
+| 17  | Everything at once | [Show me CPU, memory, request count and execution time for all apps as a dashboard](charts.md#17-the-full-dashboard) |
+| 18  | Compare runtimes | [Show me CPU and memory for all BusinessWorks 6 and Flogo apps on all dataplanes](charts.md#18-compare-runtimes-across-your-data-planes) |
+| 19  | Request vs limit | [Compare CPU request ratio and CPU limit ratio for all apps](charts.md#19-request-ratio-against-limit-ratio) |
+| 20  | Find the worst | [Which apps are using the most resources? Show me as a chart](charts.md#20-let-tessa-pick-the-subject) |
+| 21  | Change the chart | [Show it as a line chart](charts.md#21-refine-the-chart-conversationally) |
 
 ## Trends and Anomalies
 

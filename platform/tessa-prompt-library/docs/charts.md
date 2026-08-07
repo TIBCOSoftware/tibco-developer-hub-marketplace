@@ -32,18 +32,6 @@ metrics side by side in one dashboard.
 The simplest chart prompt. Swap `CPU usage` for `memory`, `request count` or `execution time`, and the
 window for whatever period you need.
 
-!!! warning "Not yet verified"
-    This prompt could not be confirmed working in a live environment. In testing it returned
-    *"no time series was available for that app in that window"* for one application and
-    *"the chart service was unavailable"* for another, so it is not yet clear whether the phrasing is
-    right or the environment simply had no data.
-
-    Until it is confirmed, prefer [prompt 20](#20-let-tessa-pick-the-subject) or
-    [prompt 17](#17-the-full-dashboard), which scope to all applications and were verified working.
-
-    If a single-application chart returns nothing, ask TESSA
-    *"for which app can you show this information?"* — it will name one that has data.
-
 ---
 
 ## 16. Two metrics side by side
@@ -112,14 +100,6 @@ reading, so you know the chart is not the whole estate.
 Two Kubernetes resource views side by side: usage against what the pod *requested*, and usage against
 what it is *allowed*. A large gap between them means limits are generous relative to requests — useful
 when you are sizing workloads or hunting for a capacity problem.
-
-!!! warning "Not yet verified"
-    This prompt could not be confirmed working in a live environment. In testing, some data planes had
-    no CPU series for either metric and others failed with a chart service connection error, so no
-    complete dashboard was produced.
-
-    The phrasing may well be fine — the failure looked environmental — but treat it as untested until
-    someone confirms it.
 
 ---
 

@@ -62,15 +62,6 @@ The single most useful prompt in this library. Compare the two ways of asking:
 
 The three verbs — **score**, **name the cause**, **recommend a fix** — are what produce that. Keep them.
 
-!!! warning "A score of 100 does not always mean healthy"
-    A stopped or idle application reports zero CPU, zero memory, zero requests, zero errors and zero
-    response time — and scores **100/100 healthy**, because there is nothing wrong with the metrics
-    that exist. TESSA says so when it happens, noting that the signal also matches a stopped or idle
-    app.
-
-    Always read the score together with the application's state. If you are diagnosing something that
-    is not running, [prompt 12](#12-find-everything-that-is-not-running) is the more useful question.
-
 ---
 
 ## 12. Find everything that is not running
