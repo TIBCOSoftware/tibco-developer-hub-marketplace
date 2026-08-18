@@ -24,8 +24,8 @@ that one, and ignore the rest.
 |---|---|---|---|---|
 | **`developer-hub-118/`** | 1.18, open-source repo | 1.41.1 | REST API | 12 |
 | **`developer-hub-119/`** | 1.19, open-source repo | 1.51.0 | **MCP server**, REST fallback | 12 |
-| **`developer-hub-portable-118/`** | DevHub Portable (current) | 1.41.x | REST API, token required | 10 |
-| **`developer-hub-portable-119/`** | DevHub Portable (future) | 1.51.0 | **MCP server**, REST fallback | 10 |
+| **`developer-hub-portable-118/`** | DevHub Portable, `portable-v1.18.x` | 1.41.x | REST API, token required | 10 |
+| **`developer-hub-portable-119/`** | DevHub Portable, `portable-v1.19.0`+ | 1.51.0 | **MCP server**, REST fallback | 10 |
 
 **Not sure which?** Run `node -e "console.log(require('@backstage/plugin-catalog-backend/package.json').version)"`
 in your checkout: `3.4.x` → the 118 sets, `3.8.x` → the 119 sets. If you unzipped a bundle and run it
@@ -61,9 +61,14 @@ up to 7016 if it is taken), and **guest mode is not anonymous** — every `/api/
 token minted from `/api/auth/guest/refresh`, or it fails with HTTP 500
 `AuthenticationError: Missing credentials`.
 
-**`developer-hub-portable-119/` is forward-looking.** The bundle available today is Backstage 1.41.x
-with no MCP plugin installed; that set is prepared for a portable build on the 1.19 line and says so
-on its first page. Use `developer-hub-portable-118/` until such a bundle ships.
+**Pick the portable set by release tag.** `portable-v1.19.0` (7 Aug 2026) and newer are on the 1.19
+line and carry the MCP server — use `developer-hub-portable-119/`. Older `portable-v1.18.x` bundles
+are Backstage 1.41.x with no MCP server — use `developer-hub-portable-118/`. `cat <bundle>/.devhub-release`
+tells you which you unpacked.
+
+Note that the MCP plugin is **compiled into the portable `index.js`**, not installed under
+`node_modules/`, so the `plugin-catalog-backend` version check above is the reliable discriminator —
+`ls node_modules/@backstage | grep mcp` finds nothing on portable even when MCP is running.
 
 
 ## What is the TIBCO Developer Hub?

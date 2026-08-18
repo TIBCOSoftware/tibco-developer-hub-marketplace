@@ -371,7 +371,7 @@ makes a failed run diagnosable.
 ### 4. Ensure the owner group exists
 
 `group:default/tibco-self-service` must resolve, or `catalog:register` and ownership display fail.
-Check with `node scripts/catalog-check.mjs Group:tibco-self-service`. If missing, fetch the reference
+Check with a catalog lookup of `group:default/tibco-self-service` (see below). If missing, fetch the reference
 group YAML, save it as `self-service-flows/<slug>/tibco-self-service-group.yaml`, and register it as
 its own location too.
 
@@ -391,14 +391,22 @@ skipping duplicates:
 
 ```yaml
     - type: file
-      target: /abs/path/to/dev-hub-template-workflow/self-service-flows/<slug>/<slug>.yaml
+      target: /abs/path/to/my-devhub-content/self-service-flows/<slug>/<slug>.yaml
 ```
 
 ### 7. Restart hint
 
-> Restart the hub: **Ctrl-C**, then `./scripts/devhub-start.sh`.
+> Restart the hub: **Ctrl-C**, then `./devhub --config devhub-local.yaml`.
 
-Then `node scripts/catalog-check.mjs Template:<slug>`.
+Then confirm it landed:
+
+```sh
+curl -s -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+     -X POST "$HUB/api/catalog/entities/by-refs" \
+     -d '{"entityRefs":["template:default/<slug>"]}'
+```
+
+A `null` in `items` means it is not registered — check the path and that the hub was restarted.
 
 ### 8. Verify (best-effort)
 
@@ -422,5 +430,5 @@ erroring — that is the fastest check that `cpLink` and the token are right. Th
 - Don't add a `debug` boolean as in `create-template`; platform actions are not dry-run aware, so it
   gives false confidence. Use `/test-self-service-flow`.
 - Don't hardcode a data plane URL, app ID or Control Plane host.
-- Don't write `TIBCOPlatformToken` into anything but the gitignored `devhub-local.yaml`.
+- Don't write `TIBCOPlatformToken` into anything but your untracked `devhub-local.yaml`.
 - Don't restart the hub for the user.

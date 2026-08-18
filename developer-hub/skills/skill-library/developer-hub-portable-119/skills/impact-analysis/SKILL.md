@@ -18,19 +18,21 @@ plus color-coded topology diagrams under `impact_analysis/`.
 
 ## Key facts
 
-- **MCP first, if this bundle has it.** On a 1.19-based portable build the catalog is exposed by
+- **MCP first, if it is enabled.** On a 1.19-based portable build the catalog is exposed by
   `@backstage/plugin-mcp-actions-backend` at `http://localhost:<port>/api/mcp-actions/v1` — use
   `catalog.query-catalog-entities` (predicate queries, `fields` projection, cursor paging) and
   `catalog.get-catalog-entity` (`{ kind, namespace, name }`) instead of assembling REST calls.
   `MCP-TOOLS.md` in this skill set is the full reference.
-  **Check it is actually there first** — `ls node_modules/@backstage | grep mcp` — because the
-  portable bundle shipping today is Backstage 1.41.x and has no MCP server at all. If it is missing,
-  everything below still works unchanged; the REST path is the fallback and, on today's bundle, the
-  only path.
+  **Check it is actually reachable first** — `curl -s -o /dev/null -w '%{http_code}' -X POST
+  http://localhost:<port>/api/mcp-actions/v1`. A `404` means MCP is switched off; turn it on with
+  `tibco.mcpActions.enabled: true` in `devhub-local.yaml` and restart. Do **not** probe
+  `node_modules` — the portable build compiles the plugin into `index.js`, so
+  `ls node_modules/@backstage | grep mcp` finds nothing even when MCP is running. If MCP is off,
+  everything below still works unchanged; the REST path is the fallback.
 
 - **Data source**: the catalog REST API of the running portable hub — `http://localhost:7007/api/catalog`.
   Same origin as the UI (portable serves both on one port); if 7007 was busy the launcher moved up,
-  so read the port from the startup log or probe 7007–7016.
+  so read the port from the startup log or probe 7007–7057.
 - **Auth**: guest mode is **not** anonymous. Every `/api/*` call needs a bearer token or it answers
   HTTP 500 `AuthenticationError: Missing credentials` (not 401 — don't misread it as a server bug).
   Mint one, valid for an hour:
@@ -42,7 +44,6 @@ plus color-coded topology diagrams under `impact_analysis/`.
 
   `/.backstage/health/v1/readiness` is the only route that answers without it — use it to check the
   hub is up and find which port it took.
-- **No MCP server** in this Backstage version — use the REST endpoints below.
 - **Endpoints**:
   - `GET /entities/by-name/{kind}/{namespace}/{name}` — one entity plus its `relations`
   - `POST /entities/by-refs` with `{"entityRefs":[…]}` — batch-fetch neighbours in one call
@@ -80,8 +81,8 @@ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:7007/.backstage/health
 ```
 
 Non-200 → the hub is not running, or took a different port (probe 7008–7016). Tell the user to run
-`./scripts/devhub-start.sh`; don't start it yourself. Then mint the guest token as shown above —
-`node scripts/catalog-check.mjs <Kind>:<name>` is a quick way to confirm the whole chain works.
+`./devhub --config devhub-local.yaml`; don't start it yourself. Then mint the guest token as shown above —
+a `POST /api/catalog/entities/by-refs` lookup is a quick way to confirm the whole chain works.
 
 A near-empty catalog is normal on a fresh portable install: it only holds what
 `devhub-local.yaml` registers. If the subject entity is not there, say so rather than analysing a

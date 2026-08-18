@@ -28,15 +28,17 @@ version in the entity name, one frozen spec per version, per-version TechDocs �
 
 ## Key facts
 
-- **MCP first, if this bundle has it.** On a 1.19-based portable build the catalog is exposed by
+- **MCP first, if it is enabled.** On a 1.19-based portable build the catalog is exposed by
   `@backstage/plugin-mcp-actions-backend` at `http://localhost:<port>/api/mcp-actions/v1` — use
   `catalog.query-catalog-entities` (predicate queries, `fields` projection, cursor paging) and
   `catalog.get-catalog-entity` (`{ kind, namespace, name }`) instead of assembling REST calls.
   `MCP-TOOLS.md` in this skill set is the full reference.
-  **Check it is actually there first** — `ls node_modules/@backstage | grep mcp` — because the
-  portable bundle shipping today is Backstage 1.41.x and has no MCP server at all. If it is missing,
-  everything below still works unchanged; the REST path is the fallback and, on today's bundle, the
-  only path.
+  **Check it is actually reachable first** — `curl -s -o /dev/null -w '%{http_code}' -X POST
+  http://localhost:<port>/api/mcp-actions/v1`. A `404` means MCP is switched off; turn it on with
+  `tibco.mcpActions.enabled: true` in `devhub-local.yaml` and restart. Do **not** probe
+  `node_modules` — the portable build compiles the plugin into `index.js`, so
+  `ls node_modules/@backstage | grep mcp` finds nothing even when MCP is running. If MCP is off,
+  everything below still works unchanged; the REST path is the fallback.
 
 - **Bundled helper**: `.claude/skills/api-version-diff/apidiff.mjs`. Node, no install step, no
   dependencies of its own. It does the mechanical comparison — operations, parameters, request

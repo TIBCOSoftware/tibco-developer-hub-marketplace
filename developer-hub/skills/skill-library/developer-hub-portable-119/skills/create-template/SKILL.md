@@ -196,7 +196,7 @@ Drop the `project-slug` annotation when there is no publish step. `skeleton/READ
 ### 5. Register in `devhub-local.yaml`
 
 1. `pwd` to get the workspace's absolute path.
-2. Read `devhub-local.yaml` (create it from `devhub-local.template.yaml` if missing).
+2. Read `devhub-local.yaml` (create it if missing — the bundle does not ship one).
 3. Append under `catalog.locations`, preserving every existing entry **including commented-out ones**:
 
 ```yaml
@@ -204,7 +204,7 @@ catalog:
   locations:
     # …existing entries kept verbatim…
     - type: file
-      target: /abs/path/to/dev-hub-template-workflow/templates/<slug>/<slug>.yaml
+      target: /abs/path/to/my-devhub-content/templates/<slug>/<slug>.yaml
 ```
 
 4. Idempotent: skip if that exact `target:` is already present.
@@ -216,7 +216,7 @@ Use `Edit` with a unique anchor (the last existing entry), not a whole-file rewr
 The hub reads `--config` once at startup:
 
 > Restart the hub to pick up the new location: press **Ctrl-C** in the terminal running it, then
-> `./scripts/devhub-start.sh`.
+> `./devhub --config devhub-local.yaml`.
 
 Don't kill or start the process yourself.
 
@@ -225,7 +225,9 @@ Don't kill or start the process yourself.
 After the user confirms the restart:
 
 ```sh
-node scripts/catalog-check.mjs Template:<slug>
+curl -s -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+     -X POST "$HUB/api/catalog/entities/by-refs" \
+     -d '{"entityRefs":["template:default/<slug>"]}'
 ```
 
 Then, if Playwright MCP tools are available, navigate to `http://localhost:7007/create`, confirm the
@@ -241,7 +243,7 @@ overlay that replaced the list you thought you were appending to.
 - Don't write template files outside `templates/<slug>/`.
 - Don't use a relative `target:` in `devhub-local.yaml` — the backend cwd is not this folder.
 - Don't edit `app-config.portable.yaml` inside the bundle; that file is replaced on every reinstall.
-  All local config belongs in the gitignored `devhub-local.yaml` overlay.
+  All local config belongs in your untracked `devhub-local.yaml` overlay.
 - Don't drop the stock example-catalog location when appending, unless the user wants an empty hub.
 - Don't tag the template `devhub-internal`; it hides the entry from listings.
 - Don't forget `fetch:template` runs the skeleton through Nunjucks — literal `${{ }}` in pasted code

@@ -1,21 +1,21 @@
 # CLAUDE.md
 
-> ## Status: forward-looking
+> ## Which bundle this set is for
 >
-> The DevHub Portable bundle available today is **Backstage 1.41.x**
-> (`@backstage/plugin-catalog-backend` 3.4.0) and ships **no** `@backstage/plugin-mcp-actions-backend`
-> — the MCP server does not exist in it. This set is prepared for a portable build on the 1.19 line
-> (Backstage 1.51.0), where the MCP server would become available exactly as it is in the
+> This set targets **DevHub Portable on the 1.19 line** — `portable-v1.19.0` (released 7 Aug 2026)
+> or newer. That build is Backstage 1.51.0 (`@backstage/plugin-catalog-backend` 3.8.0) and includes
+> `@backstage/plugin-mcp-actions-backend`, so the MCP server is available exactly as in the
 > open-source `developer-hub-119` set.
 >
-> **Until such a bundle ships, use `developer-hub-portable-118`.** Everything here is identical to it
-> apart from the MCP guidance, and every skill keeps its REST path — so if you point this set at a
-> 1.41.x bundle it still works, it just never finds the MCP server.
+> On an older 1.18-line bundle (Backstage 1.41.x) use `developer-hub-portable-118` instead. This set
+> still works there — every skill keeps its REST path — it just never finds the MCP server.
 >
-> When a 1.19-based portable bundle does ship, verify before relying on this set:
-> `ls node_modules/@backstage | grep mcp` and check for `tibco.mcpActions` in
-> `app-config.portable.yaml`. The tool names, endpoint and query syntax in `MCP-TOOLS.md` come from
-> the open-source 1.19 backend and should carry over unchanged.
+> Check which line you are on with `cat <bundle>/.devhub-release`, or:
+> `node -e "console.log(require('./node_modules/@backstage/plugin-catalog-backend/package.json').version)"`
+> — `3.8.x` is the 1.19 line, `3.4.x` the 1.18 line. **Do not look for the MCP plugin in
+> `node_modules`:** the portable build compiles it into `index.js`, so `ls node_modules/@backstage |
+> grep mcp` finds nothing even when MCP is running. Probe the endpoint instead (see "MCP on
+> portable").
 
 This file provides guidance to Claude Code (claude.ai/code) when working in this repository.
 Project documentation shared with all AI agents lives in `AGENTS.md` and is imported below.
@@ -49,17 +49,18 @@ Two skills from the open-source set are deliberately **absent**, because they ca
   source to edit and no build step to run, so a theme cannot be applied. Use the open-source repo
   (the `developer-hub-118` / `developer-hub-119` skill sets) for rebranding.
 
-The last three in the table are not shipped inside the bundle download; they are added by this
-marketplace entry. They work unmodified against the portable hub — `lineage.py` needs only the
-standard library, and `apidiff.mjs` runs on the bundled `./node/bin/node` (JSON specs directly;
-YAML needs one PyYAML conversion step, which the skill documents).
+All ten ship inside the bundle download, under `.claude/skills/`, together with their helper
+files — `lineage.py` needs only the standard library, and `apidiff.mjs` runs on the bundled
+`./node/bin/node` (JSON specs directly; YAML needs one PyYAML conversion step, which the skill
+documents).
 
 ### House rules
 
 - Localhost calls from Bash need `dangerouslyDisableSandbox: true`. Nothing else does.
 - Don't start, restart or kill the hub yourself — print the command and let the user run it.
-- Before a live run (`scripts/run-task.mjs`), state exactly what it will create and get a yes.
-- Prefer the helper scripts in `scripts/` over pasting ad-hoc fetch code into `/tmp`.
+- Before a live run (`POST /api/scaffolder/v2/tasks`), state exactly what it will create and get a yes.
+- The bundle ships no helper scripts. Drive the hub over its REST API, and keep any scratch script
+  you need under `${TMPDIR:-/tmp}/devhub-skills/<skill>/` rather than loose in `/tmp`.
 
 ## MCP on portable
 
@@ -67,12 +68,23 @@ YAML needs one PyYAML conversion step, which the skill documents).
 `scaffolder.*` tools, the predicate query syntax and the gotchas. Two portable-specific differences
 from the open-source set:
 
-- **The port may not be 7007.** The portable launcher moves up (7007–7016) if the port is taken, so
+- **The port may not be 7007.** The portable launcher moves up (7007–7057) if the port is taken, so
   the MCP endpoint is `http://localhost:<actual-port>/api/mcp-actions/v1`. Read the port from the
   startup log or `/.backstage/health/v1/readiness`.
 - **Auth is not anonymous.** The REST fallbacks in these skills mint a guest bearer token; an MCP
   client would need the equivalent. If tool calls fail with `AuthenticationError: Missing
   credentials`, that is the cause — the same trap the REST paths document.
+- **The on/off switch is `tibco.mcpActions.enabled`.** Set it to `true` in your `--config` file and
+  restart to switch the server on; `false` makes `/api/mcp-actions/*` answer
+  `404 {"error":"MCP actions is disabled"}`. The *top-level* `mcpActions` key is a different thing —
+  it carries the server's `name` and `description` for MCP clients, and has no `enabled` flag.
 
-Every skill in this set works without MCP. The REST path is not a legacy fallback here; on the
-current portable bundle it is the only path.
+  ⚠️ In `portable-v1.19.0` as published, the bundled `app-config.portable.yaml` puts `enabled: false`
+  under that top-level `mcpActions` key, where nothing reads it, and never sets
+  `tibco.mcpActions.enabled`. The effect is that MCP is **reachable by default** on that build,
+  despite the config appearing to disable it. (`/api/*` still requires a guest token, so this is not
+  an unauthenticated hole.) Probe the endpoint to find out which state you are in rather than
+  trusting the config file.
+
+Every skill in this set works without MCP. Each documents a REST path that is fully supported, not a
+legacy fallback — so a bundle with MCP switched off costs you terser calls, nothing else.

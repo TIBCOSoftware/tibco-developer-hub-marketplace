@@ -22,19 +22,23 @@ confirms the imported entities landed in the catalog.
 
 ## Key facts
 
-- **MCP first, if this bundle has it.** On a 1.19-based portable build the scaffolder is exposed over
+- **MCP first, if it is enabled.** On a 1.19-based portable build the scaffolder is exposed over
   MCP: `scaffolder.dry-run-template` (`{ templateYaml, values, files }` → `{ valid, errors, log,
   steps }` — validation only, **no rendered files**), `scaffolder.execute-template`
   (`{ templateRef, values, secrets }` → `{ taskId }`, side-effecting — confirm with the user first),
   `scaffolder.get-scaffolder-task-logs` (`{ taskId, after }` to tail) and
   `scaffolder.list-scaffolder-tasks`. See `MCP-TOOLS.md`.
-  **Check it is actually there first** — `ls node_modules/@backstage | grep mcp` — because the
-  portable bundle shipping today is Backstage 1.41.x and has no MCP server. If it is missing, the
-  REST steps below are unchanged and remain the only path.
+  **Check it is actually reachable first** — `curl -s -o /dev/null -w '%{http_code}' -X POST
+  http://localhost:<port>/api/mcp-actions/v1`. A `404` means MCP is switched off; turn it on with
+  `tibco.mcpActions.enabled: true` in `devhub-local.yaml` and restart. Do **not** probe
+  `node_modules` — the portable build compiles the plugin into `index.js`, so
+  `ls node_modules/@backstage | grep mcp` finds nothing even when MCP is running. If MCP is off, the
+  REST steps below are unchanged and remain the path.
 
-- **Helpers**: `scripts/dry-run.mjs` (Phase 1), `scripts/run-task.mjs` (Phase 2),
-  `scripts/catalog-check.mjs` (verification). All auto-discover the hub's port, mint their own guest
-  token, and need `dangerouslyDisableSandbox: true` because they call localhost.
+- **No helper scripts ship with the bundle.** Phase 1 uses `POST /api/scaffolder/v2/dry-run`,
+  Phase 2 `POST /api/scaffolder/v2/tasks` + `/events`, and verification the catalog API. Ready-to-run
+  scripts are inline below; run them with the bundle's own Python (`<bundle>/.venv/bin/python3`,
+  which ships PyYAML). Localhost calls need `dangerouslyDisableSandbox: true`.
 - **Guest mode still needs a token.** A hand-written curl to `/api/*` without
   `Authorization: Bearer <token from /api/auth/guest/refresh>` answers HTTP 500 `Missing
   credentials`. Check liveness with `/.backstage/health/v1/readiness`, which needs no token.
@@ -75,7 +79,13 @@ Read the flow's `spec.parameters` and propose safe values in one `AskUserQuestio
 Preflight the hub, write the values to a scratch JSON, then:
 
 ```sh
-node scripts/dry-run.mjs --dir import-flows/<slug> --values ${TMPDIR:-/tmp}/devhub-skills/test-import-flow/values.json
+S="${TMPDIR:-/tmp}/devhub-skills/test-import-flow"
+
+# same dry-run.py as the test-template skill: builds
+# { template, values, directoryContents[] } and POSTs /api/scaffolder/v2/dry-run
+BUNDLE=/abs/path/to/devhub-bundled-<platform>
+"$BUNDLE/.venv/bin/python3" "$S/dry-run.py" \
+    http://127.0.0.1:7007 import-flows/<slug> "$S/values.json" "$S/rendered-1"
 ```
 
 Report:
@@ -101,7 +111,7 @@ If the user declines, stop.
 #### 3a. Preconditions
 
 - The flow is registered in `devhub-local.yaml` and the hub has been restarted since
-  (`node scripts/catalog-check.mjs Template:<slug>` — a miss means it is not registered).
+  (look it up with `POST /api/catalog/entities/by-refs` — a `null` means it is not registered).
 - `GITHUB_TOKEN` was exported before the hub started, if the flow pushes.
 
 #### 3b. Gather real values
@@ -119,10 +129,36 @@ can pick a repo that matches.
 #### 3c. Run it
 
 ```sh
-node scripts/run-task.mjs --ref template:default/<slug> --values ${TMPDIR:-/tmp}/devhub-skills/test-import-flow/live-values.json --timeout 300
+S="${TMPDIR:-/tmp}/devhub-skills/test-import-flow"
+
+cat > "$S/run-task.py" <<'PY'
+import json, sys, time, urllib.request
+hub, ref, values_file = sys.argv[1], sys.argv[2], sys.argv[3]
+tok = json.load(urllib.request.urlopen(f"{hub}/api/auth/guest/refresh"))["backstageIdentity"]["token"]
+H = {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}
+def get(u): return json.load(urllib.request.urlopen(urllib.request.Request(u, headers=H)))
+body = json.dumps({"templateRef": ref, "values": json.load(open(values_file))}).encode()
+tid = json.load(urllib.request.urlopen(
+    urllib.request.Request(f"{hub}/api/scaffolder/v2/tasks", data=body, headers=H)))["id"]
+print("task:", tid)
+seen = 0
+while True:
+    for e in get(f"{hub}/api/scaffolder/v2/tasks/{tid}/events?after={seen}"):
+        seen = max(seen, e["id"])
+        msg = (e.get("body") or {}).get("message")
+        if msg: print(f"  [{(e.get('body') or {}).get('stepId','-')}] {msg}")
+    st = get(f"{hub}/api/scaffolder/v2/tasks/{tid}")["status"]
+    if st in ("completed", "failed", "cancelled"):
+        print("status:", st); sys.exit(0 if st == "completed" else 1)
+    time.sleep(2)
+PY
+
+BUNDLE=/abs/path/to/devhub-bundled-<platform>
+"$BUNDLE/.venv/bin/python3" "$S/run-task.py" \
+    http://127.0.0.1:7007 template:default/<slug> "$S/live-values.json"
 ```
 
-The script streams step log lines as they arrive and exits non-zero on failure.
+The script streams step log lines as they arrive and exits non-zero unless the task completes.
 
 | Failure | Likely cause | Fix |
 |---------|-------------|-----|
@@ -136,9 +172,13 @@ The script streams step log lines as they arrive and exits non-zero on failure.
 The entity name comes from extraction, so read it out of the task log rather than assuming:
 
 ```sh
-node scripts/catalog-check.mjs Component:<extracted-name>
+curl -s -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+     -X POST "$HUB/api/catalog/entities/by-refs" \
+     -d '{"entityRefs":["component:default/<extracted-name>"]}'
 # advanced flows register more than one kind:
-node scripts/catalog-check.mjs System:<system> Component:<name> API:<api>
+curl -s -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+     -X POST "$HUB/api/catalog/entities/by-refs" \
+     -d '{"entityRefs":["system:default/<system>","component:default/<name>","api:default/<api>"]}'
 ```
 
 The script retries three times with a 5s gap to ride out catalog refresh lag, and prints kind, name,
@@ -151,7 +191,7 @@ is missing, name the `catalog:register` step to check and the exact URL it used.
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `No DevHub Portable backend reachable` | Hub not running | `./scripts/devhub-start.sh` |
+| `No DevHub Portable backend reachable` | Hub not running | `./devhub --config devhub-local.yaml` |
 | Phase 1 HTTP 413 | Skeleton over the bundle's 10 MB limit | Trim it — not configurable in portable |
 | Phase 1 clone/extract/push errors | Expected — not dry-run aware | Normal |
 | Phase 2 HTTP 400 `no such template` | Flow not registered, or the hub was not restarted | Add the absolute location to `devhub-local.yaml`, restart |

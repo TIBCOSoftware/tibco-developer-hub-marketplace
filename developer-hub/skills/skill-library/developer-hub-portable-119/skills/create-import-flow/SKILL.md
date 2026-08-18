@@ -20,7 +20,7 @@ at `http://localhost:7007/import-flow` after a restart.
 
 - One port, no path prefix: UI and API both on `http://localhost:7007`.
 - Registration = an **absolute** `type: file` entry under `catalog.locations` in `devhub-local.yaml`,
-  then a manual restart (Ctrl-C, `./scripts/devhub-start.sh`). No hot reload.
+  then a manual restart (Ctrl-C, `./devhub --config devhub-local.yaml`). No hot reload.
 - `catalog.locations` in the overlay **replaces** the bundle's list — append, never rewrite.
 - `tibco:git:clone` and `tibco:git:push` need a GitHub token: the user exports `GITHUB_TOKEN` before
   starting the hub. Without it, clone works anonymously (60 req/hour) and push fails.
@@ -287,14 +287,22 @@ spec:
 
 ```yaml
     - type: file
-      target: /abs/path/to/dev-hub-template-workflow/import-flows/<slug>/<slug>.yaml
+      target: /abs/path/to/my-devhub-content/import-flows/<slug>/<slug>.yaml
 ```
 
 ### 7. Restart hint
 
-> Restart the hub: **Ctrl-C** in its terminal, then `./scripts/devhub-start.sh`.
+> Restart the hub: **Ctrl-C** in its terminal, then `./devhub --config devhub-local.yaml`.
 
-Then `node scripts/catalog-check.mjs Template:<slug>` to confirm ingestion.
+Then confirm ingestion:
+
+```sh
+curl -s -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+     -X POST "$HUB/api/catalog/entities/by-refs" \
+     -d '{"entityRefs":["template:default/<slug>"]}'
+```
+
+A `null` in `items` means it is not registered — check the path and that the hub was restarted.
 
 ### 8. Verify (best-effort)
 

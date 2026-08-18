@@ -22,19 +22,23 @@ deployment, not a rehearsal.
 
 ## Key facts
 
-- **MCP first, if this bundle has it.** On a 1.19-based portable build the scaffolder is exposed over
+- **MCP first, if it is enabled.** On a 1.19-based portable build the scaffolder is exposed over
   MCP: `scaffolder.dry-run-template` (`{ templateYaml, values, files }` → `{ valid, errors, log,
   steps }` — validation only, **no rendered files**), `scaffolder.execute-template`
   (`{ templateRef, values, secrets }` → `{ taskId }`, side-effecting — confirm with the user first),
   `scaffolder.get-scaffolder-task-logs` (`{ taskId, after }` to tail) and
   `scaffolder.list-scaffolder-tasks`. See `MCP-TOOLS.md`.
-  **Check it is actually there first** — `ls node_modules/@backstage | grep mcp` — because the
-  portable bundle shipping today is Backstage 1.41.x and has no MCP server. If it is missing, the
-  REST steps below are unchanged and remain the only path.
+  **Check it is actually reachable first** — `curl -s -o /dev/null -w '%{http_code}' -X POST
+  http://localhost:<port>/api/mcp-actions/v1`. A `404` means MCP is switched off; turn it on with
+  `tibco.mcpActions.enabled: true` in `devhub-local.yaml` and restart. Do **not** probe
+  `node_modules` — the portable build compiles the plugin into `index.js`, so
+  `ls node_modules/@backstage | grep mcp` finds nothing even when MCP is running. If MCP is off, the
+  REST steps below are unchanged and remain the path.
 
-- **Helpers**: `scripts/dry-run.mjs`, `scripts/run-task.mjs`, `scripts/catalog-check.mjs`. They
-  auto-discover the port and mint their own guest token. Localhost calls need
-  `dangerouslyDisableSandbox: true`.
+- **No helper scripts ship with the bundle.** Phase 1 uses `POST /api/scaffolder/v2/dry-run`,
+  Phase 2 `POST /api/scaffolder/v2/tasks` + `/events`, and verification the catalog API. Ready-to-run
+  scripts are inline below; run them with the bundle's own Python (`<bundle>/.venv/bin/python3`,
+  which ships PyYAML). Localhost calls need `dangerouslyDisableSandbox: true`.
 - **Guest mode still needs a token.** A hand-written curl to `/api/*` without
   `Authorization: Bearer <token from /api/auth/guest/refresh>` answers HTTP 500 `Missing
   credentials`. `/.backstage/health/v1/readiness` is the unauthenticated liveness check. (This is
@@ -84,8 +88,8 @@ This is the blast-radius summary the user needs before approving Phase 2.
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:7007/.backstage/health/v1/readiness
 ```
 
-Not running (or on another port — the scripts scan 7007–7016) → tell the user to run
-`./scripts/devhub-start.sh`. Don't start it yourself.
+Not running (or on another port — probe 7007–7057) → tell the user to run
+`./devhub --config devhub-local.yaml`. Don't start it yourself.
 
 Read `devhub-local.yaml` for `cpLink` and `TIBCOPlatformToken`. Missing either → every platform call
 in Phase 2 fails with an auth or connection error. Say which is missing; do not invent a token.
@@ -112,7 +116,13 @@ Propose values in one `AskUserQuestion`:
 - `repoUrl` (if present): `github.com?owner=test&repo=test-app`
 
 ```sh
-node scripts/dry-run.mjs --dir self-service-flows/<slug> --values ${TMPDIR:-/tmp}/devhub-skills/test-self-service-flow/values.json
+S="${TMPDIR:-/tmp}/devhub-skills/test-self-service-flow"
+
+# same dry-run.py as the test-template skill: builds
+# { template, values, directoryContents[] } and POSTs /api/scaffolder/v2/dry-run
+BUNDLE=/abs/path/to/devhub-bundled-<platform>
+"$BUNDLE/.venv/bin/python3" "$S/dry-run.py" \
+    http://127.0.0.1:7007 self-service-flows/<slug> "$S/values.json" "$S/rendered-1"
 ```
 
 Report:
@@ -159,10 +169,36 @@ Also collect the real app name, the real artifact `content` (a working Flogo app
 #### 5b. Run it
 
 ```sh
-node scripts/run-task.mjs --ref template:default/<slug> --values ${TMPDIR:-/tmp}/devhub-skills/test-self-service-flow/live-values.json --timeout 600
+S="${TMPDIR:-/tmp}/devhub-skills/test-self-service-flow"
+
+cat > "$S/run-task.py" <<'PY'
+import json, sys, time, urllib.request
+hub, ref, values_file = sys.argv[1], sys.argv[2], sys.argv[3]
+tok = json.load(urllib.request.urlopen(f"{hub}/api/auth/guest/refresh"))["backstageIdentity"]["token"]
+H = {"Authorization": f"Bearer {tok}", "Content-Type": "application/json"}
+def get(u): return json.load(urllib.request.urlopen(urllib.request.Request(u, headers=H)))
+body = json.dumps({"templateRef": ref, "values": json.load(open(values_file))}).encode()
+tid = json.load(urllib.request.urlopen(
+    urllib.request.Request(f"{hub}/api/scaffolder/v2/tasks", data=body, headers=H)))["id"]
+print("task:", tid)
+seen = 0
+while True:
+    for e in get(f"{hub}/api/scaffolder/v2/tasks/{tid}/events?after={seen}"):
+        seen = max(seen, e["id"])
+        msg = (e.get("body") or {}).get("message")
+        if msg: print(f"  [{(e.get('body') or {}).get('stepId','-')}] {msg}")
+    st = get(f"{hub}/api/scaffolder/v2/tasks/{tid}")["status"]
+    if st in ("completed", "failed", "cancelled"):
+        print("status:", st); sys.exit(0 if st == "completed" else 1)
+    time.sleep(2)
+PY
+
+BUNDLE=/abs/path/to/devhub-bundled-<platform>
+"$BUNDLE/.venv/bin/python3" "$S/run-task.py" \
+    http://127.0.0.1:7007 template:default/<slug> "$S/live-values.json"
 ```
 
-The script streams step log lines. The flow's `debug:log` steps print `buildId` and `appId` there —
+The script streams step log lines as they arrive. The flow's `debug:log` steps print `buildId` and `appId` there —
 capture both; they are the inputs to verification.
 
 ### 6. Verify against the platform
@@ -184,7 +220,9 @@ accepted the request, the container never came up.
 Only if the flow ends with `catalog:register`:
 
 ```sh
-node scripts/catalog-check.mjs Component:<app_name>
+curl -s -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+     -X POST "$HUB/api/catalog/entities/by-refs" \
+     -d '{"entityRefs":["component:default/<app_name>"]}'
 ```
 
 ### 8. Report and offer cleanup
@@ -205,7 +243,7 @@ The GitHub repo and the catalog entity also remain. Mention both; deleting the r
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `No DevHub Portable backend reachable` | Hub not running | `./scripts/devhub-start.sh` |
+| `No DevHub Portable backend reachable` | Hub not running | `./devhub --config devhub-local.yaml` |
 | Phase 1 HTTP 400 jsonschema errors | Values don't satisfy `spec.parameters` | Usually `deploymentTarget` sent as a string |
 | Phase 1 platform-action errors | Expected — not dry-run aware | Normal |
 | Phase 2 HTTP 400 `no such template` | Flow not registered / hub not restarted | Add the absolute location to `devhub-local.yaml`, restart |

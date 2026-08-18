@@ -22,19 +22,21 @@ field-match the need against each candidate's `spec.definition` → classify int
 
 ## Key facts
 
-- **MCP first, if this bundle has it.** On a 1.19-based portable build the catalog is exposed by
+- **MCP first, if it is enabled.** On a 1.19-based portable build the catalog is exposed by
   `@backstage/plugin-mcp-actions-backend` at `http://localhost:<port>/api/mcp-actions/v1` — use
   `catalog.query-catalog-entities` (predicate queries, `fields` projection, cursor paging) and
   `catalog.get-catalog-entity` (`{ kind, namespace, name }`) instead of assembling REST calls.
   `MCP-TOOLS.md` in this skill set is the full reference.
-  **Check it is actually there first** — `ls node_modules/@backstage | grep mcp` — because the
-  portable bundle shipping today is Backstage 1.41.x and has no MCP server at all. If it is missing,
-  everything below still works unchanged; the REST path is the fallback and, on today's bundle, the
-  only path.
+  **Check it is actually reachable first** — `curl -s -o /dev/null -w '%{http_code}' -X POST
+  http://localhost:<port>/api/mcp-actions/v1`. A `404` means MCP is switched off; turn it on with
+  `tibco.mcpActions.enabled: true` in `devhub-local.yaml` and restart. Do **not** probe
+  `node_modules` — the portable build compiles the plugin into `index.js`, so
+  `ls node_modules/@backstage | grep mcp` finds nothing even when MCP is running. If MCP is off,
+  everything below still works unchanged; the REST path is the fallback.
 
 - **Data source**: the catalog REST API of the running portable hub —
   `http://localhost:7007/api/catalog`. Same origin as the UI (portable serves both on one port); if
-  7007 was busy the launcher moved up, so read the port from the startup log or probe 7007–7016.
+  7007 was busy the launcher moved up, so read the port from the startup log or probe 7007–7057.
 - **Auth**: guest mode is **not** anonymous here. Every `/api/*` call needs a bearer token or it
   answers HTTP 500 `AuthenticationError: Missing credentials` — not 401, so don't misread it as a
   server bug. Mint one, valid for an hour:
@@ -47,7 +49,6 @@ field-match the need against each candidate's `spec.definition` → classify int
 
   `/.backstage/health/v1/readiness` is the only route that answers without a token — use it to check
   the hub is up and find which port it took. Localhost curls need `dangerouslyDisableSandbox: true`.
-- **No MCP server** in this Backstage version — use the REST endpoints below.
 - **Endpoints you need**:
   - `GET /entities/by-query?fullTextFilter[term]=<term>` — keyword search across the catalog.
   - `GET /entities?filter=kind=api` — list all entities of a kind for a full scan (catalogs are
