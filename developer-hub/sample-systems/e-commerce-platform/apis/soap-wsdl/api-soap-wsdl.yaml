@@ -7,10 +7,10 @@ metadata:
     - store
     - wsdl
   links:
-    - url: https://github.com/TIBCOSoftware/tibco-developer-hub/tree/main/tibco-examples/developer-hub-marketplace-content/e-commerce-platform/apis
+    - url: https://github.com/TIBCOSoftware/tibco-developer-hub-marketplace/tree/main/developer-hub/sample-systems/e-commerce-platform/apis
       title: GitHub Repo
       icon: github
-    - url: https://github.com/TIBCOSoftware/tibco-developer-hub/tree/main/tibco-examples/developer-hub-marketplace-content/e-commerce-platform/apis/soap-wsdl/skeleton/Soap-Example.wsdl
+    - url: https://github.com/TIBCOSoftware/tibco-developer-hub-marketplace/blob/main/developer-hub/sample-systems/e-commerce-platform/apis/soap-wsdl/skeleton/Soap-Example.wsdl
       title: WSDL Service
       icon: code
 spec:

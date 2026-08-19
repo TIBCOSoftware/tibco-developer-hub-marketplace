@@ -6,7 +6,7 @@
 
 **GitHub Repository:**
 
-[https://github.com/TIBCOSoftware/tibco-developer-hub/tree/main/tibco-examples/developer-hub-marketplace-content/platform-cli/platform-cli-provisioning-example/platform-cli-scripts](https://github.com/TIBCOSoftware/tibco-developer-hub/tree/main/tibco-examples/developer-hub-marketplace-content/platform-cli/platform-cli-provisioning-example/platform-cli-scripts)
+[https://github.com/TIBCOSoftware/tibco-developer-hub-marketplace/tree/main/platform/cli/platform-cli-provisioning-example/platform-cli-scripts](https://github.com/TIBCOSoftware/tibco-developer-hub-marketplace/tree/main/platform/cli/platform-cli-provisioning-example/platform-cli-scripts)
 
 ## TIBCO Platform CLI
 

@@ -171,7 +171,7 @@ is available everywhere.
 
 ## Getting started
 
-The [skill library assets](https://github.com/TIBCOSoftware/tibco-developer-hub/tree/main/tibco-examples/developer-hub-marketplace-content/developer-hub-skills/developer-hub-skill-library/skill-library)
+The [skill library assets](https://github.com/TIBCOSoftware/tibco-developer-hub-marketplace/tree/main/developer-hub/skills/skill-library)
 are in this entry's repository folder. To use them in your Developer Hub checkout:
 
 1. **Pick your variant folder** — see the table above.
