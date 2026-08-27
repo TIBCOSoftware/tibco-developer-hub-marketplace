@@ -1,0 +1,255 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: import-tibco-platform
+  title: Import the TIBCO Platform
+  description: >-
+    Reflect a live TIBCO Platform in the Developer Hub catalog: the Control Plane
+    becomes a Component, its Data Planes become sub-components of that Component, and
+    every application running on a Data Plane becomes a sub-component of its Data
+    Plane. Import the whole control plane or a single selected data plane. Applications
+    the platform does not associate with any data plane land under an "Unassigned
+    applications" bucket.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    # `import-flow` is what routes this to the Import Flows page of the Developer Hub.
+    - import-flow
+    - tibco
+    - platform
+spec:
+  owner: group:default/tibco-self-service
+  type: import-flow
+
+  parameters:
+    - title: Control Plane
+      required:
+        - cp_display_name
+        - owner
+      properties:
+        cp_display_name:
+          title: Control Plane Name
+          type: string
+          description: >-
+            Display name for the Control Plane. It becomes the title of the Control
+            Plane Component, and a slug of it becomes the Component's catalog name.
+          default: 'TIBCO Control Plane'
+          maxLength: 60
+        owner:
+          title: Owner
+          type: string
+          description: Group that will own every imported Component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+          default: group:default/tibco-self-service
+
+    - title: What To Import
+      required:
+        - scope
+      properties:
+        scope:
+          title: Scope
+          type: string
+          description: Import the whole control plane, or select a single data plane
+          enum:
+            - 'Entire control plane'
+            - 'Select data plane'
+          default: 'Entire control plane'
+      dependencies:
+        scope:
+          oneOf:
+            - properties:
+                scope:
+                  enum:
+                    - 'Entire control plane'
+                nest_apps:
+                  title: Nest applications under their data plane
+                  type: boolean
+                  default: true
+                  description: >-
+                    Looks up each application so it is nested under the data plane it runs
+                    on, giving Control Plane → Data Plane → Application. Costs one extra
+                    API call per application. Turn this off for a faster import that lists
+                    every application directly under the Control Plane.
+            - required:
+                - deploymentTarget
+              properties:
+                scope:
+                  enum:
+                    - 'Select data plane'
+                deploymentTarget:
+                  title: Data Plane
+                  type: object
+                  description: Pick the data plane to import
+                  ui:field: DataplaneSelector
+
+    - title: Repository Location
+      description: >-
+        The generated catalog-info.yaml is committed here and registered from its
+        GitHub URL, so the catalog keeps a versioned snapshot of the topology.
+      required:
+        - repoUrl
+        - branch
+        - target_path
+      properties:
+        repoUrl:
+          title: Target GitHub Repository
+          type: string
+          description: An existing repository the catalog snapshot is committed into
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+        branch:
+          title: Branch
+          type: string
+          description: Branch to clone and push to
+          default: 'main'
+        target_path:
+          title: Folder In The Repository
+          type: string
+          description: Folder that will hold the generated catalog-info.yaml
+          default: 'tibco-platform'
+          pattern: '^[a-zA-Z0-9._/-]+$'
+
+  steps:
+    # ---------------------------------------------------------------- clone --
+    # The rendered catalog-info.yaml is pushed from this cloned working copy.
+    - id: clone
+      name: Clone The Target Repository
+      action: tibco:git:clone
+      input:
+        failOnError: true
+        branch: ${{ parameters.branch }}
+        repoUrl: ${{ "https://" + (parameters.repoUrl | parseRepoUrl).host + "/" + (parameters.repoUrl | parseRepoUrl).owner + "/" + (parameters.repoUrl | parseRepoUrl).repo }}
+
+    # ------------------------------------------------------- read topology --
+    # NOTE: tibco:* actions are SKIPPED in a dry-run and only return real data in a
+    # real run. Control Plane reads use no baseUrl.
+    - id: get_dataplanes
+      name: Read Data Planes
+      action: tibco:call-platform-api
+      input:
+        endpoint: '/cp/api/v1/data-planes'
+
+    # ENTIRE-CP apps, bulk: one safe subscription-wide call that returns every app, but
+    # only as { id, name } — it carries no data-plane association. Kept in both modes as
+    # the safety net: with nesting on it is diffed against the per-data-plane results and
+    # anything left over renders under the "Unassigned applications" bucket, so no app can
+    # silently vanish from the catalog.
+    - id: get_cp_apps
+      name: Read All Applications
+      if: ${{ parameters.scope == "Entire control plane" }}
+      action: tibco:call-platform-api
+      input:
+        endpoint: '/cp/api/v1/apps'
+
+    # ENTIRE-CP apps, nested: ask each application which data plane it runs on.
+    #
+    # The obvious route — one /cp/api/v1/data-planes/<id>/apps call per data plane — is a
+    # trap. That endpoint is unavailable on Control Tower data planes (400 CP-40100 "App
+    # operations are currently not supported for Control Tower Data Plane") and on data
+    # planes with no capabilities provisioned (403 CP-40100 "You don't have permission to
+    # perform this action.", regardless of how much permission the user actually holds).
+    # tibco:call-platform-api throws on any non-2xx and has no failOnError, so a single
+    # such data plane fails the entire import.
+    #
+    # The per-app endpoint sidesteps all of it: it carries `data-plane-id`, and it needs
+    # only the subscription-wide read that already produced the list above — no per-data-
+    # plane permission is involved, so no data plane can break the run. The cost is one
+    # call per application instead of one per data plane; see the note in the skeleton.
+    #
+    # `or []` keeps a dry-run alive: the scaffolder resolves `each` BEFORE evaluating `if`,
+    # and get_cp_apps produces no output in a dry-run.
+    - id: get_app_detail
+      name: Read Application Details
+      if: ${{ parameters.scope == "Entire control plane" and parameters.nest_apps }}
+      each: ${{ steps.get_cp_apps.output.data.response or [] }}
+      action: tibco:call-platform-api
+      input:
+        endpoint: '/cp/api/v1/apps/${{ each.value.id }}'
+
+    # SELECT-DATA-PLANE apps: the per-data-plane endpoint returns RICH app objects
+    # (app_state, app_version, capability, dp_id, ...). One call for the chosen data
+    # plane — robust because the user picked it. These nest under that data plane.
+    - id: get_dp_apps
+      name: Read Data Plane Applications
+      if: ${{ parameters.scope == "Select data plane" }}
+      action: tibco:call-platform-api
+      input:
+        endpoint: '/cp/api/v1/data-planes/${{ parameters.deploymentTarget.dataplaneId }}/apps'
+
+    # ------------------------------------------------------------- render --
+    # Dry-run-capable: fetch:template renders the multi-entity catalog-info.yaml
+    # from ./skeleton/ using the two arrays above. In a dry-run the tibco:* reads
+    # are skipped, so data_planes/apps are empty and only the Control Plane
+    # Component renders — structure is validated, real topology needs a real run.
+    - id: render
+      name: Generate Catalog Entities
+      action: fetch:template
+      input:
+        url: ./skeleton/
+        targetPath: ${{ parameters.target_path }}
+        values:
+          cp_display_name: ${{ parameters.cp_display_name }}
+          cp_id: ${{ "cp-" + (parameters.cp_display_name | lower | replace(" ", "-")) }}
+          cp_url: ${{ steps.get_dataplanes.output.cpBrowserUrl }}
+          app_base_url: ${{ steps.get_dataplanes.output.appBaseUrl }}
+          owner: ${{ parameters.owner }}
+          scope: ${{ parameters.scope }}
+          selected_dp_id: ${{ parameters.deploymentTarget.dataplaneId }}
+          nest_apps: ${{ parameters.nest_apps }}
+          data_planes: ${{ steps.get_dataplanes.output.data.response }}
+          # Flat apps (entire-CP mode): { id, name }. With nesting on these are only used
+          # to spot apps no data plane claimed; with nesting off they render under the CP.
+          cp_apps: ${{ steps.get_cp_apps.output.data.response }}
+          # Rich apps (select-data-plane mode): nested under the chosen data plane.
+          dp_apps: ${{ steps.get_dp_apps.output.data.response }}
+          # Per-app details (entire-CP mode, nesting on): one response envelope per app —
+          # [{ status, response: { id, name, "data-plane-id", "capability-id", status, … } }, …]
+          app_details: ${{ steps.get_app_detail.output.data }}
+
+    - id: log
+      name: Show The Generated Catalog File
+      action: debug:log
+      input:
+        message: ${{ "Rendered catalog-info.yaml for '" + parameters.cp_display_name + "' under " + parameters.target_path + " (scope=" + parameters.scope + ")" }}
+        listWorkspace: true
+
+    # ----------------------------------------------------------- publish --
+    - id: push
+      name: Commit And Push The Snapshot
+      action: tibco:git:push
+      input:
+        failOnError: true
+        branch: ${{ parameters.branch }}
+        commitMessage: '${{ "chore: import TIBCO Platform topology from the Developer Hub" }}'
+
+    - id: register
+      name: Register The Snapshot In The Catalog
+      action: catalog:register
+      input:
+        # Idempotent re-imports: on the first run this registers the location; on
+        # every later run the location already exists and catalog:register returns
+        # 409 Conflict. `optional: true` makes that conflict non-fatal — the pushed
+        # catalog-info.yaml is already updated, so the catalog refresh loop updates
+        # the existing Components in place instead of the task failing.
+        optional: true
+        catalogInfoUrl: ${{ "https://" + (parameters.repoUrl | parseRepoUrl).host + "/" + (parameters.repoUrl | parseRepoUrl).owner + "/" + (parameters.repoUrl | parseRepoUrl).repo + "/blob/" + parameters.branch + "/" + parameters.target_path + "/catalog-info.yaml" }}
+
+  output:
+    text:
+      - title: Platform import complete
+        content: |
+          **Control Plane:** ${{ parameters.cp_display_name }}
+          **Scope:** ${{ parameters.scope }}
+
+          The topology snapshot was committed and registered in the catalog.
+    links:
+      - title: Control Plane Dashboard
+        url: ${{ steps.get_dataplanes.output.cpBrowserUrl }}
+      - title: Open Control Plane component in catalog
+        icon: catalog
+        url: ${{ steps.get_dataplanes.output.appBaseUrl + "/catalog/default/component/cp-" + (parameters.cp_display_name | lower | replace(" ", "-")) }}

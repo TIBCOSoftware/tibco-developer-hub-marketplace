@@ -1,0 +1,11 @@
+site_name: 'API Versioning Best Practices'
+site_description: 'Best practices for modelling API versions in the TIBCO Developer Hub catalog, with the TIBCO Platform APIs as the worked example'
+
+nav:
+  - Why this needs a convention: index.md
+  - The ten practices: practices.md
+  - Applying it to your own APIs: your-apis.md
+  - Anti-patterns & quick reference: reference.md
+
+plugins:
+  - techdocs-core

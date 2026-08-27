@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: import-tibco-platform-location
+  description: Import flow that reflects a live TIBCO Platform in the Developer Hub catalog
+spec:
+  targets:
+    - ./import-tibco-platform.yaml
+    # Same file the self-service flows register, so the group entity is shared
+    # rather than duplicated when both marketplace entries are installed.
+    - ../../../developer-hub/self-service-flows/tibco-self-service-group.yaml

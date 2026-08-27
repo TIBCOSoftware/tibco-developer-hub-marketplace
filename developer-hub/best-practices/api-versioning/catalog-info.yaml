@@ -1,0 +1,34 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: api-versioning-best-practices-doc
+  description: API Versioning Best Practices Documentation
+spec:
+  type: organization
+  profile:
+    displayName: API Versioning Best Practices
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: api-versioning-best-practices-doc
+  description: A group of documents
+spec:
+  owner: api-versioning-best-practices-doc
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: api-versioning-best-practices
+  description: 'Best practices for modelling API versions in the TIBCO Developer Hub catalog, using the TIBCO Platform APIs as the worked example.'
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - documentation
+    - tibco-hub-documentation
+    - api
+    - best-practices
+spec:
+  owner: api-versioning-best-practices-doc
+  domain: api-versioning-best-practices-doc

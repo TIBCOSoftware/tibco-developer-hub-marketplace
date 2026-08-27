@@ -1,0 +1,226 @@
+# Rendered by fetch:template from import-tibco-platform.yaml.
+#
+# Multi-document catalog file. fetch:template runs Nunjucks over this whole file, so
+# this header avoids any templating delimiters (they parse as tags even in comments).
+#
+# Model — three levels, in both scopes:
+#   Component  cp-<slug>            the Control Plane
+#   Component  dp-<dp-id>           each Data Plane, sub-component of the Control Plane
+#   Component  app-<app-id>         each application, sub-component of its Data Plane
+#   Component  cp-<slug>-unassigned a bucket Data Plane holding applications the platform
+#                                   reported in the subscription-wide list but that no
+#                                   data plane claimed. Only rendered when non-empty.
+#
+# The two scopes learn the app to data-plane mapping from DIFFERENT endpoints, because the
+# per-data-plane one cannot be used across a whole control plane - it returns 400 on Control
+# Tower data planes and 403 on data planes with no capabilities provisioned, and one failure
+# aborts the import:
+#
+#   Entire control plane  -> GET /cp/api/v1/apps/<app-id>            one call per APP
+#   Select data plane     -> GET /cp/api/v1/data-planes/<id>/apps    one call, user picked it
+#
+# Their field names differ, so the block below normalises both into one shape and the rest
+# of the file reads only that. Turning the flow's "Nest applications under their data plane"
+# option off skips the lookups entirely and falls back to the flat subscription-wide list
+# rendered directly under the Control Plane.
+#
+# Only the RENDERED output is registered; this source file is never scanned as an
+# entity. Entity names use platform IDs so re-imports update in place.
+#
+# ----------------------------------------------------- normalise the app sources --
+# `push` mutates the array object itself, so writes survive the loop scope - the standard
+# Nunjucks accumulator idiom. The `.id` tests are type guards: a dry-run replaces a skipped
+# step's output with the string "<unknown>", and iterating a string yields characters.
+#
+# dp_ids: the data planes this render will actually emit. An app pointing at anything else
+# has no parent to hang from, so it must fall through to the unassigned bucket.
+{%- set dp_ids = [] %}
+{%- for dp in values.data_planes %}
+{%- if dp.id and (values.scope == "Entire control plane" or dp.id == values.selected_dp_id) %}
+{%- set _ = dp_ids.push(dp.id) %}
+{%- endif %}
+{%- endfor %}
+{%- set rich_apps = [] %}
+{%- set rich_ids = [] %}
+{%- if values.scope == "Select data plane" %}
+{%-   for a in values.dp_apps %}
+{%-     if a.app_id %}
+{%-       set _ = rich_apps.push(a) %}
+{%-       if a.dp_id in dp_ids %}{% set _ = rich_ids.push(a.app_id) %}{% endif %}
+{%-     endif %}
+{%-   endfor %}
+{%- else %}
+{%-   for envelope in values.app_details %}
+{%-     set a = envelope.response %}
+{%-     if a.id %}
+{%-       set n = { app_id: a.id, app_name: a.name, app_description: a.description,
+                    dp_id: a["data-plane-id"], capability_instance_name: a["capability-id"],
+                    app_state: a.status, app_version: a["app-version"] } %}
+{%-       set _ = rich_apps.push(n) %}
+{%-       if n.dp_id in dp_ids %}{% set _ = rich_ids.push(n.app_id) %}{% endif %}
+{%-     endif %}
+{%-   endfor %}
+{%- endif %}
+# Apps in the subscription-wide list that will not render under any data plane above.
+# Empty unless nesting is on.
+{%- set leftovers = [] %}
+{%- if values.nest_apps and values.scope == "Entire control plane" %}
+{%-   for a in values.cp_apps %}
+{%-     if a.id and not (a.id in rich_ids) %}
+{%-       set _ = leftovers.push(a) %}
+{%-     endif %}
+{%-   endfor %}
+{%- endif %}
+# ---------------------------------------------------------------- Control Plane
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.cp_id }}
+  title: ${{ values.cp_display_name | string | dump }}
+  description: TIBCO Platform Control Plane, imported into the Developer Hub
+  tags:
+    - tibco
+    - control-plane
+  annotations:
+    tibco.com/imported-by: import-tibco-platform
+{%- if values.cp_url %}
+  links:
+    - url: ${{ values.cp_url }}
+      title: Control Plane Dashboard
+      icon: dashboard
+{%- endif %}
+spec:
+  type: control-plane
+  lifecycle: production
+  owner: ${{ values.owner }}
+{%- for dp in values.data_planes %}
+{%- if dp.id and (values.scope == "Entire control plane" or dp.id == values.selected_dp_id) %}
+# ------------------------------------------------------------------ Data Plane
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: dp-${{ dp.id }}
+  title: ${{ dp.name | string | dump }}
+  description: ${{ ("Data plane " + dp.name + " on " + values.cp_display_name) | string | dump }}
+  tags:
+    - tibco
+    - data-plane
+  annotations:
+    tibco.com/data-plane-id: ${{ dp.id }}
+    tibco.com/imported-by: import-tibco-platform
+{%- if values.cp_url %}
+  links:
+    - url: ${{ values.cp_url + "cp/app/data-plane?dp_id=" + dp.id }}
+      title: Data Plane Details
+      icon: dashboard
+{%- endif %}
+spec:
+  type: data-plane
+  lifecycle: production
+  owner: ${{ values.owner }}
+  subcomponentOf: ${{ values.cp_id }}
+{%- for app in rich_apps %}
+{%- if app.dp_id == dp.id %}
+# ------------------------------------------------- Application (rich, per-DP)
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: app-${{ app.app_id }}
+  title: ${{ app.app_name | string | dump }}
+{%- if app.app_description %}
+  description: ${{ app.app_description | string | dump }}
+{%- endif %}
+  tags:
+    - tibco
+    - application
+  annotations:
+    tibco.com/app-id: ${{ app.app_id }}
+    tibco.com/data-plane-id: ${{ dp.id }}
+{%- if app.capability_instance_name %}
+    tibco.com/capability: ${{ app.capability_instance_name }}
+{%- endif %}
+{%- if app.app_state %}
+    tibco.com/app-state: ${{ app.app_state }}
+{%- endif %}
+{%- if app.app_version %}
+    tibco.com/app-version: ${{ app.app_version | string | dump }}
+{%- endif %}
+    tibco.com/imported-by: import-tibco-platform
+spec:
+  type: application
+  lifecycle: production
+  owner: ${{ values.owner }}
+  subcomponentOf: dp-${{ dp.id }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- if leftovers.length %}
+# ------------------------------------------------- Unassigned applications bucket
+# The platform listed these applications for the subscription but no data plane
+# reported them. They keep a place in the tree instead of disappearing.
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.cp_id + "-unassigned" }}
+  title: Unassigned applications
+  description: ${{ ("Applications on " + values.cp_display_name + " that no data plane reported") | string | dump }}
+  tags:
+    - tibco
+    - data-plane
+  annotations:
+    tibco.com/imported-by: import-tibco-platform
+spec:
+  type: data-plane
+  lifecycle: production
+  owner: ${{ values.owner }}
+  subcomponentOf: ${{ values.cp_id }}
+{%- for app in leftovers %}
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: app-${{ app.id }}
+  title: ${{ app.name | string | dump }}
+  description: ${{ ("Application " + app.name + " on " + values.cp_display_name) | string | dump }}
+  tags:
+    - tibco
+    - application
+  annotations:
+    tibco.com/app-id: ${{ app.id }}
+    tibco.com/imported-by: import-tibco-platform
+spec:
+  type: application
+  lifecycle: production
+  owner: ${{ values.owner }}
+  subcomponentOf: ${{ values.cp_id + "-unassigned" }}
+{%- endfor %}
+{%- endif %}
+{%- if values.scope == "Entire control plane" and not values.nest_apps %}
+{%- for app in values.cp_apps %}
+{%- if app.id %}
+# ---------------------------------------------- Application (flat, under CP)
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: app-${{ app.id }}
+  title: ${{ app.name | string | dump }}
+  description: ${{ ("Application " + app.name + " on " + values.cp_display_name) | string | dump }}
+  tags:
+    - tibco
+    - application
+  annotations:
+    tibco.com/app-id: ${{ app.id }}
+    tibco.com/imported-by: import-tibco-platform
+spec:
+  type: application
+  lifecycle: production
+  owner: ${{ values.owner }}
+  subcomponentOf: ${{ values.cp_id }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}

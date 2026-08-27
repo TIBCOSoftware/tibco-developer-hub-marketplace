@@ -1,0 +1,11 @@
+site_name: 'Import the TIBCO Platform'
+site_description: 'Import flow that reflects a live TIBCO Platform Control Plane, its Data Planes and their applications in the TIBCO Developer Hub catalog'
+
+nav:
+  - Overview: index.md
+  - Import Options: import-options.md
+  - What Gets Created: catalog-result.md
+  - How It Works: how-it-works.md
+
+plugins:
+  - techdocs-core

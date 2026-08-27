@@ -1,0 +1,11 @@
+site_name: 'TIBCO GEMS Quickstart'
+site_description: 'Getting TIBCO GEMS 1.1.0 running and connected to your EMS servers — gemsctl, the registration YAML, TLS and MTLS, and securing the UI'
+
+nav:
+  - What GEMS is: index.md
+  - Install and run: install.md
+  - Register EMS servers: register-ems.md
+  - gemsctl reference: gemsctl.md
+
+plugins:
+  - techdocs-core

@@ -1,0 +1,36 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: gems-quickstart-doc
+  description: TIBCO GEMS Quickstart Documentation
+spec:
+  type: organization
+  profile:
+    displayName: TIBCO GEMS Quickstart
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: gems-quickstart-doc
+  description: A group of documents
+spec:
+  owner: gems-quickstart-doc
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: gems-quickstart
+  description: 'Getting TIBCO GEMS 1.1.0 running and connected to your EMS servers: gemsctl, the registration YAML, TLS and MTLS, and securing the UI.'
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - documentation
+    - tibco-hub-documentation
+    - ems
+    - gems
+    - messaging
+    - monitoring
+spec:
+  owner: gems-quickstart-doc
+  domain: gems-quickstart-doc
