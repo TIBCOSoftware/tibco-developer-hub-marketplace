@@ -4,6 +4,8 @@ Registration is how GEMS learns about your EMS servers. You do it from the UI �
 Servers** on the home page — but what you supply is a YAML document, which you can write in the
 editor on that page or paste in whole. Servers are registered in **groups**, never individually.
 
+![The registration page, with the YAML editor on the left and the detected server groups on the right](./images/gems-register.webp)
+
 ## Before you start
 
 Two things must be true of every EMS server you are about to register.
@@ -151,6 +153,8 @@ reachable and the credentials work; GEMS confirms it can reach both the `clientU
 
 Press **Done** to return to the home page, which then lists every registered server.
 
+![The GEMS home page listing the registered EMS servers](./images/gems-registered-servers.webp)
+
 If validation fails, work through these in order:
 
 | Symptom | Usual cause |
@@ -162,4 +166,4 @@ If validation fails, work through these in order:
 
 ---
 
-Source: [TIBCO GEMS 1.1.0 — EMS Registration Guide](https://docs.tibco.com/pub/msg-gems/1.1.0/doc/html/emsspec).
+Source: [TIBCO GEMS 1.1.0 documentation](https://docs.tibco.com/pub/msg-gems/1.1.0/doc/html/).

@@ -27,6 +27,11 @@ One command does the lot: it loads the container image, creates and starts the c
 the UI in your default browser if your platform has one. On a headless host add `--no-browser` and
 open `http://<host>:7513/` yourself.
 
+![The GEMS landing page as it opens after `gemsctl start`](./images/gems-landing-page.webp)
+
+That landing page is where every registration starts — the **Register EMS Servers** button in the
+middle of it is step 4 below.
+
 ### How `gemsctl` finds the image
 
 This is the step that surprises people, so it is worth knowing the order:
@@ -127,5 +132,4 @@ set of settings is in the [gemsctl reference](gemsctl.md#configuration-file).
 
 ---
 
-Source: [TIBCO GEMS 1.1.0 — Quickstart](https://docs.tibco.com/pub/msg-gems/1.1.0/doc/html/) and
-[gemsctl Reference](https://docs.tibco.com/pub/msg-gems/1.1.0/doc/html/gemsctl-reference).
+Source: [TIBCO GEMS 1.1.0 documentation](https://docs.tibco.com/pub/msg-gems/1.1.0/doc/html/).

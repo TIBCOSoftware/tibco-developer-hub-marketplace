@@ -136,4 +136,4 @@ security:
 
 ---
 
-Source: [TIBCO GEMS 1.1.0 — gemsctl Reference](https://docs.tibco.com/pub/msg-gems/1.1.0/doc/html/gemsctl-reference).
+Source: [TIBCO GEMS 1.1.0 documentation](https://docs.tibco.com/pub/msg-gems/1.1.0/doc/html/).

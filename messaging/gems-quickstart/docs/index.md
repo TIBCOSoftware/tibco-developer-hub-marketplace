@@ -67,3 +67,7 @@ Plan the registration user the way you would plan any admin account change.
 the GEMS port with no basic authentication and no TLS. That is fine on a laptop and not fine on a
 shared host — [securing the UI](install.md#3-secure-the-ui-before-anyone-else-uses-it) takes two
 minutes and is worth doing before the first real registration.
+
+---
+
+Source: [TIBCO GEMS 1.1.0 documentation](https://docs.tibco.com/pub/msg-gems/1.1.0/doc/html/).
