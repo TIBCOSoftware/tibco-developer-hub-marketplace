@@ -5,23 +5,25 @@
 Download the GEMS package for your platform from the TIBCO download site, then extract it. Everything
 you need is inside the archive — there is no installer.
 
-```sh
-# Linux
-unzip TIB_msg-gems_1.1.0_linux_x86_64.zip
+!!! note "Linux and Windows"
+    ```sh
+    # Linux
+    unzip TIB_msg-gems_1.1.0_linux_x86_64.zip
 
-# Windows
-powershell Expand-Archive -Path TIB_msg-gems_1.1.0_win_x86_64.zip -DestinationPath .
-```
+    # Windows
+    powershell Expand-Archive -Path TIB_msg-gems_1.1.0_win_x86_64.zip -DestinationPath .
+    ```
 
 Run every command below **from the extracted package directory**. `gemsctl` looks for the image file
 relative to where it runs.
 
 ## 2. Start GEMS
 
-```sh
-bin/gemsctl start          # Linux
-bin\gemsctl.exe start      # Windows
-```
+!!! note "Linux and Windows"
+    ```sh
+    bin/gemsctl start          # Linux
+    bin\gemsctl.exe start      # Windows
+    ```
 
 One command does the lot: it loads the container image, creates and starts the container, and opens
 the UI in your default browser if your platform has one. On a headless host add `--no-browser` and
@@ -72,21 +74,23 @@ Started as above, the GEMS port is plain HTTP with no authentication. To lock it
 
 Generate the hash first:
 
-```sh
-bin/gemsctl hash-pwd 'the-password-you-want'
-```
+!!! note "Generate the password hash"
+    ```sh
+    bin/gemsctl hash-pwd 'the-password-you-want'
+    ```
 
 It prints a bcrypt hash to the console. Paste that into the configuration file:
 
-```yaml
-security:
-  basicAuth:
-    userName: gems-admin
-    password: "$2a$10$xyAlfmF040VEUsUC6.MKaujCMqJCNt8yCT3C8vHen/mfBlkgV7LN."
-  tls:
-    cert: /path/to/cert.pem
-    key: /path/to/key.pem
-```
+!!! note ".gemsconfig — basic authentication and TLS"
+    ```yaml
+    security:
+      basicAuth:
+        userName: gems-admin
+        password: "$2a$10$xyAlfmF040VEUsUC6.MKaujCMqJCNt8yCT3C8vHen/mfBlkgV7LN."
+      tls:
+        cert: /path/to/cert.pem
+        key: /path/to/key.pem
+    ```
 
 Only PEM-encoded certificates and keys are supported. Restart GEMS to pick the change up, and the UI
 is then served over HTTPS behind basic authentication.
@@ -102,10 +106,11 @@ registered server.
 
 ## 5. Stop GEMS
 
-```sh
-bin/gemsctl stop           # Linux
-bin\gemsctl.exe stop       # Windows
-```
+!!! note "Linux and Windows"
+    ```sh
+    bin/gemsctl stop           # Linux
+    bin\gemsctl.exe stop       # Windows
+    ```
 
 Stopping leaves the data directory, image and container in place, so the next `start` is fast and
 your Prometheus history survives.
@@ -119,13 +124,14 @@ your Prometheus history survives.
 Passing the same flags every time gets old. Put them in `.gemsconfig` instead and both `start` and
 `stop` will pick them up:
 
-```yaml
-global:
-  dataDir: ./gems-data
-  noBrowser: true
-container:
-  port: 8513
-```
+!!! note ".gemsconfig — repeatable runs"
+    ```yaml
+    global:
+      dataDir: ./gems-data
+      noBrowser: true
+    container:
+      port: 8513
+    ```
 
 Keep that file next to the extracted package, or point at it with `--config` from anywhere. The full
 set of settings is in the [gemsctl reference](gemsctl.md#configuration-file).

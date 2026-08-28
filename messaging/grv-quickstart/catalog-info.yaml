@@ -1,0 +1,36 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: grv-quickstart-doc
+  description: Graphical RV Quickstart Documentation
+spec:
+  type: organization
+  profile:
+    displayName: Graphical RV Quickstart
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: grv-quickstart-doc
+  description: A group of documents
+spec:
+  owner: grv-quickstart-doc
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: grv-quickstart
+  description: 'Getting TIBCO Graphical Rendezvous 1.1.0 running and watching your Rendezvous estate: grvctl, the transport registration YAML, securing the UI, and AI Insights.'
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - documentation
+    - tibco-hub-documentation
+    - rendezvous
+    - grv
+    - messaging
+    - monitoring
+spec:
+  owner: grv-quickstart-doc
+  domain: grv-quickstart-doc

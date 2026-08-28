@@ -38,11 +38,12 @@ data directory (`$HOME/.gems` on Linux, `%USERPROFILE%\.gems` on Windows, by def
 
 ## The whole path in three commands
 
-```sh
-unzip TIB_msg-gems_1.1.0_linux_x86_64.zip   # 1. extract the package
-bin/gemsctl start                            # 2. load the image, start GEMS, open the UI
-bin/gemsctl stop                             # 3. stop it again
-```
+!!! note "Extract, start, stop"
+    ```sh
+    unzip TIB_msg-gems_1.1.0_linux_x86_64.zip   # 1. extract the package
+    bin/gemsctl start                            # 2. load the image, start GEMS, open the UI
+    bin/gemsctl stop                             # 3. stop it again
+    ```
 
 Between steps 2 and 3 you register your EMS servers once, from the UI, using a YAML document. That
 registration is the only part with real decisions in it, and it is the part most worth reading before

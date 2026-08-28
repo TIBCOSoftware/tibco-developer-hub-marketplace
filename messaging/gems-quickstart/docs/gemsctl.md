@@ -3,10 +3,11 @@
 `gemsctl` is the whole command-line surface of GEMS: five commands, and a configuration file that
 lets you stop typing flags. Run it from the extracted package directory.
 
-```sh
-bin/gemsctl <command> <options>          # Linux
-bin\gemsctl.exe <command> <options>      # Windows
-```
+!!! note "Usage"
+    ```sh
+    bin/gemsctl <command> <options>          # Linux
+    bin\gemsctl.exe <command> <options>      # Windows
+    ```
 
 ## Commands
 
@@ -48,9 +49,10 @@ reclaiming a machine, not for a routine shutdown.
 Generates the basic-authentication password hash that secures the GEMS container port. The output
 goes into `security.basicAuth.password` in the configuration file.
 
-```sh
-bin/gemsctl hash-pwd <STRING>
-```
+!!! note "Generate a password hash"
+    ```sh
+    bin/gemsctl hash-pwd <STRING>
+    ```
 
 `<STRING>` is the plain password; the hash is printed to the console.
 
@@ -113,26 +115,27 @@ Only PEM-encoded certificates and keys are supported.
 
 Every option in one file:
 
-```yaml
-global:
-  dataDir: ./gems-data
-  debug: false
-  noBrowser: false
-  cleanup: false
+!!! note "Every option in one .gemsconfig"
+    ```yaml
+    global:
+      dataDir: ./gems-data
+      debug: false
+      noBrowser: false
+      cleanup: false
 
-container:
-  imageName: localhost/gems:latest
-  imageFile: null
-  port: 7513
+    container:
+      imageName: localhost/gems:latest
+      imageFile: null
+      port: 7513
 
-security:
-  basicAuth:
-    userName: user
-    password: "$2a$10$xyAlfmF040VEUsUC6.MKaujCMqJCNt8yCT3C8vHen/mfBlkgV7LN."
-  tls:
-    cert: /path/to/cert.pem
-    key: /path/to/key.pem
-```
+    security:
+      basicAuth:
+        userName: user
+        password: "$2a$10$xyAlfmF040VEUsUC6.MKaujCMqJCNt8yCT3C8vHen/mfBlkgV7LN."
+      tls:
+        cert: /path/to/cert.pem
+        key: /path/to/key.pem
+    ```
 
 ---
 

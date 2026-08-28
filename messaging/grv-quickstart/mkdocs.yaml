@@ -1,0 +1,12 @@
+site_name: 'Graphical RV Quickstart'
+site_description: 'Getting TIBCO Graphical Rendezvous 1.1.0 running and monitoring your Rendezvous estate — grvctl, transport registration, securing the UI, and AI Insights'
+
+nav:
+  - What Graphical RV is: index.md
+  - Install and run: install.md
+  - Register transports: register-transports.md
+  - AI Insights (Tech Preview): ai-insights.md
+  - grvctl reference: grvctl.md
+
+plugins:
+  - techdocs-core

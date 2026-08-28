@@ -25,15 +25,16 @@ collect.
 
 ## Minimal registration
 
-```yaml
-server_groups:
-  - groupName: sample-group
-    description: "optional description"
-    clientUrl: tcp://ems1.example.com:1234,tcp://ems2.example.com:1234,tcp://ems3.example.com:1234
-    monitorUrl: http://ems1.example.com:2234,http://ems2.example.com:2234,http://ems3.example.com:2234
-    registrationUser: admin
-    registrationPass: admin-password
-```
+!!! note "server_groups — the minimum"
+    ```yaml
+    server_groups:
+      - groupName: sample-group
+        description: "optional description"
+        clientUrl: tcp://ems1.example.com:1234,tcp://ems2.example.com:1234,tcp://ems3.example.com:1234
+        monitorUrl: http://ems1.example.com:2234,http://ems2.example.com:2234,http://ems3.example.com:2234
+        registrationUser: admin
+        registrationPass: admin-password
+    ```
 
 | Field | Required | Description |
 | --- | --- | --- |
@@ -53,10 +54,11 @@ to the wrong host.
 
 If the servers are configured for TLS, change the protocols. Nothing else in the document changes:
 
-```yaml
-    clientUrl: ssl://ems1.example.com:1234,ssl://ems2.example.com:1234,ssl://ems3.example.com:1234
-    monitorUrl: https://ems1.example.com:2234,https://ems2.example.com:2234,https://ems3.example.com:2234
-```
+!!! note "TLS — change the protocols"
+    ```yaml
+        clientUrl: ssl://ems1.example.com:1234,ssl://ems2.example.com:1234,ssl://ems3.example.com:1234
+        monitorUrl: https://ems1.example.com:2234,https://ems2.example.com:2234,https://ems3.example.com:2234
+    ```
 
 - `clientUrl` — `ssl://` instead of `tcp://`
 - `monitorUrl` — `https://` instead of `http://`
@@ -71,25 +73,26 @@ both — you only need the ones whose connections actually demand MTLS.
     `<data-dir>/run/certs` — where `<data-dir>` is what you passed to `gemsctl start --data-dir`.
     The files must already be in that directory **before** you register the group.
 
-```yaml
-    clientUrl: ssl://ems1.example.com:1234,ssl://ems2.example.com:1234,ssl://ems3.example.com:1234
-    clientMtls:
-      certificate: client-certificate.pem
-      privateKey: client-private-key.pem
-      pkPassword: "client-private-key-password"
-      trusted: root-certificate.pem
-      verifyCertificate: true
-      verifyHostname: true
+!!! note "Mutual TLS — clientMtls and monitorMtls"
+    ```yaml
+        clientUrl: ssl://ems1.example.com:1234,ssl://ems2.example.com:1234,ssl://ems3.example.com:1234
+        clientMtls:
+          certificate: client-certificate.pem
+          privateKey: client-private-key.pem
+          pkPassword: "client-private-key-password"
+          trusted: root-certificate.pem
+          verifyCertificate: true
+          verifyHostname: true
 
-    monitorUrl: https://ems1.example.com:2234,https://ems2.example.com:2234,https://ems3.example.com:2234
-    monitorMtls:
-      certificate: monitor-certificate.pem
-      privateKey: monitor-private-key.pem
-      pkPassword: "monitor-private-key-password"
-      trusted: root-certificate.pem
-      verifyCertificate: true
-      verifyHostname: true
-```
+        monitorUrl: https://ems1.example.com:2234,https://ems2.example.com:2234,https://ems3.example.com:2234
+        monitorMtls:
+          certificate: monitor-certificate.pem
+          privateKey: monitor-private-key.pem
+          pkPassword: "monitor-private-key-password"
+          trusted: root-certificate.pem
+          verifyCertificate: true
+          verifyHostname: true
+    ```
 
 | Field | Required | Description |
 | --- | --- | --- |
@@ -113,36 +116,37 @@ Two easy mistakes:
 `server_groups` is a list, so one document can register many groups — and they need not be configured
 alike. Here `sample-group-1` is plain TCP and `sample-group-2` is full MTLS:
 
-```yaml
-server_groups:
-  - groupName: sample-group-1
-    description: "Group 1"
-    clientUrl: tcp://ems1.example.com:1234,tcp://ems2.example.com:1234,tcp://ems3.example.com:1234
-    monitorUrl: http://ems1.example.com:2234,http://ems2.example.com:2234,http://ems3.example.com:2234
-    registrationUser: admin
-    registrationPass: admin-password
+!!! note "Two groups, one plain and one MTLS"
+    ```yaml
+    server_groups:
+      - groupName: sample-group-1
+        description: "Group 1"
+        clientUrl: tcp://ems1.example.com:1234,tcp://ems2.example.com:1234,tcp://ems3.example.com:1234
+        monitorUrl: http://ems1.example.com:2234,http://ems2.example.com:2234,http://ems3.example.com:2234
+        registrationUser: admin
+        registrationPass: admin-password
 
-  - groupName: sample-group-2
-    description: "Group 2"
-    clientUrl: ssl://ems4.example.com:1234,ssl://ems5.example.com:1234
-    monitorUrl: https://ems4.example.com:2234,https://ems5.example.com:2234
-    registrationUser: admin
-    registrationPass: admin-password
-    clientMtls:
-      certificate: client.cert.pem
-      privateKey: client.key.pem
-      pkPassword: password
-      trusted: root-certificate.pem
-      verifyCertificate: true
-      verifyHostname: true
-    monitorMtls:
-      certificate: client.cert.pem
-      privateKey: client.key.pem
-      pkPassword: password
-      trusted: root-certificate.pem
-      verifyCertificate: true
-      verifyHostname: true
-```
+      - groupName: sample-group-2
+        description: "Group 2"
+        clientUrl: ssl://ems4.example.com:1234,ssl://ems5.example.com:1234
+        monitorUrl: https://ems4.example.com:2234,https://ems5.example.com:2234
+        registrationUser: admin
+        registrationPass: admin-password
+        clientMtls:
+          certificate: client.cert.pem
+          privateKey: client.key.pem
+          pkPassword: password
+          trusted: root-certificate.pem
+          verifyCertificate: true
+          verifyHostname: true
+        monitorMtls:
+          certificate: client.cert.pem
+          privateKey: client.key.pem
+          pkPassword: password
+          trusted: root-certificate.pem
+          verifyCertificate: true
+          verifyHostname: true
+    ```
 
 ## Validating
 
