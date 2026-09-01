@@ -1,0 +1,1190 @@
+serverInfo:
+  name: BWMCPServer
+  title: BW MCP Server
+  version: 1.20.0
+capabilities:
+  logging: {}
+  tools:
+    listChanged: true
+tools:
+  - name: bw_capture_app_thread_dump
+    description: |-
+
+      Name / Purpose:
+
+      Capture thread dump for the specified BW app to analyze performance issues or deadlocks
+
+      Output / Returns:
+      - the thread dump to analyze the app performance
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to capture thread dump for, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to capture thread dump for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to capture thread dump from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to capture thread dump from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppId (string, optional): The ID of the app to capture thread dump for, Either app id or name is required, use 'listApps' tool to list available applications
+      - AppName (string, optional): The name of the app to capture thread dump for, Either app id or name is required, use 'listApps' tool to list available applications
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appId:
+          type: string
+          description: Optional, id of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        appName:
+          type: string
+          description: Optional, name of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_delete_app
+    description: |-
+
+      Name / Purpose:
+
+      delete (undeploy) a BW application (deployment) from a dataplane
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to delete the app from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to delete the app for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to delete the app from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to delete the app from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppId (string, optional): The ID of the app to delete, Either app id or name is required, use 'listApps' tool to list available applications
+      - AppName (string, optional): The name of the app to delete, Either app id or name is required, use 'listApps' tool to list available applications
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appId:
+          type: string
+          description: Optional, id of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        appName:
+          type: string
+          description: Optional, name of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+      required:
+        - baseInput
+      additionalProperties: false
+  - name: bw_delete_app_build
+    description: |-
+
+      Name / Purpose:
+
+      delete one or more BW application builds (deployment artifacts) from a dataplane in a single call
+
+      Output / Returns:
+      - A map keyed by buildId; each value is either the delete response or an error string if that build failed
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to delete the app build from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to delete the app build for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to delete the app build from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to delete the app build from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - BuildIds ([]string, required): List of build IDs to delete. Use 'bw_list_app_builds' tool to list available builds
+
+      Limitations / Notes / Best Practices / Error Handling / Performance Considerations:
+      - App builds associated with deployed applications cannot be deleted. Please delete the application first before deleting the app build.
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        buildIds:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Required, list of build IDs to delete in a single call. Use 'bw_list_app_builds' tool to list available builds
+      required:
+        - baseInput
+        - buildIds
+      additionalProperties: false
+  - name: bw_deploy_helm_managed_app
+    description: |-
+
+      Name / Purpose:
+
+      deploy (create a deployment of) a helm managed BW app on a dataplane for the provided build id
+      Output / Returns:
+      - appId on success or failure message
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to deploy the app on, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to deploy the app for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to deploy the app on, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to deploy the app on, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - BuildId (string, required): The ID of the app build to deploy, use 'bw_list_app_builds' tool to list available builds
+      - Namespace (string, optional): The namespace to deploy the app on, if not provided, default namespace will be used
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        buildId:
+          type: string
+          description: Required, Build Id of the application to deploy, use 'bw_list_app_builds' tool to list available builds
+        namespace:
+          type: string
+          description: Optional, namespace to deploy the application in, use 'bw_list_namespaces' tool to list available namespaces
+      required:
+        - baseInput
+        - buildId
+      additionalProperties: false
+  - name: bw_download_smart_engine_report
+    description: |-
+
+      Name / Purpose:
+
+      download a smart engine report for a given BW6 Container app
+
+      Output / Returns:
+      - the report HTML file to analyze the app performance
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to download report for, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to download report for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to download report from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to download report from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppId (string, optional): The ID of the app to download report for, Either app id or name is required, use 'listApps' tool to list available applications
+      - AppName (string, optional): The name of the app to download report for, Either app id or name is required, use 'listApps' tool to list available applications
+      - ReportId (string, required): The ID of the report to download, use 'bw_list_smart_engine_reports' tool to list available reports for the application
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appId:
+          type: string
+          description: Optional, id of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        appName:
+          type: string
+          description: Optional, name of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        reportId:
+          type: string
+          description: Required, id of the report to download, use 'bw_list_smart_engine_reports' tool to list available reports for the application
+      required:
+        - baseInput
+        - reportId
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_enable_smart_engine_for_bw_app
+    description: |-
+
+      Name / Purpose:
+
+      Enable smart engine for a given BW app
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to enable smart engine for, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to enable smart engine for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to enable smart engine on, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to enable smart engine on, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppId (string, optional): The ID of the app to enable smart engine for, Either app id or name is required, use 'listApps' tool to list available applications
+      - AppName (string, optional): The name of the app to enable smart engine for, Either app id or name is required, use 'listApps' tool to list available applications
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appId:
+          type: string
+          description: Optional, id of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        appName:
+          type: string
+          description: Optional, name of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+      required:
+        - baseInput
+      additionalProperties: false
+  - name: bw_generate_smart_engine_report
+    description: |-
+
+      Name / Purpose:
+
+      generate smart engine report for a given BW app
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to generate report for, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to generate report for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to generate report on, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to generate report on, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppId (string, optional): The ID of the app to generate report for, Either app id or name is required, use 'listApps' tool to list available applications
+      - AppName (string, optional): The name of the app to generate report for, Either app id or name is required, use 'listApps' tool to list available applications
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appId:
+          type: string
+          description: Optional, id of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        appName:
+          type: string
+          description: Optional, name of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+      required:
+        - baseInput
+      additionalProperties: false
+  - name: bw_get_all_capability_summary
+    description: |-
+
+      Name / Purpose:
+
+      Get all information about a BW5 or BW6 Container capability such as capability chart versions, ingress or gateway details, all provisioned connectors, BW versions and supplements, all application public endpoints.
+
+      Use this tool only when you need summary or readiness report of all BW5 or BW6 Containers capability information. Use dedicated tools for specific information.
+
+      Output / Returns:
+      - Capability Name
+      - Capability Release Version
+      - Capability Chart Version
+      - Capability Ingress or gateway Details
+      - Public API endpoint
+      - Execution History enabled status
+      - List of All provisioned connectors & BW versions
+      - List of All uploaded supplements
+      - List of all application public endpoints
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch information from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch information for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch information from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch information from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_get_app_details
+    description: |-
+
+      Name / Purpose:
+
+      get application (deployment) details for a list of BW applications (deployments) in a single call
+
+      Output / Returns:
+      - A map keyed by App ID; each value is either the app details object or an error string if that app failed
+      - App ID
+      - App Name
+      - App Version
+      - App Description
+      - BW Version & base image tag
+      - System or engine properties: includes OTel status: look for name=='BW_OTEL_TRACES_ENABLED' (value=='true' means OpenTelemetry tracing is enabled) and name=='BW_OTEL_METRICS_ENABLED' (value=='true' means OpenTelemetry metrics are enabled) in systemProperties
+      - Resource Limits
+      - Autoscaling config
+      - Volume, volume mounts
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch app details from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch app details for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch app details from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch app details from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppIds ([]string, optional): The IDs of the apps to fetch details for, Either app ids or app names are required, use 'listApps' tool to list available applications from dataplane
+      - AppNames ([]string, optional): The names of the apps to fetch details for, Either app ids or app names are required, use 'listApps' tool to list available applications from dataplane
+
+      Limitations / Notes / Best Practices / Error Handling / Performance Considerations:
+      - Partial failures are supported for per-app fetch/parse errors; invalid AppIds/AppNames currently fail validation and abort the request
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appIds:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, ids of the applications. Either app ids or app names are required. use 'listApps' tool to list available applications
+        appNames:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, names of the applications. Either app ids or app names are required. use 'listApps' tool to list available applications
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_get_app_endpoints
+    description: |-
+
+      Name / Purpose:
+
+      get all the app endpoints for given list of BW applications (deployments)
+
+      Output / Returns:
+      - service name
+      - service port
+      - endpoint visibility (public/private)
+      - public endpoint URL
+      - private endpoint URL
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch app endpoints from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch app endpoints for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch app endpoints from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch app endpoints from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppIds ([]string, optional): The IDs of the apps to fetch endpoints for, Either app ids or names are required, use 'listApps' tool to list available applications from dataplane
+      - AppNames ([]string, optional): The names of the apps to fetch endpoints for, Either list of app ids or names are required, use 'listApps' tool to list available applications from dataplane
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appIds:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, ids of the applications. Either app ids or app names are required. use 'listApps' tool to list available applications
+        appNames:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, names of the applications. Either app ids or app names are required. use 'listApps' tool to list available applications
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_get_apps_for_build
+    description: |-
+
+      Name / Purpose:
+
+      get all the BW apps (deployments) for one or more build IDs in a single call
+
+      Output / Returns:
+      - A map keyed by buildId; each value is either the apps list or an error string if that build failed
+      - App ID
+      - App Name
+      - App Status
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch apps from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch apps for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch apps from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch apps from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - BuildIds ([]string, required): List of build IDs to fetch apps for in a single call. Use 'bw_list_app_builds' tool to list available builds
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        buildIds:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Required, list of build IDs to get applications for in a single call. Results are returned as a map keyed by buildId. Use 'bw_list_app_builds' tool to list available builds
+        namespace:
+          type: string
+          description: Optional, namespace to get the applications for build from, use 'bw_list_namespaces' tool to list available namespaces
+      required:
+        - baseInput
+        - buildIds
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_get_bw_versions
+    description: |-
+
+      Name / Purpose:
+
+      List all BW versions for a given capability instance from a dataplane
+
+      Output / Returns:
+      - Version Name
+      - Base image tags
+      - Created At
+      - Created By
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch BW versions from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch BW versions for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch BW versions from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch BW versions from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_get_capability_info
+    description: |-
+
+      Name / Purpose:
+
+      get information about a BW5 or BW6 Container capability
+
+      Output / Returns:
+      - Capability Name
+      - Capability Release Version
+      - Capability Chart Version
+      - Capability Ingress Details
+      - Public API endpoint
+      - Execution History enabled status
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch information from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch information for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch information from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch information from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_list_app_builds
+    description: |-
+
+      Name / Purpose:
+
+      List all the existing BW app builds (deployment artifacts) from a dataplane, Returns basic app build information
+
+      Output / Returns:
+      - Build Id
+      - Build Name
+      - Created by
+      - Created At
+      - Connectors Used
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch app builds from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch app builds for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch app builds from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch app builds from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_list_bw_versions_from_controlplane
+    description: |-
+
+      Name / Purpose:
+
+      List the catalog of all the BW versions from the control plane, Use these to provision on a specific dataplane via 'bw_provision_bw_version' tool.
+
+      Output / Returns:
+      - BW Version
+
+      Arguments / Parameters:
+      - CapabilityId (string, required): The ID of the capability to fetch information for, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+    inputSchema:
+      type: object
+      properties:
+        capabilityId:
+          type: string
+          description: 'Required, capability id, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+      required:
+        - capabilityId
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_list_connectors
+    description: |-
+
+      Name / Purpose:
+
+      List all the provisioned BW plugins / connectors and adapters from a dataplane
+
+      Output / Returns:
+      - Connector Id
+      - Connector Name
+      - Supplement Status
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch connectors from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch connectors for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch connectors from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch connectors from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_list_connectors_from_controlplane
+    description: |-
+
+      Name / Purpose:
+
+      List the catalog of all the BW plugins / connectors and adapters from the control plane, Use these to provision on a specific dataplane via 'bw_provision_connector' tool.
+
+      Output / Returns:
+      - Connector Id
+      - Connector Name
+      - Connector Version
+      - Connector Description
+      - Display Version
+      - Documentation Link
+      - End of Support Date
+      - Release Date
+      - Supported BW/BWCE Versions
+      - Supplement Info
+
+      Arguments / Parameters:
+      - CapabilityId (string, required): The ID of the capability to fetch information for, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+    inputSchema:
+      type: object
+      properties:
+        capabilityId:
+          type: string
+          description: 'Required, capability id, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+      required:
+        - capabilityId
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_list_instances_for_app
+    description: |-
+
+      Name / Purpose:
+
+      Get all the app instances (deployment instances / replicas) for one or more BW apps (deployments) in a single call
+
+      Output / Returns:
+      - A map keyed by App ID; each value is either the list of app instances or an error string if that app failed
+      - App instance name
+      - App instance status
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch app instances from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch app instances for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch app instances from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch app instances from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppIds ([]string, optional): The IDs of the apps to fetch instances for, Either app ids or app names are required, use 'listApps' tool to list available applications from dataplane
+      - AppNames ([]string, optional): The names of the apps to fetch instances for, Either app ids or app names are required, use 'listApps' tool to list available applications from dataplane
+
+      Limitations / Notes / Best Practices / Error Handling / Performance Considerations:
+      - Partial failures are supported for per-app fetch errors; invalid AppIds/AppNames currently fail validation and abort the request
+      - To answer platform-wide questions (e.g. instance counts across many apps), pass all relevant app ids/names in a single call instead of calling this tool once per app
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appIds:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, ids of the applications. Either app ids or app names are required. use 'listApps' tool to list available applications
+        appNames:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, names of the applications. Either app ids or app names are required. use 'listApps' tool to list available applications
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_list_namespaces
+    description: |-
+
+      Name / Purpose:
+
+      List all the namespaces for BW capabilities from a dataplane
+
+      Output / Returns:
+      - Namespace Name
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch namespaces from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch namespaces for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch namespaces from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch namespaces from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_list_smart_engine_reports
+    description: |-
+
+      Name / Purpose:
+
+      list all smart engine reports for a given BW6 Container app
+
+      Output / Returns:
+      - Report ID
+      - Date Created
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to list reports for, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to list reports for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to list reports on, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to list reports on, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppId (string, optional): The ID of the app to list reports for, Either app id or name is required, use 'listApps' tool to list available applications
+      - AppName (string, optional): The name of the app to list reports for, Either app id or name is required, use 'listApps' tool to list available applications
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appId:
+          type: string
+          description: Optional, id of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        appName:
+          type: string
+          description: Optional, name of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_list_supplements
+    description: |-
+
+      Name / Purpose:
+
+      List all the provisioned supplements for BW capabilities from a dataplane
+
+      Output / Returns:
+      - Connector ID
+      - Connector Name
+      - Supplement Name
+      - Supplement file
+      - Created By
+      - Created Date
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to fetch supplements from, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to fetch supplements for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to fetch supplements from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to fetch supplements from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_provision_bw_version
+    description: |-
+
+      Name / Purpose:
+
+      Provision a BW version in a dataplane. Use 'bw_list_bw_versions_from_controlplane' tool to list available BW versions.
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to provision the BW version in, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to provision the BW version for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to provision the BW version in, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to provision the BW version in, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - BwVersion (string, required): The BW version to provision
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        bwVersion:
+          type: string
+          description: Required, BW version to provision on the dataplane
+      required:
+        - baseInput
+        - bwVersion
+      additionalProperties: false
+  - name: bw_provision_connector
+    description: |-
+
+      Name / Purpose:
+
+      Provision a BW plugin / connector or adapter in the specified dataplane. Use 'bw_list_connectors_from_controlplane' tool to list available connectors from controlplane.
+
+      Output / Returns:
+      - success or failure code and message
+
+      Arguments / Parameters:
+      - Connector ID (string, required): The ID of the connector to provision
+      - Connector Version (string, required): The version of the connector to provision
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to provision the connector in, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to provision the connector for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to provision the connector in, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to provision the connector in, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        connectorId:
+          type: string
+          description: Required, id of the plugin/connector/adapter to provision on the dataplane
+        version:
+          type: string
+          description: Required, version of the plugin/connector/adapter to provision on the dataplane
+      required:
+        - baseInput
+        - connectorId
+        - version
+      additionalProperties: false
+  - name: bw_run_osgi_command
+    description: |-
+
+      Name / Purpose:
+
+      Run a read-only TIBCO BusinessWorks OSGi console command against a running instance of the specified BW/BWCE app on a dataplane, to inspect or debug the app's runtime for root-cause analysis (e.g. thread dumps, engine/process/activity/endpoint/resource/component/library listings and diagnostics). Only a fixed allowlist of read-only diagnostic commands is permitted; commands that start, stop, pause, resume, install, uninstall, update, delete, load, set log levels, or otherwise change application/engine state are blocked. The command is dispatched to the app engine only when the target instance is in the Running state
+
+      Output / Returns:
+      - the raw text output of the OSGi command as returned by the app engine
+
+      Arguments / Parameters:
+      - Command (string, required): The read-only OSGi console command to run, optionally followed by arguments (e.g. 'td' for a thread dump, 'lb' to list bundles, 'le' for engine info). Allowed commands (command - what it does):
+        appnodeprocessinfo - show AppNode system process info (PID, uptime, CPU and memory usage)
+        dsr - diagnose shared resource issues detected by the engine
+        getcomps - list the application components running in the AppNode
+        la - list all deployed applications and their state
+        lais - list activity execution statistics
+        lapi - show detail for a specific process (job) instance
+        lapis - list a summary of active process (job) instances
+        las - list currently instantiated activities
+        lat - list registered activity types
+        lb - list all OSGi bundles and their state
+        lbwes - list BW statistics event subscribers
+        le - show BW engine information (name, state, threads)
+        lendpoints - list the endpoints exposed by the engine
+        les - list currently instantiated event sources
+        ll - list all shared/module libraries
+        lloggers - list configured loggers and their levels
+        lmetrics - show job metrics for the engine
+        lp - list the BW processes known to the engine
+        lpis - list process (job) statistics
+        lrhandlers - list resource handlers
+        lrproxies - list resource proxies
+        td - capture a full thread dump of the engine JVM
+      Any other command (including state-changing ones) is rejected
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to run the command on, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to run the command for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to run the command on, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to run the command on, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppId (string, optional): The ID of the app to run the command for, Either app id or name is required, use 'listApps' tool to list available applications
+      - AppName (string, optional): The name of the app to run the command for, Either app id or name is required, use 'listApps' tool to list available applications
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appId:
+          type: string
+          description: Optional, id of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        appName:
+          type: string
+          description: Optional, name of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        command:
+          type: string
+          description: Required, the read-only OSGi console command to run against the app engine. Only allowlisted read-only diagnostic commands are permitted (e.g. 'td' for a thread dump, 'lb' to list bundles, 'le' for engine info, 'lapis' for process instances, 'lendpoints' for endpoints, 'getcomps' for components, 'dsr' to diagnose shared resources). State-changing commands (start/stop/pause/resume/install/uninstall/update, etc.) are rejected
+      required:
+        - baseInput
+        - command
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: bw_scale_app
+    description: |-
+
+      Name / Purpose:
+
+      Scale the BW app (deployment) to desired replicas for a given app (deployment) name or id
+      Output / Returns:
+      - success or failure code(201) and message once scale request is submitted
+
+      Arguments / Parameters:
+      - CapabilityInstanceId (string, optional): The ID of the capability instance to scale app instances for, Either capability Id or capability Instance Id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+      - CapabilityId (string, optional): The ID of the capability to scale app instances for, Either capability Id or capability Instance Id is required, Supported values: 'BWCE', 'BW5CE'. Use 'listCapabilityInstances' tool to list available capabilities from dataplane
+      - DataPlaneId (string, optional): The ID of the data plane to scale app instances from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - DataplaneName (string, optional): The name of the data plane to scale app instances from, Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+      - AppId (string, optional): The ID of the app to scale instances for. Either app id or app name is required. use 'listApps' tool to list available apps from dataplane
+      - AppName (string, optional): The name of the app to scale instances for. Either app id or app name is required. use 'listApps' tool to list available apps from dataplane
+      - Replicas (int, required): The desired number of replicas to scale the app to, should be be greater than or equal to 0
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            dataPlaneId:
+              type: string
+              description: Optional, data plane id. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            dataplaneName:
+              type: string
+              description: Optional, name of the data plane. Either dataplane id or name is required, use 'listDataplanes' tool to list available data planes
+            capabilityId:
+              type: string
+              description: 'Optional, capability id. Either capability id or capability instance id is required, Supported values: BWCE, BW5CE. Use ''listCapabilityInstances'' tool to list available capabilities from dataplane'
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id. Either capability id or capability instance id is required, use 'listCapabilityInstances' tool to list capability instances from dataplane
+          additionalProperties: false
+        appId:
+          type: string
+          description: Optional, id of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        appName:
+          type: string
+          description: Optional, name of the application. Either app id or app name is required. use 'listApps' tool to list available applications
+        replicas:
+          type: integer
+          description: Required, number of replicas to scale the application instances to,  should be greater than or equal to 0
+      required:
+        - baseInput
+        - replicas
+      additionalProperties: false
+resources: []
+prompts: []
+toolCount: 25
+resourceCount: 0
+promptCount: 0
+errors: []

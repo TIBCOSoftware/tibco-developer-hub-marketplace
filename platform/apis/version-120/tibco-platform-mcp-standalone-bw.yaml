@@ -1,0 +1,19 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: "bw-mcp-120"
+  title: TIBCO BusinessWorks MCP Server
+  description: MCP server for TIBCO BusinessWorks on the TIBCO Platform.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - model-context-protocol
+spec:
+  type: mcp-server
+  lifecycle: production
+  owner: TIBCO
+  remotes:
+    - type: streamable-http
+      url: /bw/mcp
+  definition:
+    $text: ./bw-mcp-definition-120.yaml

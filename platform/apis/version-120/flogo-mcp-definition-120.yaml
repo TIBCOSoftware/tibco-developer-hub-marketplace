@@ -1,0 +1,800 @@
+serverInfo:
+  name: FlogoMCPServer
+  title: Flogo MCP Server
+  version: 1.19.0
+capabilities:
+  logging: {}
+  tools:
+    listChanged: true
+tools:
+  - name: flogo_delete_app
+    description: |-
+
+      Name / Purpose:
+
+      Delete (undeploy) an application (deployment) from a dataplane
+
+      Arguments / Parameters:
+      - appId (string, optional): The ID of the app to delete. Either app id or name is required. Use 'listApps' tool to list available apps from dataplane
+      - appName (string, optional): The name of the app to delete. Either app id or name is required. Use 'listApps' tool to list available apps from dataplane
+      - namespace (string, optional): The namespace the app is in, use 'flogo_list_namespaces' tool to list available namespaces. If not provided, default namespace will be used
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+        appId:
+          type: string
+          description: Optional, id of the application, one of appId or appName is required, use 'listApps' tool to list available applications
+        appName:
+          type: string
+          description: Optional, name of the application, one of appId or appName is required, use 'listApps' tool to list available applications
+        namespace:
+          type: string
+          description: Optional, namespace to delete the application from, use 'flogo_list_namespaces' tool to list available namespaces
+      required:
+        - baseInput
+        - appId
+        - appName
+      additionalProperties: false
+  - name: flogo_delete_app_build
+    description: |-
+
+      Name / Purpose:
+
+      Delete one or more application builds (deployment artifacts) from a dataplane in a single call
+
+      Output / Returns:
+      - A map keyed by buildId; each value is an object with a 'status' field ('success' or 'error'). On success the backend response is under 'response'; on error the message is under 'error'
+
+      Arguments / Parameters:
+      - buildIds ([]string, required): List of build IDs to delete in a single call. Use 'flogo_list_app_builds' tool to list available builds
+      - dataPlaneId (string, optional): The ID of the dataplane to delete the app build from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to delete the app build from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+
+      Limitations / Notes / Best Practices / Error Handling / Performance Considerations:
+      - App builds associated with deployed apps cannot be deleted. Please delete the app first before deleting the app build.
+      - Partial failures are supported: a failing build records a per-build error and does not abort the others
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+        buildIds:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Required, list of build IDs to delete in a single call. Results are returned as a map keyed by buildId. Use 'flogo_list_app_builds' tool to list available builds
+      required:
+        - baseInput
+        - buildIds
+      additionalProperties: false
+  - name: flogo_deploy_helm_managed_app
+    description: |-
+
+      Name / Purpose:
+
+      Deploy (create a deployment of) a helm managed app on a dataplane for the provided build id
+      Output / Returns:
+      - appId on success or failure message
+
+      Arguments / Parameters:
+      - buildId (string, required): The ID of the app build to deploy, use 'flogo_list_app_builds' tool to list available builds
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+        buildId:
+          type: string
+          description: Required, buildId of the application to deploy, use 'flogo_list_app_builds' tool to list available builds
+        namespace:
+          type: string
+          description: Optional, namespace to deploy the application in, use 'flogo_list_namespaces' tool to list available namespaces
+      required:
+        - baseInput
+        - buildId
+      additionalProperties: false
+  - name: flogo_get_all_capability_summary
+    description: |-
+
+      Name / Purpose:
+
+      Get all information about FLOGO capability such as capability chart version, ingress or gateway details, all provisioned connectors, FLOGO versions and supplements, all application public endpoints.
+
+      Use this tool only when you need summary or readiness report for FLOGO capability. Use dedicated tools for specific information.
+
+      Output / Returns:
+      - Capability Name
+      - Capability Release Version
+      - Capability Chart Version
+      - Capability Ingress or gateway Details
+      - Public API endpoint
+      - List of All provisioned connectors & FLOGO versions
+      - List of All uploaded supplements
+      - List of all application public endpoints
+
+      Arguments / Parameters:
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_get_app_details
+    description: |-
+
+      Name / Purpose:
+
+      Get details for a list of flogo applications (deployments) in a single call
+
+      Output / Returns:
+      - A map keyed by App ID; each value is an object with a 'status' field ('success' or 'error'). On success the app details are under 'details'; on error the message is under 'error'
+      - App ID
+      - App Name
+      - App Version
+      - App Description
+      - Flogo Version & base image tag
+      - System or engine properties: includes OTel status: look for name=='FLOGO_OTEL_TRACE' (value=='true' means OpenTelemetry tracing is enabled) in systemProperties
+      - Resource Limits
+      - Autoscaling config
+      - Volume, volume mounts
+
+      Arguments / Parameters:
+      - appIds ([]string, optional): The IDs of the apps to fetch details for. Either app ids or app names are required. Use 'listApps' tool to list available apps from dataplane
+      - appNames ([]string, optional): The names of the apps to fetch details for. Either app ids or app names are required. Use 'listApps' tool to list available apps from dataplane
+      - namespace (string, optional): The namespace the apps are in (shared across all requested apps), use 'flogo_list_namespaces' tool to list available namespaces. If not provided, default namespace will be used
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+
+      Limitations / Notes / Best Practices / Error Handling / Performance Considerations:
+      - Partial failures are supported for per-app fetch/parse errors; invalid app names fail validation and abort the request
+      - All requested apps must share the same namespace in a single call
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+        appIds:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, ids of the applications to fetch details for, either app ids or app names are required, use 'listApps' tool to list available applications
+        appNames:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, names of the applications to fetch details for, either app ids or app names are required, use 'listApps' tool to list available applications
+        namespace:
+          type: string
+          description: Optional, namespace the applications are in, use 'flogo_list_namespaces' tool to list available namespaces
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_get_app_endpoints
+    description: |-
+
+      Name / Purpose:
+
+      Get the app endpoints for a list of flogo applications (deployments) in a single call
+
+      Output / Returns:
+      - A map keyed by App ID; each value is an object with a 'status' field ('success' or 'error'). On success the endpoints are under 'endpoints'; on error the message is under 'error'
+      - service name
+      - service port
+      - endpoint visibility (public/private)
+      - public endpoint URL
+      - private endpoint URL
+
+      Arguments / Parameters:
+      - appIds ([]string, optional): The IDs of the apps to fetch endpoints for. Either app ids or app names are required. Use 'listApps' tool to list available apps from dataplane
+      - appNames ([]string, optional): The names of the apps to fetch endpoints for. Either app ids or app names are required. Use 'listApps' tool to list available apps from dataplane
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch endpoints from. Either dataplane id or name is required (at least one must be provided). Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch endpoints from. Either dataplane id or name is required (at least one must be provided). Use 'listDataplanes' tool to list available dataplanes
+
+      Limitations / Notes / Best Practices / Error Handling / Performance Considerations:
+      - Partial failures are supported for per-app fetch/parse errors; invalid app names fail validation and abort the request
+      - Prefer a single call with multiple app ids/names over many single-app calls to reduce round-trips and token cost
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+        appIds:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, ids of the applications to fetch endpoints for, either app ids or app names are required, use 'listApps' tool to list available applications
+        appNames:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, names of the applications to fetch endpoints for, either app ids or app names are required, use 'listApps' tool to list available applications
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_get_app_instances
+    description: |-
+
+      Name / Purpose:
+
+      Get the app instances (deployment instances / replicas) for a list of flogo applications (deployments) in a single call
+
+      Output / Returns:
+      - A map keyed by App ID; each value is an object with a 'status' field ('success' or 'error'). On success the instances are under 'instances'; on error the message is under 'error'
+      - Each instance under 'instances' includes:
+        - App instance name
+        - App instance pod IP
+        - App instance status
+        - App instance namespace
+
+      Arguments / Parameters:
+      - appIds ([]string, optional): The IDs of the apps to fetch instances for. Either app ids or app names are required. Use 'listApps' tool to list available apps from dataplane
+      - appNames ([]string, optional): The names of the apps to fetch instances for. Either app ids or app names are required. Use 'listApps' tool to list available apps from dataplane
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+
+      Limitations / Notes / Best Practices / Error Handling / Performance Considerations:
+      - Partial failures are supported for per-app fetch/parse errors; invalid app names fail validation and abort the request
+      - Prefer a single call with multiple app ids/names over many single-app calls to reduce round-trips and token cost
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+        appIds:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, ids of the applications to fetch instances for, either app ids or app names are required, use 'listApps' tool to list available applications
+        appNames:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Optional, names of the applications to fetch instances for, either app ids or app names are required, use 'listApps' tool to list available applications
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_get_apps_deployed_for_build
+    description: |-
+
+      Name / Purpose:
+
+      Get all the flogo apps (deployments) deployed using one or more build IDs in a single call
+
+      Output / Returns:
+      - A map keyed by buildId; each value is an object with a 'status' field ('success' or 'error'). On success the deployed apps are under 'apps'; on error the message is under 'error'
+      - Each app under 'apps' includes:
+        - App ID
+        - App Name
+        - App Status
+
+      Arguments / Parameters:
+      - buildIds ([]string, required): List of build IDs to fetch apps for in a single call. Use 'flogo_list_app_builds' tool to list available builds
+      - namespace (string, optional): The namespace to fetch the deployed apps from. Use 'flogo_list_namespaces' tool to list available namespaces
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+        buildIds:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Required, list of build IDs to get applications for in a single call. Results are returned as a map keyed by buildId. Use 'flogo_list_app_builds' tool to list available builds
+        namespace:
+          type: string
+          description: Optional, namespace to get the applications for build from, use 'flogo_list_namespaces' tool to list available namespaces
+      required:
+        - baseInput
+        - buildIds
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_get_capability_info
+    description: |-
+
+      Name / Purpose:
+
+      Get information about a specific capability
+
+      Output / Returns:
+      - Capability Name
+      - Capability Release Version
+      - Capability Chart Version
+      - Capability Ingress Details
+      - Public API endpoint
+      - Execution History enabled status
+
+      Arguments / Parameters:
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_get_provisioned_flogo_versions
+    description: |-
+
+      Name / Purpose:
+
+      Get all provisioned flogo versions for a given capability instance from a dataplane
+
+      Output / Returns:
+      - Version Name
+      - Base image tags
+      - Created At
+      - Created By
+
+      Arguments / Parameters:
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_list_app_builds
+    description: |-
+
+      Name / Purpose:
+
+      List all the existing app builds (deployment artifacts) from a dataplane, Returns basic app build information
+
+      Output / Returns:
+      - Build Id
+      - Build Name
+      - Created by
+      - Created At
+      - Connectors Used
+
+      Arguments / Parameters:
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_list_connectors
+    description: |-
+
+      Name / Purpose:
+
+      List all the provisioned flogo connectors from the dataplane
+
+      Output / Returns:
+      - Connector Id
+      - Connector Name
+      - Supplement Status
+
+      Arguments / Parameters:
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_list_connectors_from_controlplane
+    description: |-
+
+      Name / Purpose:
+
+      List all the available flogo connectors from the control plane (connectors catalog). Use the connector ID and tag from these to provision a specific connector on the dataplane via 'flogo_provision_connector' tool.
+
+      Output / Returns:
+      - Connector Id
+      - Connector Name
+      - Connector Tag
+    inputSchema:
+      type: object
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_list_namespaces
+    description: |-
+
+      Name / Purpose:
+
+      List all the namespaces for flogo capability from a dataplane
+
+      Output / Returns:
+      - Namespace Name
+
+      Arguments / Parameters:
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_list_supplements
+    description: |-
+
+      Name / Purpose:
+
+      List all the provisioned supplements from a dataplane
+
+      Output / Returns:
+      - Connector ID
+      - Connector Name
+      - Supplement Name
+      - Supplement file
+      - Created By
+      - Created Date
+
+      Arguments / Parameters:
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+      required:
+        - baseInput
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_list_versions_from_control_plane
+    description: |
+
+      Name / Purpose:
+
+      List all the available flogo versions from control plane (buildtype catalog). Use a specific version from these to provision the specified flogo version on the dataplane via 'flogo_provision_flogo_version' tool.
+
+      Output / Returns:
+      - Flogo Version
+    inputSchema:
+      type: object
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: flogo_provision_connector
+    description: |-
+
+      Name / Purpose:
+
+      Provision a flogo connector in the specified dataplane. Use 'flogo_list_connectors_from_controlplane' tool to list the available connectors (connectors catalog) from controlplane.
+
+      Output / Returns:
+      - success or failure code and message
+
+      Arguments / Parameters:
+      - connectorId (string, required): The ID of the connector to provision
+      - version (string, required): The tag / version of the connector to provision
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+        connectorId:
+          type: string
+          description: Required, id of the plugin/connector to provision on the dataplane
+        version:
+          type: string
+          description: Required, version of the plugin/connector to provision on the dataplane
+      required:
+        - baseInput
+        - connectorId
+        - version
+      additionalProperties: false
+  - name: flogo_provision_flogo_version
+    description: |-
+
+      Name / Purpose:
+
+      Provision a flogo version in the dataplane. Use 'flogo_list_versions_from_control_plane' tool to list available flogo versions from control plane.
+
+      Arguments / Parameters:
+      - flogoVersion (string, required): The flogo version to provision
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+        flogoVersion:
+          type: string
+          description: Required, Flogo version to provision on the dataplane
+      required:
+        - baseInput
+        - flogoVersion
+      additionalProperties: false
+  - name: flogo_scale_app
+    description: |-
+
+      Name / Purpose:
+
+      Scale the app (deployment) to desired replicas for a given flogo app (deployment)
+      Output / Returns:
+      - success or failure code(201) and message once scale request is submitted
+
+      Arguments / Parameters:
+      - appId (string, optional): The ID of the app to scale instances for. Either app id or name is required. Use 'listApps' tool to list available apps from dataplane
+      - appName (string, optional): The name of the app to scale instances for. Either app id or name is required. Use 'listApps' tool to list available apps from dataplane
+      - replicas (int, required): The desired number of replicas to scale the app to, should be more than or equal to 0
+      - namespace (string, optional): The namespace to scale the app in, use 'flogo_list_namespaces' tool to list available namespaces
+      - dataPlaneId (string, optional): The ID of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+      - dataPlaneName (string, optional): The name of the dataplane to fetch app builds from. Either dataplane id or name is required. Use 'listDataplanes' tool to list available dataplanes
+    inputSchema:
+      type: object
+      properties:
+        baseInput:
+          type: object
+          properties:
+            capabilityInstanceId:
+              type: string
+              description: Optional, capability instance id, use 'listCapabilityInstances' tool to list capability instances from dataplane
+            dataPlaneId:
+              type: string
+              description: Optional, dataplane id, use 'listDataplanes' tool to list available dataplanes
+            dataPlaneName:
+              type: string
+              description: Optional, dataplane name, use 'listDataplanes' tool to list available dataplanes
+          additionalProperties: false
+        appId:
+          type: string
+          description: Optional, id of the application, one of appId or appName is required, use 'listApps' tool to list available applications
+        appName:
+          type: string
+          description: Optional, name of the application, one of appId or appName is required, use 'listApps' tool to list available applications
+        replicas:
+          type: integer
+          description: Required, number of replicas to scale the application instances to,  should be greater than or equal to 0
+        namespace:
+          type: string
+          description: Optional, namespace to scale the application instances in, use 'flogo_list_namespaces' tool to list available namespaces
+      required:
+        - baseInput
+        - appId
+        - appName
+        - replicas
+      additionalProperties: false
+resources: []
+prompts: []
+toolCount: 19
+resourceCount: 0
+promptCount: 0
+errors: []

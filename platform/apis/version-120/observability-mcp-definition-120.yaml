@@ -1,0 +1,1695 @@
+serverInfo:
+  name: Platform Observability MCP Server
+  version: 1.20.0
+capabilities:
+  experimental: {}
+  logging: {}
+  prompts:
+    listChanged: true
+  resources:
+    subscribe: false
+    listChanged: true
+  tools:
+    listChanged: true
+  extensions:
+    io.modelcontextprotocol/ui: {}
+tools:
+  - name: analyze_application
+    description: |-
+      Get app health status and metrics in one call
+
+      Returns CPU, memory, errors, and execution-time metrics plus an overall health score.
+      Useful for quick health checks or detailed performance analysis. The execution_time
+      metric evaluation is used as a measure of performance, based on the time it takes for
+      the BW process to complete and respond.
+
+      Request Parameters:
+          - app_id (str, optional): Application identifier (app ID or app name). Automatically resolved via the platform lookup API.
+          - app_type (str, optional): Application type - bwce, flogo, bw5ce, bw5. Default: bwce
+          - data_plane (str, optional): Data plane identifier (ID or name). Automatically resolved via the platform lookup API. If omitted, queries all permitted data planes.
+          - metrics (list, optional): Which metrics to get. Options: cpu, memory, requests, errors, execution_time. Default: all metrics
+          - time_range (str, optional): Time range - 1h, 6h, 1d, 7d, 30d. Default: 1h
+          - include_health_score (bool, optional): Calculate health score 0-100. Default: true
+          - include_recommendations (bool, optional): Generate recommendations. Default: true
+
+      Example Request (all metrics):
+          {
+              "app_id": "my-bwce-app",
+              "app_type": "bwce",
+              "data_plane": "d5eo67m2n86c73d56uc0",
+              "time_range": "1h"
+          }
+
+      Example Request (specific metrics):
+          {
+              "app_id": "app-123",
+              "app_type": "flogo",
+              "data_plane": "d5eo67m2n86c73d56uc0",
+              "metrics": ["cpu", "memory", "errors"],
+              "time_range": "6h"
+          }
+
+      Example Response:
+          {
+              "status": "success",
+              "app_id": "app-123",
+              "app_name": "my-bwce-app",
+              "health": {
+                  "status": "healthy",
+                  "score": 95,
+                  "issues": []
+              },
+              "metrics": {
+                  "cpu": {
+                      "current": 0.45,
+                      "avg": 0.42,
+                      "max": 0.78,
+                      "unit": "ratio"
+                  },
+                  "memory": {
+                      "current": 0.039116,
+                      "avg": 0.035678,
+                      "max": 0.078234,
+                      "unit": "ratio"
+                  },
+                  "errors": {
+                      "total": 45,
+                      "rate": 0.02,
+                      "percent": 2.1
+                  }
+              },
+              "recommendations": [
+                  "CPU utilization is healthy",
+                  "Memory usage is normal"
+              ]
+          }
+
+      Returns:
+          JSON string with health status, metrics data, and recommendations
+    inputSchema:
+      additionalProperties: false
+      properties:
+        request:
+          description: Analyze application request
+          properties:
+            app_id:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Application identifier (app ID or app name). Automatically resolved to app ID via the platform lookup API.
+            app_type:
+              default: bwce
+              description: 'App type: bwce, flogo, bw5ce, bw5'
+              type: string
+            data_plane:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Data plane identifier (data plane ID or name). Automatically resolved to data plane ID via the platform lookup API. If omitted, queries across all permitted data planes.
+            metrics:
+              anyOf:
+                - items:
+                    enum:
+                      - cpu
+                      - memory
+                      - requests
+                      - errors
+                      - execution_time
+                    type: string
+                  type: array
+                - type: "null"
+              default: null
+              description: 'Which metrics to get. Default: all. ''execution_time'' measures how long a BW process takes to complete and respond, and is used as the indicator of the application''s performance.'
+            time_range:
+              default: 1h
+              description: 'Time range: 1h, 6h, 1d, 7d, 30d'
+              type: string
+            include_health_score:
+              default: true
+              description: Calculate health score
+              type: boolean
+            include_recommendations:
+              default: true
+              description: Generate recommendations
+              type: boolean
+            start_time:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Start time (ISO 8601)
+            end_time:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: End time (ISO 8601)
+            step:
+              default: 1m
+              description: Query step
+              type: string
+          type: object
+      required:
+        - request
+      type: object
+    annotations:
+      title: Analyze Application
+      readOnlyHint: true
+      destructiveHint: false
+      openWorldHint: true
+  - name: detect_violations
+    description: |-
+      Find apps exceeding thresholds for CPU, memory, execution time, or request rates
+
+      Detects violations across different metric types using configurable thresholds and time windows.
+      Good for SLA monitoring, capacity planning, and finding problem apps.
+
+      Violation Types:
+          - cpu: Detect CPU utilization above threshold (e.g., > 80%)
+          - memory: Detect memory utilization above threshold (e.g., > 80%)
+          - execution_time: Detect execution time degradation vs baseline (e.g., 20% slower)
+          - request_rate: Detect when success rate drops or failure rate rises (e.g., < 99% success)
+
+      Request Parameters:
+          - violation_type (str, required): cpu, memory, execution_time, or request_rate
+          - threshold (float, optional): Threshold value. Defaults: cpu/memory=0.8, execution_time=1.2, request_rate=0.9
+          - time_window (str, optional): Look-back window - 1h, 6h, 1d, 7d, 30d. Default: 1d
+          - sample_interval (str, optional): Sampling interval - 1m, 5m, 15m, 1h. Default: 5m
+          - capability (str, optional): bwce, flogo, or bw5ce. Default: bwce
+          - app_id (str, optional): Application identifier(s) to filter (comma-separated app IDs or app names). Automatically resolved via the platform lookup API.
+          - data_plane (str, optional): Data plane identifier (ID or name). Automatically resolved via the platform lookup API. If omitted, queries all permitted data planes.
+
+      Type-Specific Parameters:
+          For cpu/memory:
+              - ratio_type: request or limit. Default: request
+
+          For execution_time:
+              - baseline_window: Baseline comparison window. Default: 24h
+              - comparison_window: Current period window. Default: 5m
+
+          For request_rate:
+              - rate_type: success or failure. Default: success
+              - min_request_count: Minimum requests to consider. Default: 1
+
+      Example (CPU violations):
+          {
+              "violation_type": "cpu",
+              "threshold": 0.8,
+              "time_window": "7d",
+              "sample_interval": "5m",
+              "capability": "bwce",
+              "ratio_type": "request"
+          }
+
+      Example (Request rate violations):
+          {
+              "violation_type": "request_rate",
+              "threshold": 0.99,
+              "rate_type": "success",
+              "time_window": "1d",
+              "capability": "bwce",
+              "app_ids": "app-123,app-456"
+          }
+
+      Example Response (CPU/Memory — instant query, Prometheus filters by threshold):
+          {
+              "summary": {
+                  "threshold": 0.8,
+                  "time_window": "7d",
+                  "sample_interval": "5m",
+                  "total_apps_analyzed": 12,
+                  "apps_with_violations": 3
+              },
+              "violations": [
+                  {
+                      "app_id": "app-123",
+                      "app_name": "production-service",
+                      "dataplane_id": "dp-prod-01",
+                      "max_cpu_ratio": 0.95,
+                      "exceeded_by": 0.15
+                  }
+              ]
+          }
+
+      Returns:
+          JSON string with summary and per-app violation details.
+          When violations are found, an `_agent_hint` field is included to guide
+          follow-up queries — use a narrower time window around the violation
+          period instead of re-querying the full original window.
+    inputSchema:
+      additionalProperties: false
+      properties:
+        request:
+          description: Detect violations request
+          properties:
+            violation_type:
+              description: Violation type
+              enum:
+                - cpu
+                - memory
+                - execution_time
+                - request_rate
+              type: string
+            threshold:
+              anyOf:
+                - type: number
+                - type: "null"
+              default: null
+              description: 'Threshold (default: cpu/mem=0.8, exec_time=1.2, req_rate=0.9)'
+            time_window:
+              default: 1d
+              description: 'Time window: 1h, 6h, 1d, 7d, 30d'
+              type: string
+            sample_interval:
+              default: 5m
+              description: 'Sample interval: 1m, 5m, 15m, 1h'
+              type: string
+            capability:
+              default: bwce
+              description: 'Capability: bwce, flogo, bw5ce, bw5'
+              type: string
+            app_id:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Application identifier(s) to filter (comma-separated app IDs or app names). Automatically resolved to app IDs via the platform lookup API.
+            data_plane:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Data plane identifier (data plane ID or name). Automatically resolved to data plane ID via the platform lookup API. If omitted, queries across all permitted data planes.
+            ratio_type:
+              anyOf:
+                - enum:
+                    - request
+                    - limit
+                  type: string
+                - type: "null"
+              default: request
+              description: CPU/memory ratio type
+            baseline_window:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: 24h
+              description: 'Exec time: baseline window'
+            comparison_window:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: 5m
+              description: 'Exec time: comparison window'
+            rate_type:
+              anyOf:
+                - enum:
+                    - success
+                    - failure
+                  type: string
+                - type: "null"
+              default: success
+              description: 'Request rate: success or failure'
+            min_request_count:
+              anyOf:
+                - type: integer
+                - type: "null"
+              default: 1
+              description: 'Request rate: min requests'
+            process_name:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Filter by process/flow name(s). For BWCE/BW5CE maps to 'process_name' label; for Flogo maps to 'flow_name' label. Ignored for other capabilities. Accepts a single name or a comma-separated list (e.g. 'processA,processB'). Uses regex matching for multiple values.
+            metric_name:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Override metric name
+          required:
+            - violation_type
+          type: object
+      required:
+        - request
+      type: object
+    annotations:
+      title: Detect Threshold Violations
+      readOnlyHint: true
+      destructiveHint: false
+      openWorldHint: true
+  - name: query_metrics
+    description: |-
+      Query metrics with custom aggregations and time ranges
+
+      Flexible metric queries with full control. Supports metric shortcuts, raw PromQL names,
+      or custom PromQL expressions with validate-then-execute guardrail.
+
+      TWO MODES:
+
+      Mode 1 — Metric Shortcuts / Raw Names (set 'metric'):
+          Builds PromQL from a metric shortcut or raw metric name with label filters.
+
+      Mode 2 — Custom PromQL (set 'custom_promql'):
+          Passes your raw PromQL expression through the CP's PromQL validator for
+          JWT-based authorization, then executes the SANITIZED query. Use this for
+          complex PromQL that shortcuts cannot handle: nested subqueries, custom label
+          matchers, binary operators (>, <, ==), multi-level aggregations.
+          Requires 'data_plane'. When set, 'metric' and 'aggregate_function' are ignored.
+
+      Query Types:
+          - range: Returns time-series data over a time window
+          - instant: Returns current point-in-time value
+
+      Metric Shortcuts (Mode 1):
+          - cpu_request_ratio → k8s_container_cpu_request_utilization_ratio
+          - cpu_limit_ratio → k8s_container_cpu_limit_utilization_ratio
+          - memory_request_ratio → k8s_container_memory_request_utilization_ratio
+          - memory_limit_ratio → k8s_container_memory_limit_utilization_ratio
+          - request_count → capability-specific request metric
+          - execution_time → process_execution_time
+
+      You can also use raw PromQL metric names.
+
+      Aggregation Functions (Mode 1 only):
+          - rate: Calculate rate of change
+          - increase: Calculate increase over time
+          - avg_over_time: Average over time window
+          - max_over_time: Maximum over time window
+          - min_over_time: Minimum over time window
+          - sum_over_time: Sum over time window
+
+      Request Parameters:
+          - metric (str, optional): Metric shortcut or raw PromQL name. Required unless custom_promql is set.
+          - custom_promql (str, optional): Raw PromQL expression. When set, requires data_plane.
+          - query_type (str, required): range or instant
+          - capability (str, optional): bwce, flogo, or bw5ce. Default: bwce
+          - time_window (str, optional): Relative time - 1h, 6h, 1d, 7d, 30d. Default: 1h
+          - start_time (str, optional): Absolute start time (ISO 8601). Overrides time_window
+          - end_time (str, optional): Absolute end time (ISO 8601). Used with start_time
+          - time (str, optional): Evaluation time for instant queries (ISO 8601). Default: now
+          - aggregate_function (str, optional): PromQL aggregation function (Mode 1 only)
+          - interval (str, optional): Aggregation interval - 5m, 15m, 1h. Default: 5m
+          - app_id (str, optional): Application identifier(s) to filter (comma-separated app IDs or app names). Automatically resolved via the platform lookup API.
+          - data_plane (str, optional): Data plane identifier (ID or name). Automatically resolved via the platform lookup API. If omitted, queries all permitted data planes. Required for custom_promql.
+
+      Example (Range query with aggregation — Mode 1):
+          {
+              "metric": "cpu_request_ratio",
+              "query_type": "range",
+              "capability": "bwce",
+              "time_window": "6h",
+              "aggregate_function": "avg_over_time",
+              "interval": "5m",
+              "app_id": "app-123,app-456"
+          }
+
+      Example (Custom PromQL instant — Mode 2, find flogo apps with CPU > 80%):
+          {
+              "custom_promql": "max_over_time(max by (app_id, dataplane_id, app_type) (max_over_time(k8s_container_cpu_request_utilization_ratio{app_type=\"flogo\"}[5m]))[1d:5m]) > 0.8",
+              "data_plane": "k8s-auto-dp1",
+              "query_type": "instant"
+          }
+
+      Example (Custom PromQL range — Mode 2, CPU trend over 6 hours):
+          {
+              "custom_promql": "avg by (app_id) (k8s_container_cpu_request_utilization_ratio{app_type=\"flogo\"})",
+              "data_plane": "k8s-auto-dp1",
+              "query_type": "range",
+              "time_window": "6h"
+          }
+
+      Example Response (Range — Mode 1):
+          {
+              "query": {
+                  "metric": "cpu_request_ratio",
+                  "promql": "avg_over_time(k8s_container_cpu_request_utilization_ratio{app_type="bwce"}[5m])",
+                  "type": "range",
+                  "start_time": "2026-02-23T02:00:00Z",
+                  "end_time": "2026-02-23T08:00:00Z"
+              },
+              "summary": {
+                  "total_series": 3,
+                  "total_data_points": 216
+              },
+              "results": [...]
+          }
+
+      Returns:
+          JSON string with time-series data or instant values, plus query metadata
+    inputSchema:
+      additionalProperties: false
+      properties:
+        request:
+          description: Query metrics request
+          properties:
+            metric:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: 'Metric (shortcut or raw name). Shortcuts: cpu_request_ratio, memory_limit_ratio, etc. Required unless custom_promql is provided.'
+            custom_promql:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: 'Raw PromQL expression for advanced queries. When provided, the query is validated via the CP''s PromQL validator (JWT-based authorization), sanitized, and then executed. Use this for complex PromQL that metric shortcuts cannot handle: nested subqueries, custom label matchers, binary operators (>, <, ==), multi-level aggregations. When set, ''metric'' and ''aggregate_function'' are ignored.'
+            query_type:
+              default: range
+              description: 'Type: range (time-series) or instant (current value)'
+              enum:
+                - range
+                - instant
+              type: string
+            capability:
+              default: bwce
+              description: 'Capability: bwce, flogo, bw5ce, bw5'
+              type: string
+            time_window:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: 1h
+              description: 'Time window: 1h, 6h, 1d, 7d, 30d'
+            start_time:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Start time (ISO 8601, overrides time_window)
+            end_time:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: End time (ISO 8601)
+            time:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: 'Instant query time (ISO 8601, default: now)'
+            aggregate_function:
+              anyOf:
+                - enum:
+                    - rate
+                    - increase
+                    - sum_over_time
+                    - avg_over_time
+                    - max_over_time
+                    - min_over_time
+                  type: string
+                - type: "null"
+              default: null
+              description: PromQL aggregation
+            interval:
+              default: 5m
+              description: Aggregation interval
+              type: string
+            step:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Query step interval (e.g. 5m, 15m, 1h). Auto-calculated if omitted.
+            app_id:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Application identifier(s) to filter (comma-separated app IDs or app names). Automatically resolved to app IDs via the platform lookup API.
+            data_plane:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Data plane identifier (data plane ID or name). Automatically resolved to data plane ID via the platform lookup API. If omitted, queries across all permitted data planes.
+          type: object
+      required:
+        - request
+      type: object
+    annotations:
+      title: Query Metrics
+      readOnlyHint: true
+      destructiveHint: false
+      openWorldHint: true
+  - name: detect_performance_degradation
+    description: |-
+      Detect period-over-period performance degradation using PromQL offset
+
+      Compares a metric's current period against a shifted baseline period to detect
+      degradation that exceeds a configurable percent-increase threshold.
+
+      Comparison Modes:
+          - week_over_week: Compare last 7 days vs prior 7 days (default)
+          - day_over_day: Compare last 1 day vs prior 1 day
+          - hour_over_hour: Compare last 1 hour vs prior 1 hour
+          - custom: Specify current_window, baseline_window, and offset
+
+      Key Features:
+          - Period-over-period comparison using PromQL offset modifier
+          - Configurable percent-increase threshold (default: 0.2 = 20%)
+          - Top-K offenders sorted by worst degradation
+          - Per-application and per-process breakdown
+
+      Request Parameters:
+          - metric (str): Metric to analyze. Default: execution_time (resolved per capability)
+          - capability (str): Capability type. Default: bwce
+          - mode (str): Comparison mode. Default: week_over_week
+          - threshold (float): Percent increase threshold. Default: 0.2 (20%)
+          - current_window (str, optional): Override current window
+          - baseline_window (str, optional): Override baseline window
+          - offset (str, optional): Override offset duration
+          - min_baseline_value (float): clamp_min floor. Default: 0.001
+          - top_k (int): Max violations to return. Default: 20
+          - app_id (str, optional): Application identifier(s) to filter (comma-separated app IDs or app names). Automatically resolved via the platform lookup API.
+          - data_plane (str, optional): Data plane identifier (ID or name). Automatically resolved via the platform lookup API. If omitted, queries all permitted data planes.
+          - process_name (str, optional): Filter by operation/process name
+
+      Example (week-over-week):
+          {
+              "metric": "execution_time",
+              "capability": "bwce",
+              "mode": "week_over_week",
+              "threshold": 0.2,
+              "data_plane": "dp-prod-01"
+          }
+
+      Example (custom):
+          {
+              "metric": "execution_time",
+              "capability": "bwce",
+              "mode": "custom",
+              "threshold": 0.15,
+              "current_window": "12h",
+              "baseline_window": "12h",
+              "offset": "1d"
+          }
+
+      Returns:
+          JSON with:
+          - summary: {total_series_above_threshold, total_violations_found, violations_returned, top_k, worst_increase_ratio}
+          - violations: [{labels, app_id, app_name, dataplane_id, app_type, process_name,
+            max_increase_ratio (degradation ratio), exceeded_by (amount above threshold)}]
+          - query: echo of resolved parameters and generated PromQL
+          - _agent_hint: (when violations found) guidance for follow-up queries
+    inputSchema:
+      additionalProperties: false
+      properties:
+        request:
+          description: Schema for assessing period-over-period performance degradation using PromQL offset
+          example:
+            capability: bwce
+            data_plane: dp-prod-01
+            metric: execution_time
+            mode: week_over_week
+            threshold: 0.2
+          properties:
+            metric:
+              default: execution_time
+              description: Metric to analyze (shortcut like 'execution_time' or raw PromQL name). Resolved per capability via backend.
+              type: string
+            capability:
+              default: bwce
+              description: Capability type (bwce, flogo, bw5ce, bw5)
+              type: string
+            mode:
+              default: week_over_week
+              description: 'Comparison mode: ''week_over_week'' (7d vs prior 7d), ''day_over_day'' (1d vs prior 1d), ''hour_over_hour'' (1h vs prior 1h), or ''custom'' (requires current_window, baseline_window, offset)'
+              type: string
+            threshold:
+              default: 0.2
+              description: Percent increase threshold (0.2 = 20%). Only series exceeding this are returned.
+              exclusiveMinimum: 0
+              type: number
+            current_window:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Current analysis window duration (e.g., '7d', '1d', '12h'). Required for 'custom' mode.
+            baseline_window:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Baseline window duration (e.g., '7d', '1d', '12h'). Required for 'custom' mode.
+            offset:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Offset duration for baseline shift (e.g., '7d', '1d'). Required for 'custom' mode.
+            min_baseline_value:
+              default: 0.001
+              description: clamp_min floor for baseline to avoid divide-by-zero on tiny baselines
+              exclusiveMinimum: 0
+              type: number
+            top_k:
+              default: 20
+              description: Return only top N offenders sorted by percent increase
+              exclusiveMinimum: 0
+              type: integer
+            app_id:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Application identifier(s) to filter (comma-separated app IDs or app names). Automatically resolved to app IDs via the platform lookup API. If not specified, all apps are included.
+            data_plane:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Data plane identifier (data plane ID or name). Automatically resolved to data plane ID via the platform lookup API. If omitted, queries across all permitted data planes.
+            process_name:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Process/operation name to filter (e.g., 'create_order'). If not specified, all processes are included.
+            include_sidecar_containers:
+              default: false
+              description: 'Include sidecar containers (e.g., fluent-bit) in results. Default: false (excludes fluent-bit).'
+              type: boolean
+          type: object
+      required:
+        - request
+      type: object
+    annotations:
+      title: Detect Performance Degradation
+      readOnlyHint: true
+      destructiveHint: false
+      openWorldHint: true
+  - name: record_app_violation_event
+    description: |-
+      Record an application violation event on the Control Plane.
+
+      Use this tool when the agent reasons that an app has a violation worth
+      recording: health score degradation, sustained high resource usage,
+      recurring issues in the audit history, or a threshold breach surfaced
+      by detect_violations / detect_performance_degradation.
+
+      The violation event is:
+      1. Persisted in the CP audit trail (Elasticsearch)
+      2. Exported as a Prometheus metric (audit_event_count_total)
+
+      analysis_event_id is OPTIONAL: pass it to correlate the violation to a
+      prior analyze_application call; omit it when the violation is detected
+      outside an analysis (e.g. straight from a detect_* tool).
+
+      Request Parameters:
+          - app_id (str, required): Application ID (resolved)
+          - data_plane (str, required): Data plane ID (resolved)
+          - violation_name (str, required): Violation event name, e.g. "HealthScoreDegraded"
+          - analysis_event_id (str, optional): UUID from analyze_application response to correlate
+          - severity (str, optional): "info", "warning", "critical". Default: "warning"
+          - violation_details (str, optional): Free-form description of the violation
+          - health_score (int, optional): Current health score for context
+          - health_status (str, optional): Current health status
+          - app_type (str, optional): App type. Default: "bwce"
+
+      Example Request:
+          {
+              "app_id": "d6uolhoqpu4s73a5lru0",
+              "data_plane": "d6uoflt5v8rc73e2f890",
+              "violation_name": "HealthScoreDegraded",
+              "analysis_event_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+              "severity": "warning",
+              "violation_details": "Health score dropped from 92 to 65 over 3 analyses.",
+              "health_score": 65,
+              "health_status": "degraded"
+          }
+    inputSchema:
+      additionalProperties: false
+      properties:
+        request:
+          description: Request to record an application violation event on the Control Plane.
+          properties:
+            app_id:
+              description: Application ID (resolved). Use the app_id from analyze_application response.
+              minLength: 1
+              type: string
+            data_plane:
+              description: Data plane ID (resolved). Use a data plane ID from the analyze_application response (its data_planes list).
+              minLength: 1
+              type: string
+            violation_name:
+              description: Violation event name, e.g. 'HealthScoreDegraded', 'HighMemoryUsage', 'ConsecutiveDegradation'
+              minLength: 1
+              type: string
+            analysis_event_id:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Optional UUID from a prior analyze_application response. When present, correlates this violation event to the analysis that triggered it. Omit when the violation is detected outside an analysis (e.g. directly from detect_violations).
+            app_type:
+              default: bwce
+              description: 'App type: bwce, flogo, bw5ce, bw5'
+              type: string
+            severity:
+              default: warning
+              description: 'Severity: info, warning, critical'
+              type: string
+            violation_details:
+              default: ""
+              description: Free-form description of the violation from agent reasoning
+              type: string
+            health_score:
+              anyOf:
+                - type: integer
+                - type: "null"
+              default: null
+              description: Current health score for context
+            health_status:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Current health status for context
+          required:
+            - app_id
+            - data_plane
+            - violation_name
+          type: object
+      required:
+        - request
+      type: object
+    annotations:
+      title: Record App Violation Event
+      readOnlyHint: false
+      destructiveHint: false
+      openWorldHint: true
+  - name: get_app_audit_history
+    description: |-
+      Retrieve audit history for an application.
+
+      Returns recent audit events (analyses, violation events, config changes) for an app
+      without running a full health analysis. Useful for checking what happened
+      recently before deciding whether to investigate further.
+
+      Request Parameters:
+          - app_id (str, required): Application identifier (app ID or app name). Automatically resolved via the platform lookup API.
+          - data_plane (str, optional): Data plane identifier (ID or name). Automatically resolved. If omitted, returns events across all data planes.
+          - limit (int, optional): Maximum number of audit events to return (max: 50). Default: 10
+
+      Example Request:
+          {
+              "app_id": "rest-bwce-1",
+              "data_plane": "k8s-auto-dp1ns",
+              "limit": 20
+          }
+
+      Example Response:
+          {
+              "status": "success",
+              "available": true,
+              "app_id": "d6uolhoqpu4s73a5lru0",
+              "data_planes": ["d6uoflt5v8rc73e2f890"],
+              "total_events": 3,
+              "events": [
+                  {
+                      "timestamp": "2026-06-07T10:30:00Z",
+                      "event": "App Health Analysis",
+                      "status": "OK",
+                      "source": "o11y-mcp-server",
+                      "details": "Score: 95, Status: healthy, Issues: "
+                  }
+              ]
+          }
+
+      Audit history is best-effort context. If the audit backend is
+      unavailable or returns an unparseable payload, the tool degrades
+      gracefully rather than failing, returning:
+          {
+              "status": "unavailable",
+              "available": false,
+              "reason": "audit history temporarily unavailable",
+              "app_id": "d6uolhoqpu4s73a5lru0",
+              "data_planes": ["d6uoflt5v8rc73e2f890"],
+              "total_events": 0,
+              "events": []
+          }
+    inputSchema:
+      additionalProperties: false
+      properties:
+        request:
+          description: Request to retrieve audit history for an application.
+          properties:
+            app_id:
+              description: Application identifier (app ID or app name). Automatically resolved to app ID via the platform lookup API.
+              minLength: 1
+              type: string
+            data_plane:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: null
+              description: Data plane identifier (ID or name). Automatically resolved. If omitted, returns events across all data planes.
+            limit:
+              default: 10
+              description: 'Maximum number of audit events to return (1-50). Default: 10'
+              maximum: 50
+              minimum: 1
+              type: integer
+          required:
+            - app_id
+          type: object
+      required:
+        - request
+      type: object
+    annotations:
+      title: Get App Audit History
+      readOnlyHint: true
+      destructiveHint: false
+      openWorldHint: true
+  - name: chart_single_metric
+    description: |-
+      Create interactive chart from metrics data (returned as base64 data, no files).
+
+      IMPORTANT: Prefer chart_render for simple metric charts — it handles everything
+      in one call. Use this tool only when you already have query metadata from a
+      previous query_metrics call.
+
+      Two modes of operation:
+      1. **Direct fetch (recommended):** Provide promql, start_time, end_time from
+         query_metrics response → query.promql, query.start_time, query.end_time.
+         The chart tool fetches data from Prometheus directly — DO NOT relay the
+         time_series JSON through the LLM.
+      2. **Legacy mode:** Provide metrics_data as JSON string. AVOID this mode —
+         it forces the LLM to relay large JSON, adding latency and risking corruption.
+
+      Args:
+          metrics_data: (Legacy, avoid) JSON string from query_metrics output.
+          promql: (Recommended) PromQL query string from query_metrics response query.promql field.
+              When provided with start_time/end_time, the chart tool fetches data directly
+              from Prometheus — avoiding LLM data relay entirely.
+          start_time: ISO 8601 start time (e.g., "2026-02-23T02:00:00Z"). Required with promql.
+          end_time: ISO 8601 end time (e.g., "2026-02-23T08:00:00Z"). Required with promql.
+          step: Step interval in seconds (e.g., "60"). If omitted, auto-calculated from time range.
+          chart_type: Type of chart - "line", "bar", "scatter", "area" (default: "line")
+          title: Chart title (default: "Metrics Chart")
+          width: Chart width in pixels (default: 1200)
+          height: Chart height in pixels (default: 600)
+          output_format: "png", "html", or "png+html" (default: "png+html")
+
+      Returns:
+          JSON string containing:
+          - png_data: Base64-encoded PNG image (if PNG output requested)
+          - html_data: Base64-encoded HTML chart (if HTML output requested)
+          - png_size_bytes: Size of PNG data
+          - html_size_bytes: Size of HTML data
+          - chart_type: Type of chart generated
+
+      Examples:
+          Direct fetch (recommended - pass query metadata from query_metrics response):
+          - chart_single_metric(promql="avg_over_time(...)", start_time="...", end_time="...")
+          One-call alternative (no prior query needed):
+          - chart_render(metric="cpu_request_ratio", time_window="6h")
+
+      Note: Charts are returned as base64-encoded data.
+            No files are saved - data exists only in memory.
+    inputSchema:
+      additionalProperties: false
+      properties:
+        metrics_data:
+          default: ""
+          type: string
+        promql:
+          default: ""
+          type: string
+        start_time:
+          default: ""
+          type: string
+        end_time:
+          default: ""
+          type: string
+        step:
+          default: ""
+          type: string
+        data_plane:
+          default: ""
+          type: string
+        chart_type:
+          default: line
+          type: string
+        title:
+          default: Metrics Chart
+          type: string
+        width:
+          default: 1200
+          type: integer
+        height:
+          default: 600
+          type: integer
+        output_format:
+          default: png+html
+          type: string
+      type: object
+    annotations:
+      title: Chart Single Metric
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: false
+  - name: chart_render
+    description: |-
+      Render a chart for a metric in a single call — no data relay through the LLM.
+
+      This tool queries Prometheus and generates a chart in one operation.
+      The data flows entirely server-side: query Prometheus → generate chart → return result.
+      The LLM never handles raw time-series data, eliminating corruption and latency issues.
+
+      Args:
+          metric: Metric shortcut or raw PromQL name.
+              Shortcuts: cpu_request_ratio, cpu_limit_ratio, memory_request_ratio,
+              memory_limit_ratio, request_count, execution_time
+          query_type: "range" (time-series chart) or "instant" (current value bar chart). Default: "range"
+          capability: bwce, flogo, or bw5ce. Default: "bwce"
+          time_window: Relative time window - 1h, 6h, 1d, 7d, 30d. Default: "1h"
+          start_time: (Optional) Absolute start time (ISO 8601). Overrides time_window.
+          end_time: (Optional) Absolute end time (ISO 8601). Used with start_time.
+          aggregate_function: PromQL aggregation - avg_over_time, max_over_time,
+              min_over_time, sum_over_time, rate, increase. Default: "avg_over_time"
+          interval: Aggregation interval - 5m, 15m, 1h. Default: "5m"
+          app_id: (Optional) Application ID(s), comma-separated.
+              If unknown, call listApps first to discover valid values.
+          data_plane: Data plane ID or name. Strongly recommended.
+              Auto-resolution may fail — if so, call listApps to get the
+              data_plane value and pass it explicitly.
+          chart_type: "line", "bar", "scatter", "area". Default: "line"
+          title: Chart title. Auto-generated from metric name if omitted.
+          width: Chart width in pixels. Default: 1200
+          height: Chart height in pixels. Default: 600
+          output_format: "png", "html", or "png+html". Default: "png+html"
+
+      Returns:
+          JSON string containing:
+          - png_data: Base64-encoded PNG image (if PNG output requested)
+          - html_data: Base64-encoded HTML chart (if HTML output requested)
+          - summary: Query summary with stats (min, max, avg, current per series)
+          - query: Query metadata (promql, start_time, end_time)
+
+      Examples:
+          - chart_render(metric="cpu_request_ratio", time_window="6h")
+          - chart_render(metric="memory_request_ratio", time_window="1d", chart_type="area")
+          - chart_render(metric="request_count", capability="flogo", app_id="my-app")
+
+      Note: Charts are returned as base64-encoded data, no files saved.
+    inputSchema:
+      additionalProperties: false
+      properties:
+        metric:
+          type: string
+        query_type:
+          default: range
+          type: string
+        capability:
+          default: bwce
+          type: string
+        time_window:
+          default: 1h
+          type: string
+        start_time:
+          default: ""
+          type: string
+        end_time:
+          default: ""
+          type: string
+        aggregate_function:
+          default: avg_over_time
+          type: string
+        interval:
+          default: 5m
+          type: string
+        app_id:
+          default: ""
+          type: string
+        data_plane:
+          default: ""
+          type: string
+        chart_type:
+          default: line
+          type: string
+        title:
+          default: ""
+          type: string
+        width:
+          default: 1200
+          type: integer
+        height:
+          default: 600
+          type: integer
+        output_format:
+          default: png+html
+          type: string
+      required:
+        - metric
+      type: object
+    annotations:
+      title: Chart Render
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: true
+  - name: chart_dashboard
+    description: |-
+      Create multi-panel dashboard comparing multiple metrics side-by-side.
+
+      Two modes:
+        1. Direct fetch (recommended): pass metric names — the server fetches
+           all data from Prometheus and generates the dashboard in one call.
+           No data relay through the LLM.
+        2. Pre-fetched data: pass metrics_data JSON (legacy, not recommended).
+
+      Args:
+          metrics: Comma-separated metric shortcuts to fetch and chart.
+              e.g. "cpu_request_ratio,memory_request_ratio"
+              Shortcuts: cpu_request_ratio, cpu_limit_ratio, memory_request_ratio,
+              memory_limit_ratio, request_count, execution_time
+          metrics_data: (Legacy) JSON string with pre-fetched metrics data.
+              Only used when metrics is empty.
+          capability: bwce, flogo, or bw5ce. Default: "bwce"
+          time_window: Relative time window - 1h, 6h, 1d, 7d, 30d. Default: "1h"
+          start_time: (Optional) Absolute start time (ISO 8601). Overrides time_window.
+          end_time: (Optional) Absolute end time (ISO 8601). Used with start_time.
+          aggregate_function: PromQL aggregation. Default: "avg_over_time"
+          interval: Aggregation interval - 5m, 15m, 1h. Default: "5m"
+          app_id: (Optional) Application ID(s), comma-separated.
+              If unknown, call listApps first to discover valid values.
+          data_plane: Data plane ID or name. Strongly recommended.
+              Auto-resolution may fail — if so, call listApps to get the
+              data_plane value and pass it explicitly.
+          title: Dashboard title (default: "Multi-Metric Dashboard")
+          width: Dashboard width (default: 1400)
+          height: Dashboard height (default: 800)
+          output_format: "png", "html", or "png+html" (default: "png+html")
+
+      Returns:
+          JSON with base64-encoded png_data and/or html_data
+
+      Examples:
+          Direct fetch (recommended):
+          - chart_dashboard(metrics="cpu_request_ratio,memory_request_ratio",
+              app_id="rest-bwce-1", data_plane="k8s-auto-dp1", time_window="6h")
+          Legacy:
+          - chart_dashboard(metrics_data="<json>")
+
+      Note: Dashboard is returned as base64-encoded data, no files saved.
+    inputSchema:
+      additionalProperties: false
+      properties:
+        metrics:
+          default: ""
+          type: string
+        metrics_data:
+          default: ""
+          type: string
+        capability:
+          default: bwce
+          type: string
+        time_window:
+          default: 1h
+          type: string
+        start_time:
+          default: ""
+          type: string
+        end_time:
+          default: ""
+          type: string
+        aggregate_function:
+          default: avg_over_time
+          type: string
+        interval:
+          default: 5m
+          type: string
+        app_id:
+          default: ""
+          type: string
+        data_plane:
+          default: ""
+          type: string
+        title:
+          default: Multi-Metric Dashboard
+          type: string
+        width:
+          default: 1400
+          type: integer
+        height:
+          default: 800
+          type: integer
+        output_format:
+          default: png+html
+          type: string
+      type: object
+    annotations:
+      title: Chart Dashboard
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: true
+  - name: chart_before_after
+    description: |-
+      Generate before/after comparison chart — fetches data server-side.
+
+      ALWAYS use server-side mode: pass metric, before_start, before_end,
+      after_start, after_end. The tool fetches data from Prometheus directly
+      and generates the chart in one call. Do NOT call query_metrics first.
+
+      Legacy mode (before_data/after_data JSON strings) is deprecated and
+      unreliable — the LLM often truncates or corrupts the time series data.
+
+      Args:
+          metric: Metric shortcut or raw PromQL name.
+              Shortcuts: cpu_request_ratio, cpu_limit_ratio, memory_request_ratio,
+              memory_limit_ratio, request_count, execution_time
+          capability: bwce, flogo, bw5ce. Default: "bwce"
+          before_start: ISO 8601 start time for "before" window (e.g. "2026-03-28T17:00:00Z")
+          before_end: ISO 8601 end time for "before" window
+          after_start: ISO 8601 start time for "after" window
+          after_end: ISO 8601 end time for "after" window
+          aggregate_function: PromQL aggregation. Default: "avg_over_time"
+          interval: Aggregation interval. Default: "5m"
+          app_id: (Optional) Application ID(s), comma-separated.
+          data_plane: Data plane ID or name. Strongly recommended.
+          title: Chart title. Default: "Before/After Comparison"
+          width: Chart width in pixels. Default: 1200
+          height: Chart height in pixels. Default: 600
+          output_format: "png", "html", or "png+html". Default: "png+html"
+          before_data: (Legacy) JSON string for "before" period. Use server-side mode instead.
+          after_data: (Legacy) JSON string for "after" period. Use server-side mode instead.
+          metric_name: (Legacy) Alias for metric parameter. Deprecated.
+
+      Returns:
+          JSON with base64-encoded png_data and/or html_data, change percentage
+
+      Examples:
+          - chart_before_after(metric="cpu_request_ratio", app_id="my-app",
+              data_plane="k8s-auto-dp1",
+              before_start="2026-03-28T17:00:00Z", before_end="2026-03-28T18:00:00Z",
+              after_start="2026-03-28T19:00:00Z", after_end="2026-03-28T20:00:00Z")
+          - "Compare CPU before and after deployment"
+          - "Show memory comparison between yesterday 2-3pm and today 2-3pm"
+
+      Note: Charts are returned as base64-encoded data, no files saved.
+    inputSchema:
+      additionalProperties: false
+      properties:
+        metric:
+          default: ""
+          type: string
+        capability:
+          default: bwce
+          type: string
+        before_start:
+          default: ""
+          type: string
+        before_end:
+          default: ""
+          type: string
+        after_start:
+          default: ""
+          type: string
+        after_end:
+          default: ""
+          type: string
+        aggregate_function:
+          default: avg_over_time
+          type: string
+        interval:
+          default: 5m
+          type: string
+        app_id:
+          default: ""
+          type: string
+        data_plane:
+          default: ""
+          type: string
+        title:
+          default: Before/After Comparison
+          type: string
+        width:
+          default: 1200
+          type: integer
+        height:
+          default: 600
+          type: integer
+        output_format:
+          default: png+html
+          type: string
+        before_data:
+          default: ""
+          type: string
+        after_data:
+          default: ""
+          type: string
+        metric_name:
+          default: ""
+          type: string
+      type: object
+    annotations:
+      title: Chart Before/After Comparison
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: true
+  - name: chart_violations
+    description: |-
+      Generate visualization for threshold violation detection results.
+
+      Creates charts from detect_violations tool output showing which applications
+      violated thresholds and when. Supports multiple visualization types for
+      different analysis needs.
+
+      Chart Types:
+          - bar (default): Compare violation severity across applications
+            Shows violation percentage with color coding (green/orange/red)
+            Best for: Quick overview of which apps have most violations
+
+          - heatmap: Show violation patterns over time
+            X-axis: Time, Y-axis: Apps, Color: Violation intensity
+            Best for: Identifying time-based patterns and trends
+
+          - timeline: Show when violations occurred
+            Horizontal bars showing first to last violation
+            Best for: Understanding violation duration and timing
+
+      Args:
+          violation_data: JSON string from detect_violations tool output
+          chart_type: Type of chart - "bar", "heatmap", or "timeline" (default: "bar")
+          title: Chart title (default: "Threshold Violations")
+          width: Chart width in pixels (default: 1200)
+          height: Chart height in pixels (default: 600)
+          output_format: "png", "html", or "png+html" (default: "png+html")
+
+      Returns:
+          JSON string containing:
+          - png_data: Base64-encoded PNG image (if PNG output requested)
+          - html_data: Base64-encoded HTML chart (if HTML output requested)
+          - chart_type: Type of chart generated
+          - summary: Summary from violation data
+
+      Color Coding (bar chart):
+          - Green: < 10% violation rate (low severity)
+          - Orange: 10-30% violation rate (medium severity)
+          - Red: > 30% violation rate (high severity)
+
+      Examples:
+          User: "Detect CPU violations above 80% and show me a chart"
+          Claude calls:
+          1. detect_violations(violation_type="cpu", threshold=0.8)
+          2. generate_violation_chart(violation_data=<result>, chart_type="bar")
+
+          User: "Show me a heatmap of memory violations over time"
+          Claude calls:
+          1. detect_violations(violation_type="memory")
+          2. generate_violation_chart(violation_data=<result>, chart_type="heatmap")
+
+          User: "When did the violations occur? Show timeline"
+          Claude calls:
+          1. detect_violations(...)
+          2. generate_violation_chart(violation_data=<result>, chart_type="timeline")
+
+      Input Format (from detect_violations):
+          {
+              "summary": {
+                  "violation_type": "cpu",
+                  "threshold": 0.8,
+                  "total_apps_analyzed": 5,
+                  "apps_with_violations": 3
+              },
+              "violations": [
+                  {
+                      "app_name": "inventory-mgmt",
+                      "max_value": 0.95,
+                      "violation_count": 48,
+                      "violation_percentage": 28.6,
+                      "first_violation": "2025-02-16T08:15:00Z",
+                      "last_violation": "2025-02-23T14:30:00Z",
+                      "time_series": [...]
+                  }
+              ]
+          }
+
+      Output Format:
+          {
+              "status": "success",
+              "chart_type": "bar",
+              "png_data": "iVBORw0KGgoAAAANS...",  # Base64 PNG
+              "html_data": "PCFET0NUWVBFIGh0...",  # Base64 HTML
+              "png_size_bytes": 45678,
+              "html_size_bytes": 12345,
+              "summary": {
+                  "apps_with_violations": 3,
+                  "violation_type": "cpu"
+              }
+          }
+
+      Note: Charts are returned as base64-encoded data, no files saved.
+    inputSchema:
+      additionalProperties: false
+      properties:
+        violation_data:
+          type: string
+        chart_type:
+          default: bar
+          type: string
+        title:
+          default: Threshold Violations
+          type: string
+        width:
+          default: 1200
+          type: integer
+        height:
+          default: 600
+          type: integer
+        output_format:
+          default: png+html
+          type: string
+      required:
+        - violation_data
+      type: object
+    annotations:
+      title: Chart Violations
+      readOnlyHint: true
+      destructiveHint: false
+      idempotentHint: true
+      openWorldHint: false
+  - name: dashboard_create
+    description: "Create a new platform observability dashboard\n\nCreates a new dashboard with or without default cards for monitoring platform observability metrics.\nThe dashboard includes predefined cards for CPU utilization, memory usage, request counts,\nand error rates based on the specified applications and data plane.\n\nFeatures:\n- Auto-generated dashboard names if not specified\n- Default monitoring cards for common metrics\n- Application and data plane filtering\n- Configurable time ranges for all cards\n- Support for multiple capability types\n- Support for blank dashboard without default cards\n- Dry-run mode for safe testing (set dry_run=true to validate without creating)\n\nExample Request:\n{\n    \"name\": \"Production BWCE Dashboard\",\n    \"capability\": \"bwce\",\n    \"data_plane_id\": \"dp-prod-01\",\n    \"app_ids\": [\"app-123\", \"app-456\"],\n    \"time_slot\": \"48h\",\n    \"dry_run\": false\n}\n\nExample Response (Success):\n{\n    \"dashboard_name\": \"Production BWCE Dashboard\",\n    \"dashboard_id\": \"dash-789\",\n    \"link\": \"https://platform.tibco.com/dashboards/dash-789\",\n    \"created_at\": \"2025-12-15T12:00:00Z\"\n}\n\nArgs:\n    request: Dashboard creation request parameters\n        - name (str, optional): Dashboard name (auto-generated if empty)\n        - capability (str, optional): Capability type (default: \"bwce\")\n        - data_plane_id (str, optional): Data plane ID (global if empty)\n        - app_ids (list, optional): Application IDs to monitor\n        - time_slot (str, optional): Time range (default: \"48h\")\n        - dry_run (bool, optional): Validate without creating (default: false)\n    \nReturns:\n    JSON string with dashboard creation result or error information.\n    In dry-run mode, returns the payload that would be sent without creating the dashboard."
+    inputSchema:
+      additionalProperties: false
+      properties:
+        request:
+          description: Request schema for creating a new dashboard
+          properties:
+            name:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: ""
+              description: Dashboard name. If empty, auto-generated name will be used
+            capability:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: bwce
+              description: Capability type for the dashboard (e.g., 'bwce')
+            data_plane_id:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: ""
+              description: Data plane ID. If empty, global data plane will be used
+            app_ids:
+              description: List of application IDs to include in dashboard cards
+              items:
+                type: string
+              type: array
+            time_slot:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: 48h
+              description: Default time slot for dashboard cards (e.g., '24h', '48h', '7d')
+            dry_run:
+              anyOf:
+                - type: boolean
+                - type: "null"
+              default: false
+              description: If true, validates the request without creating the dashboard. Returns what would be created.
+          type: object
+      required:
+        - request
+      type: object
+    annotations:
+      title: Create Dashboard
+      readOnlyHint: false
+      destructiveHint: false
+      idempotentHint: false
+      openWorldHint: true
+  - name: dashboard_get
+    description: "Get an existing platform observability dashboard by name\n\nRetrieves the complete configuration of an existing dashboard including all cards,\nlayout information, and metadata. Use this to inspect dashboard structure or\nverify dashboard creation.\n\nExample Request:\n{\n    \"dashboard_name\": \"Production BWCE Dashboard\"\n}\n\nExample Response (Success):\n{\n    \"dashboard_name\": \"Production BWCE Dashboard\",\n    \"dashboard_id\": \"dash-789\",\n    \"capability\": \"bwce\",\n    \"cards\": [\n        {\n            \"card_id\": \"card-001\",\n            \"title\": \"CPU Utilization\",\n            \"metrics\": \"k8s_container_cpu_request_utilization_ratio\",\n            \"chart_type\": \"line\"\n        }\n    ],\n    \"link\": \"https://platform.tibco.com/dashboards/dash-789\"\n}\n\nArgs:\n    request: Dashboard retrieval request with dashboard name\n        - dashboard_name (str, required): Name of the dashboard to retrieve\n    \nReturns:\n    JSON string with dashboard configuration or error information"
+    inputSchema:
+      additionalProperties: false
+      properties:
+        request:
+          description: Request schema for retrieving a dashboard
+          properties:
+            dashboard_name:
+              description: Name of the dashboard to retrieve
+              type: string
+          required:
+            - dashboard_name
+          type: object
+      required:
+        - request
+      type: object
+    annotations:
+      title: Get Dashboard
+      readOnlyHint: true
+      destructiveHint: false
+      openWorldHint: true
+  - name: dashboard_add_card
+    description: "Add a new card to an existing platform observability dashboard\n\nAdds a new card to an existing dashboard to monitor specific metrics with\noptions of filter by list of application id (app_id) and application name (app_name) and\noptions of visualization settings. The card will be positioned automatically based on\nexisting cards in the dashboard.\n\nFeatures:\n- Custom metrics and aggregation settings\n- Application and data plane filtering\n- Configurable chart types and time ranges\n- Automatic card positioning and sizing\n- Support for various aggregation operators\n- Support for metrics card and logs card\n- Dry-run mode for safe testing (set dry_run=true to validate without adding)\n\nExample Request:\n{\n    \"dashboard_name\": \"Production BWCE Dashboard\",\n    \"title\": \"Memory Usage\",\n    \"metrics_name\": \"k8s_container_memory_working_set_bytes\",\n    \"capability\": \"bwce\",\n    \"app_ids\": [\"app-123\"],\n    \"time_slot\": \"24h\",\n    \"aggregation_type\": \"avg\",\n    \"aggregation_operator\": \"avg\",\n    \"chart_type\": \"line\",\n    \"dry_run\": false\n}\n\nExample Response (Success):\n{\n    \"card_id\": \"card-456\",\n    \"dashboard_name\": \"Production BWCE Dashboard\",\n    \"title\": \"Memory Usage\",\n    \"link\": \"https://platform.tibco.com/dashboards/dash-789\"\n}\n\nArgs:\n    request: Card creation request parameters\n        - dashboard_name (str, required): Dashboard to add card to\n        - title (str, required): Card title\n        - metrics_name (str, required): Metric name (from get_metrics_listings)\n        - capability (str, optional): Capability type (default: \"bwce\")\n        - app_ids (list, optional): Application IDs to filter\n        - time_slot (str, optional): Time range (default: \"48h\")\n        - aggregation_type (str, optional): Aggregation (default: \"increase\")\n        - chart_type (str, optional): Chart type (default: \"line\")\n        - dry_run (bool, optional): Validate without adding (default: false)\n    \nReturns:\n    JSON string with card creation result or error information.\n    In dry-run mode, returns the payload that would be sent without adding the card."
+    inputSchema:
+      additionalProperties: false
+      properties:
+        request:
+          description: Request schema for adding a card to an existing dashboard
+          properties:
+            dashboard_name:
+              description: Name of the dashboard to add the card to
+              type: string
+            title:
+              description: Title for the card
+              type: string
+            metrics_name:
+              description: Name of the metrics (e.g., 'k8s_container_cpu_request_utilization_ratio') that can be obtained from either get_available_metrics or metrics_config API
+              type: string
+            capability:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: bwce
+              description: Capability type for the card
+            data_plane_id:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: ""
+              description: Data plane ID. If empty, global data plane will be used
+            app_ids:
+              description: List of application IDs to filter the card data
+              items:
+                type: string
+              type: array
+            app_names:
+              description: List of application names to filter the card data
+              items:
+                type: string
+              type: array
+            time_slot:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: 48h
+              description: Time slot for the card data (e.g., '24h', '48h', '7d')
+            aggregation_type:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: increase
+              description: Aggregation type (e.g., 'rate', 'increase', 'avg')
+            aggregation_operator:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: sum
+              description: Aggregation operator (e.g., 'avg', 'sum', 'max', 'min')
+            chart_type:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: line
+              description: Chart type for visualization (e.g., 'line', 'bar', 'area')
+            category:
+              anyOf:
+                - type: string
+                - type: "null"
+              default: metrics
+              description: Category of the card (e.g. 'metrics', 'logs')
+            dry_run:
+              anyOf:
+                - type: boolean
+                - type: "null"
+              default: false
+              description: If true, validates the request without adding the card. Returns what would be created.
+          required:
+            - dashboard_name
+            - title
+            - metrics_name
+          type: object
+      required:
+        - request
+      type: object
+    annotations:
+      title: Add Card to Dashboard
+      readOnlyHint: false
+      destructiveHint: false
+      idempotentHint: false
+      openWorldHint: true
+  - name: metrics_list_all
+    description: |-
+      Get complete list of ALL available metrics across ALL capabilities
+
+      Retrieves the full catalog of available metrics from all capability types
+      (bwce, flogo, bw5ce). Use this when you need to browse or search
+      across all metrics, or when the capability type is unknown.
+
+      Each metric includes: metric_name, display_name, description, capability,
+      type, unit, and category.
+
+      Use this tool when:
+      - You need to see all available metrics
+      - You want to search across all capabilities
+      - The capability type is not yet determined
+
+      For filtered results by a specific capability, use get_metrics_listings_by_capability instead.
+
+      Example Response (Success):
+      {
+          "metrics": [
+              {
+                  "metricName": "k8s_container_cpu_request_utilization_ratio",
+                  "displayName": "CPU Utilization Ratio",
+                  "description": "Container CPU request utilization ratio",
+                  "capability": "bwce",
+                  "metricType": "gauge",
+                  "unit": "ratio",
+                  "category": "performance"
+              },
+              {
+                  "metricName": "k8s_container_memory_working_set_bytes",
+                  "displayName": "Memory Working Set",
+                  "capability": "flogo",
+                  "metricType": "gauge",
+                  "unit": "bytes"
+              }
+          ]
+      }
+
+      Args:
+          ctx (Context, optional): The request context containing authentication and other metadata.
+
+      Returns:
+          str: A JSON-formatted string containing the complete metrics catalog or error information.
+
+      Raises:
+          Exception: If an error occurs while retrieving the metrics labels.
+    inputSchema:
+      additionalProperties: false
+      properties: {}
+      type: object
+    annotations:
+      title: Get Metrics Listings
+      readOnlyHint: true
+      destructiveHint: false
+      openWorldHint: true
+  - name: dashboard_delete
+    description: "Delete a platform observability dashboard\n\nPermanently removes a dashboard and all its cards from the system.\nThis is a destructive operation that cannot be undone. Use with caution.\n\nFeatures:\n- Permanent deletion of dashboard and all associated cards\n- Idempotent operation (safe to retry if dashboard already deleted)\n- Validates dashboard existence before deletion\n- Returns confirmation message on success\n\nExample Request:\n{\n    \"dashboard_name\": \"Production BWCE Dashboard\"\n}\n\nExample Response (Success):\n{\n    \"message\": \"dashboard deleted\",\n    \"dashboard_name\": \"Production BWCE Dashboard\",\n    \"deleted_at\": \"2025-12-15T12:30:00Z\"\n}\n\nExample Response (Not Found):\n{\n    \"isError\": true,\n    \"error\": {\n        \"message\": \"Failed to delete dashboard\",\n        \"details\": \"dashboard 'Production BWCE Dashboard' not found\"\n    }\n}\n\nArgs:\n    request: Dashboard deletion request parameters\n        - dashboard_name (str, required): Name of the dashboard to delete\n        \nReturns:\n    JSON string with deletion result or error information\n    \nWarning:\n    This operation is DESTRUCTIVE and IRREVERSIBLE. All dashboard \n    configuration and cards will be permanently removed."
+    inputSchema:
+      additionalProperties: false
+      properties:
+        request:
+          description: Request schema for deleting a dashboard
+          properties:
+            dashboard_name:
+              description: Name of the dashboard to delete
+              type: string
+          required:
+            - dashboard_name
+          type: object
+      required:
+        - request
+      type: object
+    annotations:
+      title: Delete Dashboard
+      readOnlyHint: false
+      destructiveHint: true
+      idempotentHint: true
+      openWorldHint: true
+  - name: metrics_list_by_capability
+    description: |-
+      Get metrics filtered by a SPECIFIC capability type for targeted dashboard creation
+
+      Retrieves ONLY the metrics available for a specific capability type. This is the
+      preferred tool when you know which capability you're working with, as it returns
+      a focused, relevant subset of metrics.
+
+      Capability types: "bwce", "flogo", "bw5ce"
+
+      Use this tool when:
+      - You know the specific capability type (e.g., creating a BWCE dashboard)
+      - You want a focused list of metrics for one capability
+      - You're adding cards to an existing dashboard with a known capability
+
+      For the complete metrics catalog across all capabilities, use get_metrics_listings instead.
+
+      Example Request:
+      capability = "bwce"
+
+      Example Response (Success):
+      {
+          "capability": "bwce",
+          "metrics": [
+              {
+                  "metricName": "k8s_container_cpu_request_utilization_ratio",
+                  "displayName": "CPU Utilization Ratio",
+                  "description": "Container CPU request utilization ratio",
+                  "metricType": "gauge",
+                  "unit": "ratio",
+                  "category": "performance"
+              },
+              {
+                  "metricName": "bwce_activity_execution_count",
+                  "displayName": "Activity Execution Count",
+                  "metricType": "counter",
+                  "unit": "count"
+              }
+          ]
+      }
+
+      Args:
+          capability (str): Capability type to filter metrics (default: "bwce").
+              Valid options: "bwce", "flogo", "bw5ce"
+          ctx (Context, optional): Context object containing authentication and request information.
+
+      Returns:
+          str: JSON string with capability-specific metrics or error information.
+
+      Raises:
+          Exception: If there is an error retrieving the metrics.
+    inputSchema:
+      additionalProperties: false
+      properties:
+        capability:
+          default: bwce
+          type: string
+      type: object
+    annotations:
+      title: Get Metrics Listings by Capability
+      readOnlyHint: true
+      destructiveHint: false
+      openWorldHint: true
+resources: []
+prompts: []
+toolCount: 17
+resourceCount: 0
+promptCount: 0
+errors: []

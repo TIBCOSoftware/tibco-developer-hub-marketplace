@@ -1,0 +1,19 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: "flogo-mcp-120"
+  title: TIBCO Flogo MCP Server
+  description: MCP server for TIBCO Flogo on the TIBCO Platform.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - model-context-protocol
+spec:
+  type: mcp-server
+  lifecycle: production
+  owner: TIBCO
+  remotes:
+    - type: streamable-http
+      url: /flogo/mcp
+  definition:
+    $text: ./flogo-mcp-definition-120.yaml

@@ -1,0 +1,1596 @@
+serverInfo:
+  name: ControlPlaneMCPServer
+  title: Control Plane MCP Server
+  version: 1.20.0
+capabilities:
+  logging: {}
+  tools:
+    listChanged: true
+tools:
+  - name: createActivationServer
+    description: |-
+      Create an activation server resource at the subscription or dataplane level
+
+      Purpose: To create an activation server resource at the subscription or dataplane level to connect to an activation server
+
+      Input: CreateActivationServerInput with the following fields:
+      - data-plane-id: (Optional) ID of the data plane for which the activation server resource will be created. If not provided, the activation server resource will be created at the subscription level
+      - name: Name of the activation server resource
+      - description: Description of the activation server resource
+      - url: URL of the activation server
+
+      Returns: Id of the created resource in case of successful creation of the activation server resource
+      - resource_instance_id : Unique identifier for the created activation server resource instance
+
+      Note: Activation server resource is type of Resource known to system as 'ACTIVATION_SERVER' and can be created at both subscription and data plane level
+      During creation, prompt the user to choose between creating the resource at the dataplane level or the subscription level. If the user selects the dataplane level, the 'data-plane-id' field must be provided. If the subscription level is chosen, 'data-plane-id' can be left blankSamples:
+               - Sample 1 — Success
+                  Input:
+                   {"name": "production-activation", "description": "Production activation server", "url": "https://activation.company.com"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"activation-001"},"context":["2025-01-01T00:00:00Z"]}
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: 'Optional: id of the data plane for which the activation server resource is to be created. To check for possible values, use the ''listDataplanes'' tool and show them to the user.'
+        name:
+          type: string
+          description: name of the activation server resource to be created
+        description:
+          type: string
+          description: description of the activation server resource to be created
+        url:
+          type: string
+          description: url of the activation server to connect
+      required:
+        - name
+        - description
+        - url
+      additionalProperties: false
+  - name: createBWAgent
+    description: "Create a BW agent resource instance to facilitate communication between control plane and on-prem bw agents\n\nPurpose: To create a BW agent resource instance that facilitates communication between control plane and on-prem bw agents\n\nInput:\n- data-plane-id: ID of the data plane with which the BW Agent resource will be linked\n- url: URL of the on prem BW Agent\n- name: Name of the BW Agent resource instance\n- description: Description of the BW Agent resource instance\n- agent-name: Name of the on prem BW agent\n- agent-description: Description of the on prem BW Agent \n- network-name: Name of the network which is used to create on prem BW Agent\n- product-version: Version of the BW product (e.g., 6.5.0)\n\nReturns: Id of the created resource in case of successful creation of the BW agent\n- resource_instance_id : Unique identifier for the created BW Agent resource instance\n\nNote: BW agent is a type of resource known to the Control Plane as 'BW_AGENT' and is created only at the data plane levelSamples:\n         - Sample 1 — Success\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"url\": \"http://bw-agent.company.com:8080\", \"name\": \"production-bw-agent\", \"description\": \"Production BW agent\", \"agent-name\": \"bw-prod-agent\", \"agent-description\": \"Production BusinessWorks agent\", \"network-name\": \"production-network\", \"product-version\": \"6.8.0\"}\n            Output:\n             {\"status\":\"success\",\"response\":{\"resource_instance_id\":\"bw-agent-001\"},\"context\":[\"2025-01-01T00:00:00Z\"]}"
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane for which the bw agent is to be created. To check for possible values, use the 'listDataplanes' tool and show them to the user.
+        url:
+          type: string
+          description: URL of the BW agent
+        name:
+          type: string
+          description: name of the bw agent  resource to be created
+        description:
+          type: string
+          description: description of the bw agent to be created
+        agent-name:
+          type: string
+          description: name of the agent
+        agent-description:
+          type: string
+          description: description of the agent
+        network-name:
+          type: string
+          description: name of the network
+        product-version:
+          type: string
+          description: version of the product
+      required:
+        - data-plane-id
+        - url
+        - name
+        - description
+        - agent-name
+        - agent-description
+        - network-name
+        - product-version
+      additionalProperties: false
+  - name: createHawkDomainRV
+    description: |-
+      Create a hawk domain with RV transport
+
+      Purpose: To create a hawk domain with RV transport at the dataplane level
+
+      Input: CreateHawkDomainForRVInput with the following fields:
+      - data-plane-id: ID of the data plane where the hawk domain will be created
+      - domain-name: Name of the hawk domain
+      - rv: RV configuration details for the hawk domain including:
+      	- rv-service: RV service name
+      	- rv-network: RV network name
+      	- rv-daemon: RV daemon address
+
+      Returns: Id of the created resource in case of successful creation of the hawk domain
+      - resource_instance_id : Unique identifier for the created hawk domain resource instance
+
+      Note: Hawk domain is type of Resource known to system as 'HAWK_DOMAIN' and is created at the only data plane levelSamples:
+               - Sample 1 — Success
+                  Input:
+                   {"data-plane-id": "dp-123", "domain-name": "rv-domain", "rv": {"rv-service": "7500", "rv-network": "rv-network", "rv-daemon": "tcp:7500"}}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"hawk-rv-001"},"context":["2025-01-01T00:00:00Z"]}
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane for which the hawk domain is to be created. To check for possible values, use the 'listDataplanes' tool and show them to the user.
+        domain-name:
+          type: string
+          description: name of the hawk domain to be created
+        rv:
+          type: object
+          properties:
+            rv-service:
+              type: string
+              description: rv service of the hawk domain
+            rv-network:
+              type: string
+              description: rv network of the hawk domain
+            rv-daemon:
+              type: string
+              description: rv daemon of the hawk domain
+          description: rendezvous details of the hawk domain
+          required:
+            - rv-service
+            - rv-network
+            - rv-daemon
+          additionalProperties: false
+      required:
+        - data-plane-id
+        - domain-name
+        - rv
+      additionalProperties: false
+  - name: createStorageClass
+    description: |-
+      Create a storage class to manage storage resources within a data plane
+
+      Purpose: To create a storage class that manages storage resources within a data plane
+
+      Input: StorageClassInput with the following fields:
+      - data-plane-id: ID of the data plane where the storage class will be created
+      - name: Name of the storage class
+      - description: Description of the storage class
+      - storage-class-name: Name of the storage class in the underlying infrastructure (e.g., Kubernetes StorageClass name)
+
+      Returns: Id of the created resource in case of successful creation of the storage class
+      - resource_instance_id : Unique identifier for the created storage class resource instance
+
+      Note: Storage class is a type of Resource known to the Control Plane as 'STORAGE_CLASS' and is created only at the data plane levelSamples:
+               - Sample 1 — Success
+                  Input:
+                   {"data-plane-id": "dp-123", "name": "fast-storage", "description": "High-performance SSD storage", "storage-class-name": "gp2-ssd"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"storage-001"},"context":["2025-01-01T00:00:00Z"]}
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane for which the storage resource is to be created. To check for possible values, use the 'listDataplanes' tool and show them to the user.
+        name:
+          type: string
+          description: name of the storage class to be created
+        description:
+          type: string
+          description: description of the storage class to be created
+        storage-class-name:
+          type: string
+          description: name of storage class in the data plane cluster
+      required:
+        - data-plane-id
+        - name
+        - description
+        - storage-class-name
+      additionalProperties: false
+  - name: deleteCapabilityInstanceInsideDataPlane
+    description: |-
+      Delete a capability instance inside a data plane
+
+      Purpose: This tool deletes a specific capability instance associated with a data plane.
+
+      Input:
+      - data-plane-id: The ID of the data plane where the capability instance is located.
+      - capability-instance-id: The ID of the capability instance to delete.
+
+      Output: A confirmation message indicating the successful deletion of the capability instance.
+
+      Note: This tool is used to remove a capability instance from a data plane. It is important to ensure that the capability instance is no longer needed before deletion, as this action cannot be undone.Samples:
+               - Sample 1 — Success
+                  Input:
+                   {"data-plane-id": "dp-123", "capability-instance-id": "bwce-inst-001"}
+                  Output:
+                   {"status":"success","response":{"message":"Capability instance bwce-inst-001 successfully deleted from data plane dp-123"},"context":["2025-01-01T00:00:00Z"]}
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane from which the capability instance is to be deleted. To check for possible values, use the 'listDataplanes' tool and show them to the user.
+        capability-instance-id:
+          type: string
+          description: instance id of the capability to be deleted. To check for possible values, use the 'listCapabilityInstances' tool and show them to the user.
+      required:
+        - data-plane-id
+        - capability-instance-id
+      additionalProperties: false
+  - name: deleteDataPlane
+    description: |-
+      Delete a data plane
+
+      Purpose: This tool is used to delete a data plane, removing it from the list of active data planes.
+      This is destructive command and removes data plane from active use.
+      Warning: This is irreversible
+
+      Input:
+      - data-plane-id: The unique identifier of the data plane to be unregistered
+      - force: Optional input indicating if the deletion should be forced. Default value is false
+
+      Note: This operation may also be referred to as 'unregistering' a data plane.
+
+      Output: The result of the deletion includes:
+      - id: Unique identifier of the deleted data plane
+      - message: Additional message or information about the deletionSamples:
+               - Sample 1 — Success
+                  Input:
+                   {"data-plane-id": "dp-123", "force": true}
+                  Output:
+                   {"status":"success","response":{"id":"dp-123","message":"Data plane dp-123 successfully unregistered and removed from active data planes"},"context":["2025-01-01T00:00:00Z"]}
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane to be unregistered. To check for possible values, use the 'listDataplanes' tool and show them to the user.
+        force:
+          type: boolean
+          description: Optional flag to force unregister the data plane. If set to true, the data plane will be unregistered even if it has capabilities or applications associated with it. If the user has not explicitly set it, the default value false should be used.
+      required:
+        - data-plane-id
+      additionalProperties: false
+  - name: deleteResourceInstance
+    description: "Delete a specific resource instance with subscription scope or data plane scope \n\nPurpose: To delete a specific resource instance configured at either the subscription level or at at the dataplane level \n\nInput: \n- resourceInstanceId: Resource Instance ID to be deleted\n- dataPlaneId: Optional Input. This data plane ID is needed if the resource exists at the dataplane level. If this is not passed subscription scope is considered .\n\nReturns:\n- message: Confirmation message indicating the resource instance has been deleted successfully.\n\nNote: Delete tools should only be called when explicitly required as they will remove the resource instance and its associated configurations permanently. It should always be double checked before invoking the delete tools.\n\nSamples:\n         - Sample 1 — Success (Subscription Level)\n            Input:\n             {\"resourceInstanceId\": \"res-456\"}\n            Output:\n             {\"status\":\"success\",\"response\":{\"message\":\"Resource instance res-456 has been deleted successfully\"},\"context\":[\"2025-01-01T00:00:00Z\"]}\n\n         - Sample 2 — Success (Data Plane Level)\n            Input:\n             {\"resourceInstanceId\": \"res-456\", \"dataPlaneId\": \"dp-123\"}\n            Output:\n             {\"status\":\"success\",\"response\":{\"message\":\"Resource instance res-456 has been deleted successfully from data plane dp-123\"},\"context\":[\"2025-01-01T00:00:00Z\"]}\n\n         - Sample 3 — Error\n             Input:\n               {\"appId\": \"app-999\"}\n             Output:\n               {\"status\": \"error\",\"code\": \"CP-10000\",\"message\": \"Error summary\",\"details\": \"Error details\",\"context\": [\"2025-03-11T04:53:52Z\"]}"
+    inputSchema:
+      type: object
+      properties:
+        resourceInstanceId:
+          type: string
+          description: id of the resource instance to be deleted. To check for possible values, use the 'listResourceInstances' tool.
+        dataPlaneId:
+          type: string
+          description: optional id of the data plane from which the resource instance is to be deleted. If provided, the resource instance will be deleted from the data plane scope. If not provided, the resource instance will be deleted from the subscription scope. To check for possible values, use the 'listDataplanes' tool.
+      required:
+        - resourceInstanceId
+      additionalProperties: false
+  - name: getCapabilitiesMetadata
+    description: |-
+      Get metadata of supported capabilities and their available versions
+
+      Purpose: To list capabilities currently supported on the platform along with the versions available for each capability. Use this to validate capability ids and choose correct versions before provisioning or other operations.
+
+      Input: None
+
+      Output: A list of capabilities, each containing:
+      - capability-id: Identifier of the capability
+      - name: Human friendly name of the capability
+      - versions: The currently supported versions for the capability
+
+      Samples:
+               - Sample 1 — Success
+                  Input:
+                   {}
+                  Output:
+                   {"status":"success","response":[{"capability-id":"TIBCOHUB","name":"TIBCO® Developer Hub","versions":["1.15.0","1.14.0","1.13.0"]},{"capability-id":"FLOGO","name":"TIBCO Flogo®","versions":["1.15.0","1.14.0","1.13.0","1.12.0"]},{"capability-id":"EMS","name":"TIBCO Enterprise Message Service™","versions":["1.15.0","1.14.0","1.13.0"]},{"capability-id":"BWCE","name":"TIBCO BusinessWorks™ 6 (Containers)","versions":["1.15.0","1.14.0","1.13.0"]},{"capability-id":"BW5CE","name":"TIBCO BusinessWorks™ 5 (Containers)","versions":["1.15.0","1.14.0","1.13.0"]}],"context":["2026-01-13T07:51:49.773Z"]}
+
+               - Sample 2 — Error
+                  Input:
+                   {}
+                  Output:
+                   {"status": "error","code": "CP-10000","message": "Error summary","details": "Error details","context": ["2026-01-13T07:51:49.773Z"]}
+    inputSchema:
+      type: object
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: linkResourceInstancesToDataPlane
+    description: |-
+      Link resource instances to a data plane
+
+      Purpose: This tool is used to link one or more resource instances to a data plane, establishing a connection between them.
+
+      Input:
+      - data-plane-id: The unique identifier of the data plane to which the resources are to be linked
+      - resource-instance-id: The unique identifiers of the resource instances to be linked
+      - resource-type: The type of the resources being linked
+      - operation: The operation to be performed. It can be 'link' or 'unlink'
+
+      Output: The result of the linking operation including:
+      - id: Unique identifier of the data plane
+      - resource-instances: List of resource instances linked to the data plane. Each instance detail includes:
+      	- id: Unique identifier of the resource instance
+      	- type: Type of the resource instance
+      	- status: Status of the resource instance
+      	- message: Additional message or information about the resource instance statusSamples:
+               - Sample 1 — Success
+                  Input:
+                   {"data-plane-id": "dp-123", "resource-instance-id": "storage-001", "resource-type": "STORAGE_CLASS", "operation": "link"}
+                  Output:
+                   {"status":"success","response":{"id":"dp-123","resource-instances":[{"id":"storage-001","type":"STORAGE_CLASS","status":"linked","message":"Successfully linked to data plane"}]},"context":["2025-01-01T00:00:00Z"]}
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane to which the resource instances are to be linked. To check for possible values, use the 'listDataplanes' tool and show them to the user.
+        resource-instance-id:
+          type: string
+          description: id of the resource instance to be linked. To check for possible values, use the 'listResourceInstances' tool and show them to the user.
+        resource-type:
+          type: string
+          description: type of the resource instance to be linked. For possible values, use the 'listResources' tool and show them to the user.
+        operation:
+          type: string
+          description: 'operation to be performed. Supported values: ''link'', ''unlink'' '
+      required:
+        - data-plane-id
+        - resource-instance-id
+        - resource-type
+        - operation
+      additionalProperties: false
+  - name: listApps
+    description: |-
+      List applications in a subscription with support of optional filters
+
+      Purpose: To list applications in a subscription with comprehensive filtering options. These filters should be used as much as possible
+      This tool provides detailed output, encompassing application-specific data as well as fundamental information about Data Planes, Capability types and Instances, and the Resource Instance Id associated with these applications. It should be sufficient for most needs; invoking other tools is only necessary when detailed resource information is explicitly required.
+
+      Input:
+      - dataPlaneId: Optional filter to get applications in specific data plane(s) identified by unique ID(s). Accepts single or multiple IDs as an array
+      - dataPlaneName: Optional filter to get applications in specific data plane(s) with name(s). Accepts single or multiple names as an array
+      - appName: Optional filter to get details of application(s) by name(s). Accepts single or multiple names as an array
+      - appId: Optional filter to get details of application(s) by ID(s). Accepts single or multiple IDs as an array
+      - appStatus: Optional filter to get details of applications with specific status(es). Accepts single or multiple statuses as an array
+      - capabilityId: Optional filter to get details of applications by specific capability/capabilities. Accepts single or multiple capability IDs as an array
+      - resourceInstanceId: Optional filter to get details of applications associated with specific resource instance(s). Accepts single or multiple resource instance IDs as an array
+      - namespace: Optional filter to get applications deployed in a specific Kubernetes namespace
+      - includeFields: Optional filter to specify which attributes to include in the response. Accepts an array of field names from the output details (e.g., ['app-name', 'app-id', 'app-state', 'data-plane-name']). When provided, only the specified fields will be returned
+      - page: Optional page number for pagination
+      - limit: Optional limit for pagination
+      - orderBy: Optional name of the field to order the results by. Supported values: 'app-description', 'app-id', 'app-name', 'app-state', 'capability-id', 'capability-instance-id', 'capability-instance-description', 'capability-instance-name', 'capability-instance-status', 'created-by', 'created-time', 'data-plane-id', 'data-plane-name', 'data-plane-description', 'data-plane-status', 'host-cloud-type', 'modified-by', 'modified-time', 'registered-region', 'subscription-id'
+      - order: Optional sort order. Supported values: 'asc' or 'desc'. Only takes effect when orderBy is provided
+
+      Output: A JSON object containing:
+      - data: A list of application details (described below)
+      - total-records-in-table: Total number of records returned, to be used for pagination
+
+      Each record in 'data' has the following details:
+      - app-description: Description of the application
+      - app-eula: Status of the application EULA
+      - app-id: Application ID
+      - app-links: Links related to the application
+      - app-name: Name of the application
+      - app-namespace: Namespace of the application
+      - app-resource-instance_ids: List of resource instance IDs associated with the application
+      - app-state: Status of the application
+      - app-tags: Tags associated with the application
+      - app-version: Version of the application
+      - capability-id: Capability ID of the application
+      - capability-instance-description: Description of the capability instance
+      - capability-instance-id: Capability instance ID of the application
+      - capability-instance-name: Name of the capability instance
+      - capability-instance-namespace: Namespace of the capability instance
+      - capability-instance-status: Status of the capability instance
+      - capability-instance-tags: Tags associated with the capability instance
+      - capability-instance-version: Version of the capability instance
+      - created-by: User who created the application
+      - created-time: Timestamp when the application was created
+      - data-plane-description: Description of the dataplane
+      - data-plane-id: ID of the dataplane
+      - data-plane-name: Name of the dataplane
+      - data-plane-status: Status of the dataplane
+      - data-plane-tags: Tags associated with the dataplane
+      - host-cloud-type: Type of the host cloud where the application is deployed
+      - modified-by: User who last updated the application
+      - modified-time: Timestamp when the application was last updated
+      - registered-region: Region where the application is registered
+      - running-region: Region where the application is currently running
+      - subscription-id: Subscription ID of the application
+
+      Note: If no filters are provided, all applications in the subscription will be returned.
+      Supported values for appStatus filter are: 'Stopped', 'Stopping', 'Running', 'Failure', 'Unknown', 'Deployment Failed', 'Scaling', 'Warning', 'App Not Present in DP'
+      Samples:
+               - Sample 1 — Success (Single values)
+                  Input:
+                   {"data-plane-id": ["dp-123"], "capability-id": ["BWCE"], "app-status": ["Running"]}
+                  Output:
+                   {"status":"success","response":{"data":[{"app-description":"app description","app-eula":true,"app-id":"cuumooaghufnbqb1mtcg","app-links":{},"app-name":"app-name","app-namespace":"app-ns","app-resource-instance-ids":[],"app-state":"Running","app-tags":[],"app-version":[1,0],"capability-id":"BWCE","capability-instance-description":null,"capability-instance-id":"cuumge27dsoajnuj4f6g","capability-instance-name":"BWCE","capability-instance-namespace":"cap-ns","capability-instance-status":"provisioned","capability-instance-tags":null,"capability-instance-version":[1,5,0],"created-by":"username","created-time":1740467298,"data-plane-description":"","data-plane-id":"cuq4rgaugsdfke0k7k4g","data-plane-name":"data-plane-name","data-plane-status":"processed","data-plane-tags":null,"host-cloud-type":"k8s","modified-by":"username","modified-time":1740467343,"registered-region":"global","running-region":"","subscription-id":"cuq4qiqugsdfke0k7k3g"}],"total-records-in-table":1},"context":["2024-11-11T11:04:59.224Z"]}
+
+               - Sample 2 — Success (Multiple values)
+                  Input:
+                   {"dataPlaneId": ["dp-123", "dp-456"], "appStatus": ["Running", "Stopped"], "capabilityId": ["BWCE", "FLOGO"]}
+                  Output:
+                   {"status":"success","response":{"data":[...applications from multiple data planes with multiple statuses...],"total-records-in-table":10},"context":["2024-11-11T11:04:59.224Z"]}
+
+               - Sample 3 — Error
+                  Input:
+                    {"appId": ["app-999"]}
+                  Output:
+                    {"status": "error","code": "CP-10000","message": "Error summary","details": "Error details","context": ["2025-03-11T04:53:52Z"]
+    inputSchema:
+      type: object
+      properties:
+        dataPlaneId:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: id(s) of the data plane to filter applications for the specified data plane(s)'
+        dataPlaneName:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: name(s) of the data plane to filter applications for the specified data plane(s)'
+        appName:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: name(s) of the application to filter applications by name'
+        appId:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: id(s) of the application to filter applications by id'
+        appStatus:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: status(es) of the application to filter applications based on their status. Supported values: ''Stopped'', ''Stopping'', ''Running'', ''Failure'', ''Unknown'', ''Deployment Failed'', ''Scaling'', ''Warning'', ''App Not Present in DP'''
+        capabilityId:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: id(s) of the capability to filter applications for the specified capability. To check for possible values, use the ''getCapabilitiesMetadata'' tool. '
+        resourceInstanceId:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: id(s) of the resource instance to filter applications associated with the specified resource instance(s)'
+        namespace:
+          type: string
+          description: 'Optional: filter applications by Kubernetes namespace name. Only apps deployed in the specified namespace will be returned.'
+        includeFields:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: list of attribute names to include in the response. Only the specified fields will be returned. Accepted values are from the output fields of this tool such as ''app-name'', ''app-id'', ''app-state'', ''data-plane-id'', ''data-plane-name'', etc.'
+        page:
+          type: integer
+          description: 'Optional: page number for pagination'
+        limit:
+          type: integer
+          description: 'Optional: limit for pagination'
+        orderBy:
+          type: string
+          description: 'Optional: name of the field to order the results by. Supported values: ''app-description'', ''app-id'', ''app-name'', ''app-state'', ''capability-id'', ''capability-instance-id'', ''capability-instance-description'', ''capability-instance-name'', ''capability-instance-status'', ''created-by'', ''created-time'', ''data-plane-id'', ''data-plane-name'', ''data-plane-description'', ''data-plane-status'', ''host-cloud-type'', ''modified-by'', ''modified-time'', ''registered-region'', ''subscription-id''.'
+        order:
+          type: string
+          description: 'Optional: sort order. Supported values: ''asc'' or ''desc''. Only takes effect when orderBy is provided.'
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: listCapabilityInstances
+    description: "List details of multiple capability instances in a subscription with support of optional filters\n\nPurpose: To list details of multiple capability instances in a subscription with comprehensive filtering options. These filters should be used as much as possible\nThis tool provides detailed output, encompassing capability instances data as well as fundamental information about Data Planes and the Resource Instance Id associated with these capability instances. It should be sufficient for most needs; invoking other tools is only necessary when detailed resource information is explicitly required.\n\nInput:\n- dataPlaneId: Optional filter to get capability instances in specific data plane(s) identified by unique ID(s). Accepts single or multiple IDs as an array\n- dataPlaneName: Optional filter to get capability instances in specific data plane(s) with name(s). Accepts single or multiple names as an array\n- capabilityId: Optional filter to get capability instances of specific capabilityId(s). Accepts single or multiple capability IDs as an array\n- capabilityInstanceId: Optional filter to get specific capability instance(s) identified by unique ID(s). Accepts single or multiple IDs as an array\n- includeFields: Optional filter to specify which attributes to include in the response. Accepts an array of field names from the output details (e.g., ['capability-instance-id', 'capability-instance-name', 'capability-id', 'status']). When provided, only the specified fields will be returned\n- status: Optional filter to get capability instances by status(es). Accepts single or multiple statuses as an array. Supported values are: 'red','amber' and 'green' \n- page: Optional page number for pagination\n- limit: Optional limit for pagination\n- orderBy: Optional name of the field to order the results by. Supported values: 'data-plane-id', 'data-plane-name', 'capability-instance-id', 'capability-instance-name', 'capability-id', 'type', 'description', 'created-by', 'created-time', 'modified-by', 'modified-time', 'region', 'status'\n- order: Optional sort order. Supported values: 'asc' or 'desc'. Only takes effect when orderBy is provided\n\nOutput: A JSON object containing:\n- data: A list of capability instance details (described below)\n- total-records-in-table: Total number of records returned, to be used for pagination\n\nEach record in 'data' has the following details:\n- data-plane-id: The ID of the data plane with which it is associated\n- data-plane-name: The name of the data plane with which it is associated\n- capability-instance-id: The ID of the capability instance\n- capability-instance-name: The name of the capability instance\n- capability-id: The ID of the capability associated with the instance\n- type: Internal type of the capability instance used in the backend\n- description: A description of the capability instance\n- created-by: The user who created the capability instance\n- created-time: The timestamp when the capability instance was created\n- modified-by: The user who last updated the capability instance\n- modified-time: The timestamp when the capability instance was last updated\n- namespace: The namespace where the capability instance is located\n- region: The region where the capability instance is located\n- tags: A list of tags associated with the capability instance\n- version: The version of the capability instance\n- latest-version-available: The version available to upgrade the capability instance to. If the latest version is installed then version and latest-version-available will be same\n- resource-instances: A list of resource instances associated with the capability instance, each containing:\n\t- id: The ID of the resource instance.\n\t- name: The name of the resource instance.\n- status: The status of the capability instance\n- services: A list of services associated with the capability instance, each containing:\n  - name: The name of the service\n  - status: The status of the service\n  - message: A message providing additional information about the service status\n\nNote: If no filters are provided, all capability instances in the subscription will be returned.\ncapabilityId supported in the input as a filter can also be considered as type or capability for the end user and should be used accordingly in the user queries. This is not to be mixed with type in the output as that is for internal representation only.\nExample: To retrieve all BWCE instances, set capabilityId to \"BWCE\" in your input\n\nSamples:\n         - Sample 1 — Success\n            Input:\n             {\"dataPlaneId\": [\"dp-123\"], \"capabilityId\": [\"BWCE\"], \"capabilityInstanceId\": [\"ci-001\"], \"page\": 1, \"limit\": 10}\n            Output:\n\t\t     {\"status\":\"success\",\"context\":[\"2024-11-11T11:04:59.224Z\"],\"response\":{\"data\":[{\"data-plane-id\":\"dp-123\",\"data-plane-name\":\"Production DataPlane\",\"capability-instance-id\":\"ci-001\",\"capability-instance-name\":\"BWCE Instance 1\",\"capability-id\":\"BWCE\",\"type\":\"BWCE\",\"description\":\"BusinessWorks Container Edition instance\",\"created-by\":\"admin\",\"created-time\":\"2024-12-01T10:30:00Z\",\"modified-by\":\"admin\",\"modified-time\":\"2024-12-15T14:20:00Z\",\"namespace\":\"default\",\"region\":\"us-east-1\",\"tags\":\"\",\"version\":\"1.0.0\",\"latest-version-available\":\"1.1.0\",\"resource-instances\":[{\"id\":\"cuumg7a7dsoajnuj4f5g\",\"name\":\"storage-resource\"},{\"id\":\"cuumgaa7dsoajnuj4f60\",\"name\":\"ingress-resource\"}],\"status\":\"Running\",\"services\":[{\"name\":\"bwce-service\",\"status\":\"Running\",\"message\":\"Service is healthy\"}]}],\"total-records-in-table\":1}}\n\n         - Sample 2 — Error\n            Input:\n              {\"capabilityInstanceId\": [\"ci-999\"]}\n            Output:\n              {\"status\": \"error\",\"code\": \"CP-10000\",\"message\": \"Error summary\",\"details\": \"Error details\",\"context\": [\"2025-03-11T04:53:52Z\"]"
+    inputSchema:
+      type: object
+      properties:
+        dataPlaneId:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: id(s) of the data plane to filter capability instances for the specified data plane(s)'
+        dataPlaneName:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: name(s) of the data plane to filter capability instances for the specified data plane(s)'
+        capabilityId:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: id(s) of the capability to filter capability instances for the specified capability. To check for possible values, use the ''getCapabilitiesMetadata'' tool. '
+        capabilityInstanceId:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: id(s) of the capability instance to filter by specific capability instance'
+        status:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: status(es) of the capability instance to filter by status. Supported values are: ''red'',''amber'' and ''green'''
+        includeFields:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: list of attribute names to include in the response. Only the specified fields will be returned. Accepted values are from the output fields of this tool such as ''capability-instance-id'', ''capability-instance-name'', ''capability-id'', ''data-plane-id'', ''status'', etc.'
+        page:
+          type: integer
+          description: 'Optional: page number for pagination'
+        limit:
+          type: integer
+          description: 'Optional: limit for pagination'
+        orderBy:
+          type: string
+          description: 'Optional: name of the field to order the results by. Supported values: ''data-plane-id'', ''data-plane-name'', ''capability-instance-id'', ''capability-instance-name'', ''capability-id'', ''type'', ''description'', ''created-by'', ''created-time'', ''modified-by'', ''modified-time'', ''region'', ''status''.'
+        order:
+          type: string
+          description: 'Optional: sort order. Supported values: ''asc'' or ''desc''. Only takes effect when orderBy is provided.'
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: listDataplanes
+    description: "List data planes in a subscription with support of optional filters\n\nPurpose: To list data planes in a subscription with comprehensive filtering options. These filters should be used as much as possible\nThis tool provides detailed output, encompassing data plane-specific data as well as fundamental information about Capability types and Instances associated with these data planes. It should be sufficient for most needs; invoking other tools is only necessary when detailed resource information is explicitly required.\n\nInput:\n- dataPlaneId: Optional filter to get details of specific data plane(s) identified by unique ID(s). Accepts single or multiple IDs as an array\n- dataPlaneName: Optional filter to get details of specific data plane(s) by name(s). Accepts single or multiple names as an array\n- dataPlaneType: Optional filter to get data planes by type(s). Accepts single or multiple types as an array. Supported values: 'k8s' or 'control-tower'\n- includeFields: Optional filter to specify which attributes to include in the response. Accepts an array of field names from the output details (e.g., ['data-plane-id', 'name', 'status', 'capabilities']). When provided, only the specified fields will be returned\n- status: Optional filter to get data planes by status(es). Accepts single or multiple statuses as an array. Supported values are: 'red','amber' and 'green' \n- page: Optional page number for pagination\n- limit: Optional limit for pagination\n- orderBy: Optional name of the field to order the results by. Supported values: 'data-plane-name', 'data-plane-id', 'data-plane-description', 'host-cloud-type', 'registered-region', 'status'\n- order: Optional sort order. Supported values: 'asc' or 'desc'. Only takes effect when orderBy is provided\n\nOutput: A JSON object containing:\n- data: A list of data plane details (described below)\n- total-records-in-table: Total number of records returned, to be used for pagination\n\nEach record in 'data' has the following details:\n- data-plane-id: Unique identifier of the data plane\n- data-plane-name: Name of the data plane\n- status: Status of the data plane\n- message: Additional message or information about the data plane status\n- tibtunnel-connected: Indicates if the Tibco tunnel is connected for the data plane\n- cluster-scoped-permissions: Indicates if the data plane has cluster-scoped permissions\n- data-plane-description: Description of the data plane\n- fluent-bit: Fluent Bit is enabled or disabled for the data plane\n- host-cloud-type: Type of the data plane\n- namespace: The namespace of the data plane\n- registered-region: The region where the data plane is registered\n- service-account-name: The name of the service account associated with the data plane\n- tags: Tags associated with the data plane\n- custom-certificate-secret-name: The name of the custom certificate secret for the data plane. This is only present in response if being set while creating the Data plane\n- proxy-config: Proxy configuration for the data plane. This is only present in response if being set while creating the Data plane\n- container-registry: The container registry used by the data plane, including:\n  - url: The URL of the container registry\n  - repository: The repository in the container registry\n  - username: The username for accessing the container registry\n  - password: The redacted password for accessing the container registry.\n- capabilities: List of capabilities of the data plane, each including:\n  - id: Unique identifier of the capability(also referred as capability-instance id in some cases)\n  - name: Name of the capability\n  - capability-id: Type of the capability (also referred as capability, type for other tools)\n\nNote: If no filters are provided, all data planes in the subscription will be returned.\nSamples:\n         - Sample 1 — Success (Single values)\n            Input:\n             {\"dataPlaneId\": [\"dp-123\"], \"dataPlaneType\": [\"k8s\"]}\n            Output:\n             {\"status\":\"success\",\"response\":{\"data\":[{\"data-plane-id\":\"crgnkdp90k6c73d0erf0\",\"data-plane-name\":\"Production DataPlane\",\"status\":\"red\",\"message\":\"Last heard status at 2024-09-11 11:08:40 +0000 UTC\",\"tibtunnel-connected\":false,\"cluster-scoped-permissions\":\"true\",\"data-plane-description\":\"Production environment data plane\",\"fluent-bit\":\"enabled\",\"host-cloud-type\":\"AWS\",\"namespace\":\"default\",\"registered-region\":\"us-east-1\",\"service-account-name\":\"dataplane-sa\",\"tags\":[\"production\"],\"custom-certificate-secret-name\":\"custom-cert\",\"proxy-config\":\"{}\",\"container-registry\":{\"url\":\"https://registry.example.com\",\"repository\":\"tibco\",\"username\":\"user\",\"password\":\"pass\"},\"capabilities\":[{\"id\":\"cap-001\",\"name\":\"BWCE\",\"capability-id\":\"BWCE\"}]}],\"total-records-in-table\":1},\"context\":[\"2024-11-11T11:04:59.224Z\"]}\n\n         - Sample 2 — Success (Multiple values)\n            Input:\n             {\"dataPlaneId\": [\"dp-123\", \"dp-456\"], \"dataPlaneType\": [\"k8s\", \"control-tower\"]}\n            Output:\n             {\"status\":\"success\",\"response\":{\"data\":[...data planes from multiple IDs and types...],\"total-records-in-table\":10},\"context\":[\"2024-11-11T11:04:59.224Z\"]}\n\n         - Sample 3 — Error\n            Input:\n              {\"dataPlaneId\": [\"dp-999\"]}\n            Output:\n              {\"status\": \"error\",\"code\": \"CP-10000\",\"message\": \"Error summary\",\"details\": \"Error details\",\"context\": [\"2025-03-11T04:53:52Z\"]"
+    inputSchema:
+      type: object
+      properties:
+        dataPlaneId:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: id(s) of the data plane to filter by specific data plane(s)'
+        dataPlaneName:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: name(s) of the data plane to filter by specific data plane name(s)'
+        dataPlaneType:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: type(s) of the data plane to filter by type. Supported values: ''k8s'' or ''control-tower'''
+        status:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: status(es) of the data plane to filter by status. Supported values are: ''red'',''amber'' and ''green'''
+        includeFields:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: list of attribute names to include in the response. Only the specified fields will be returned. Accepted values are from the output fields of this tool such as ''data-plane-id'', ''name'', ''status'', ''host-cloud-type'', ''capabilities'', etc.'
+        page:
+          type: integer
+          description: 'Optional: page number for pagination'
+        limit:
+          type: integer
+          description: 'Optional: limit for pagination'
+        orderBy:
+          type: string
+          description: 'Optional: name of the field to order the results by. Supported values: ''data-plane-name'', ''data-plane-id'', ''data-plane-description'', ''host-cloud-type'', ''registered-region'', ''status''.'
+        order:
+          type: string
+          description: 'Optional: sort order. Supported values: ''asc'' or ''desc''. Only takes effect when orderBy is provided.'
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: listLicenseDetails
+    description: |-
+      Fetch license details for a subscription with optional scope filters
+
+      Purpose: To retrieve license information configured . The response includes license file metadata, expiration dates, capability-level entitlements (FTL, BW, EMS, RV, etc.), and host identifiers.
+
+      Input:
+      - dataPlaneId: Optional filter to fetch license details for a specific data plane. Mutually exclusive with 'global'.
+      - global: Optional boolean flag. When true, fetches only the global (subscription-level) license. Mutually exclusive with 'dataPlaneId'.
+
+      Note: If neither 'dataPlaneId' nor 'global' is provided, all licenses in the subscription are returned.
+
+      Output: A JSON object containing:
+      - response: A list of license entries, each including:
+        - scope: License scope (e.g., 'SUBSCRIPTION' or 'DATAPLANE')
+        - scope_id: Identifier of the scope (subscription id or data plane id)
+        - file_name: Name of the uploaded license file
+        - license_file: Encoded license file content
+        - license_metadata: Decoded license metadata including ENTERPRISE_ID, LICENSE entries (with EXPIRATION, LICENSE_NAME, LICENSE_VERSION, SERIAL_NUMBER, etc.), MACHINE_TYPE, SERVER_ID and source identifiers
+        - modified_date: Last modification timestamp (Unix seconds)
+        - linked_data_planes: Data planes linked to this license (if any)
+
+      Samples:
+               - Sample 1 — Success (all licenses in subscription)
+                  Input:
+                   {}
+                  Output:
+                   {"status":"success","response":[{"scope":"SUBSCRIPTION","scope_id":"d7pm0252sbvs73amckc0","file_name":"license.bin","license_file":"...","license_metadata":{"ENTERPRISE_ID":"957","LICENSE":[{"LICENSE_NAME":"TIBCO_FTL_CCS","EXPIRATION":"2026-08-31","SERIAL_NUMBER":"LA-T228628-42454","expired":false}]},"modified_date":1778227131,"linked_data_planes":null}],"context":["2026-05-08T08:01:43.454Z"]}
+
+               - Sample 2 — Success (specific data plane)
+                  Input:
+                   {"dataPlaneId": "dp-123"}
+                  Output:
+                   {"status":"success","response":[{"scope":"DATAPLANE","scope_id":"dp-123","file_name":"license.bin","license_metadata":{...}}],"context":["2026-05-08T08:01:43.454Z"]}
+
+               - Sample 3 — Success (global only)
+                  Input:
+                   {"global": true}
+                  Output:
+                   {"status":"success","response":[{"scope":"SUBSCRIPTION","scope_id":"d7pm0252sbvs73amckc0","license_metadata":{...}}],"context":["2026-05-08T08:01:43.454Z"]}
+
+               - Sample 4 — Error
+                  Input:
+                    {"dataPlaneId": "dp-999"}
+                  Output:
+                    {"status": "error","code": "CP-10000","message": "Error summary","details": "Error details","context": ["2026-05-08T04:53:52Z"]}
+    inputSchema:
+      type: object
+      properties:
+        dataPlaneId:
+          type: string
+          description: 'Optional: id of the data plane to fetch license details for. Mutually exclusive with ''global''. If neither is provided, all licenses in the subscription are returned. To check for possible values, use the ''listDataplanes'' tool.'
+        global:
+          type: boolean
+          description: 'Optional: when true, fetches only the global (subscription-level) license. Mutually exclusive with ''dataPlaneId''.'
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: listResourceInstances
+    description: |-
+      List details of multiple resource instances in a subscription with optional filters
+
+      Purpose: To list detailed resource instance information in a single, unified response. The tool consolidates data across control plane APIs to reduce round trips and supports filtering when you only need a subset.
+
+      Input:
+      - dataPlaneId: Optional filter to get details of resource instances with scope as dataplane(s). Accepts single or multiple IDs as an array
+      - dataPlaneName: Optional filter to get details of resource instances with scope as dataplane(s). Accepts single or multiple names as an array
+      - resourceInstanceId: Optional filter to get details of specific resource instance(s) by ID(s). Accepts single or multiple IDs as an array
+      - resourceType: Optional filter to get details of resource instances for specific resource type(s). Accepts single or multiple types as an array. To get the correct type 'listResources' tool can be used and 'id' from the response should be used.
+      - includeFields: Optional filter to specify which attributes to include in the response. Accepts an array of field names from the output details (e.g., ['id', 'name', 'type', 'scope', 'data-plane-id']). When provided, only the specified fields will be returned
+      - page: Optional page number for pagination
+      - limit: Optional limit for pagination
+      - orderBy: Optional name of the field to order the results by. Supported values: 'id', 'name', 'type', 'scope', 'data-plane-id', 'data-plane-name'
+      - order: Optional sort order. Supported values: 'asc' or 'desc'. Only takes effect when orderBy is provided
+
+      Returns: A JSON object containing:
+      - data: A list of resource instances (described below)
+      - total-records-in-table: Total number of records returned, to be used for pagination
+
+      For resources with scope 'DataPlane', each item in 'data' includes: id, name, type, scope, data-plane-id, data-plane-name, instance-details, linked-capabilities (id, name, capability). For resources with scope 'Subscription', each item includes: id, name, type, scope, instance-details, linked-dataplanes (id, name).
+
+      Samples:
+               - Sample 1 — Success (Single values)
+                  Input:
+                   {"dataPlaneId": ["dp-123"], "resourceType": ["postgres"]}
+                  Output:
+                   {"status":"success","response":{"data":[{"id":"res-001","name":"postgres-db","type":"postgres","scope":"DataPlane","data-plane-id":"dp-123","data-plane-name":"Production DP","instance-details":{...},"linked-capabilities":[{"id":"cap-001","name":"BWCE","capability":"BWCE"}]}],"total-records-in-table":1},"context":["2024-11-11T11:04:59.224Z"]}
+
+               - Sample 2 — Success (Multiple values)
+                  Input:
+                   {"dataPlaneId": ["dp-123", "dp-456"], "resourceType": ["postgres", "kafka"]}
+                  Output:
+                   {"status":"success","response":{"data":[...resource instances from multiple data planes and resource types...],"total-records-in-table":10},"context":["2024-11-11T11:04:59.224Z"]}
+
+               - Sample 3 — Error
+                  Input:
+                    {"resourceInstanceId": ["res-999"]}
+                  Output:
+                    {"status": "error","code": "CP-10000","message": "Error summary","details": "Error details","context": ["2025-03-11T04:53:52Z"]}
+    inputSchema:
+      type: object
+      properties:
+        dataPlaneId:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: id(s) of the data plane to filter resource instances for the specified data plane(s).'
+        dataPlaneName:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: name(s) of the data plane to filter resource instances for the specified data plane(s). To check for possible values, use the ''listDataplanes'' tool.'
+        resourceInstanceId:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: id(s) of the resource instance to be fetched.'
+        resourceType:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: type(s) of the resource instance to filter by resource type. To check for possible values, use the ''listResources'' tool.'
+        includeFields:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: list of attribute names to include in the response. Only the specified fields will be returned. Accepted values are from the output fields of this tool such as ''id'', ''name'', ''type'', ''scope'', ''data-plane-id'', ''instance-details'', etc.'
+        page:
+          type: integer
+          description: 'Optional: page number for paginated results. Only set this when the user explicitly requests a specific page.'
+        limit:
+          type: integer
+          description: 'Optional: maximum number of records to return per page for pagination. Only set this when the user explicitly requests a custom limit.'
+        orderBy:
+          type: string
+          description: 'Optional: name of the field to order the results by. Supported values: ''id'', ''name'', ''type'', ''scope'', ''data-plane-id'', ''data-plane-name''.'
+        order:
+          type: string
+          description: 'Optional: sort order. Supported values: ''asc'' or ''desc''. Only takes effect when orderBy is provided.'
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: listResources
+    description: "List all possible resources available in platform and their supported types where applicable \n\nPurpose: To get all resources available in the platform which can be used to create instances of resources \n\nInput: No input parameters are required for this tool \n\nReturns: List of resources including :\n- id: Unique identifier for the resource type\n- name: Human-readable name for the resource\n- supportedTypes: For route resource types (INGRESS_CONTROLLER, GATEWAYAPI), the list of supported controller implementations (e.g. nginx, kong, traefik, GKE, Istio). Absent for other resource types. \n\nNote: This does not return the instances of the resources, but only the types of resources available in the platform.Samples:\n         - Sample 1 — Success\n            Input:\n             {}\n            Output:\n             {\"status\":\"success\",\"response\":[{\"id\":\"INGRESS_CONTROLLER\",\"name\":\"Ingress Controller\",\"supportedTypes\":[\"nginx\",\"kong\",\"traefik\",\"openshiftRouter\",\"haProxy\"]},{\"id\":\"GATEWAYAPI\",\"name\":\"Gateway API\",\"supportedTypes\":[\"nginx\",\"GKE\",\"Istio\",\"traefik\",\"Other GatewayAPI Controller\",\"NetScaler\"]},{\"id\":\"STORAGE_CLASS\",\"name\":\"Storage Class\"},{\"id\":\"EMAIL_RECEIVER\",\"name\":\"Email Receiver\"}],\"context\":[\"2025-01-01T00:00:00Z\"]}"
+    inputSchema:
+      type: object
+      additionalProperties: false
+    annotations:
+      readOnlyHint: true
+  - name: manageAlertRule
+    description: |-
+      Create or update an alert rule to monitor resources and send notifications
+
+      Purpose: To create a new alert rule or update an existing one that monitors resources and sends notifications when triggered
+
+      Behaviour:
+      - If 'resource-instance-id' is omitted, a new alert rule is created (name, dp-id, capability-id, severity, config-details and alert-receiver-id are required)
+      - If 'resource-instance-id' is provided, the existing alert rule is updated
+      - For updates, only provide the fields that need to be changed. Fields that are omitted will remain unchanged on the server.
+      - For partial updates of 'config-details', include only the sub-fields you want to change; omitted sub-fields stay unchanged.
+      - To enable/disable an existing rule without changing anything else, provide only 'resource-instance-id' and 'is-enabled' ('true' or 'false').
+
+      Input: ManageAlertRuleInput with the following fields:
+      - resource-instance-id: (Optional) ID of the alert rule resource instance to update. To get this id, use the 'listResourceInstances' tool with resourceType 'ALERT_RULE'
+      - is-enabled: (Optional) Flag to enable or disable an existing alert rule. Possible values are 'true' or 'false'. Default value should be ''
+      - name: Name of the alert rule (required for create, optional for update)
+      - description: (Optional) Description of the alert rule
+      - alert-message: (Optional) Message to be sent when the alert is triggered
+      - dp-id: ID of the data plane to which the alert rule is applied (required for create, optional for update)
+      - capability-id: ID of the capability to which the alert rule is applied (required for create, optional for update)
+      - severity: Severity of the alert (e.g., critical, warning, info) (required for create, optional for update)
+      - config-details: Configuration details for the alert rule (required for create, optional for update)
+      - alert-receiver-id: ID of the alert receiver to which the alert is sent when triggered (required for create, optional for update)
+
+      Returns: Id of the created or updated resource
+      - resource_instance_id : Unique identifier for the alert rule resource instance
+
+      Note: Alert rule is a type of Resource known to the Control Plane as 'ALERT_RULE' and is created only at the subscription level.
+       For update calls, only fields to be changed are expected in the input/payload.
+
+      Samples:
+               - Sample 1 — Create (no resource-instance-id)
+                  Input:
+                   {"name": "High CPU Alert", "description": "Monitor CPU usage", "alert-message": "CPU usage exceeded threshold", "dp-id": "dp-123", "capability-id": "BWCE", "severity": "critical", "config-details": {"alert-rule-category": "CpuLimit", "alert-rule-operator": ">=", "alert-rule-time": "5", "alert-rule-value": "80", "alert-time-range": "10"}, "alert-receiver-id": "email-rec-001"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"alert-rule-001"},"context":["2025-01-01T00:00:00Z"]}
+               - Sample 2 — Update top-level fields (with resource-instance-id)
+                  Input:
+                   {"resource-instance-id": "d86l8fmopu3c73abr7dg", "name": "alert-ruled", "severity": "warning", "alert-receiver-id": "d86kh6mopu3c73abr7ag"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d86l8fmopu3c73abr7dg"},"context":["2025-01-01T00:00:00Z"]}
+               - Sample 3 — Partial update of config-details only (only change alert-rule-time)
+                  Input:
+                   {"resource-instance-id": "d86l8fmopu3c73abr7dg", "config-details": {"alert-rule-time": "58"}}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d86l8fmopu3c73abr7dg"},"context":["2025-01-01T00:00:00Z"]}
+               - Sample 4 — Disable an existing alert rule
+                  Input:
+                   {"resource-instance-id": "d86l8fmopu3c73abr7dg", "is-enabled": "false"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d86l8fmopu3c73abr7dg","message":"Alert rule has been disabled successfully"},"context":["2025-01-01T00:00:00Z"]}
+    inputSchema:
+      type: object
+      properties:
+        resource-instance-id:
+          type: string
+          description: 'Optional: id of the alert rule resource instance to be updated. If provided, the existing alert rule is updated; if omitted, a new alert rule is created. To get this id, use the ''listResourceInstances'' tool with resourceType ''ALERT_RULE''.'
+        is-enabled:
+          type: string
+          description: 'Optional: flag to enable or disable an existing alert rule. Possible values are ''true'' or ''false''. Only used on update — provide only ''resource-instance-id'' and ''is-enabled'' to toggle. If the user has not explicitly set it, leave empty.'
+        name:
+          type:
+            - "null"
+            - string
+          description: name of the alert rule. Required when creating, optional when updating — omit to leave unchanged.
+        description:
+          type:
+            - "null"
+            - string
+          description: 'Optional: description of the alert rule. Omit to leave unchanged during update.'
+        alert-message:
+          type:
+            - "null"
+            - string
+          description: 'Optional: message to be sent when the alert is triggered. Omit to leave unchanged during update.'
+        dp-id:
+          type:
+            - "null"
+            - string
+          description: id of the data plane to which the alert rule is applied. Required when creating, optional when updating — omit to leave unchanged. To check for possible values, use the 'listDataplanes' tool.
+        capability-id:
+          type:
+            - "null"
+            - string
+          description: id of the capability to which the alert rule is applied. Required when creating, optional when updating — omit to leave unchanged. To check for valid values, use the 'getCapabilitiesMetadata' tool.
+        severity:
+          type:
+            - "null"
+            - string
+          description: 'severity of the alert rule. Supported values: ''critical'', ''warning'', ''info''. Required when creating, optional when updating — omit to leave unchanged.'
+        config-details:
+          type:
+            - "null"
+            - object
+          properties:
+            alert-rule-category:
+              type:
+                - "null"
+                - string
+              description: 'category of the alert rule. Supported values: ''FaultPercentage'', ''CpuRequest'', ''CpuLimit'', ''MemoryRequest'', ''MemoryLimit''. Required when creating, optional when updating — omit to leave unchanged.'
+            alert-rule-operator:
+              type:
+                - "null"
+                - string
+              description: 'operator to be used for the alert rule. Supported values: ''>='', ''>'', ''<='', ''<''. Required when creating, optional when updating — omit to leave unchanged.'
+            alert-rule-value:
+              type:
+                - "null"
+                - string
+              description: threshold value for the alert rule. Required when creating, optional when updating — omit to leave unchanged.
+            alert-time-range:
+              type:
+                - "null"
+                - string
+              description: time range for the alert rule. Supported value is anything greater than 5 as whole number. Required when creating, optional when updating — omit to leave unchanged.
+            alert-rule-time:
+              type:
+                - "null"
+                - string
+              description: time interval for the situation to persist before triggering an alert. Supported value is anything greater than 0 as whole number. Required when creating, optional when updating — omit to leave unchanged.
+          description: configuration details for the alert rule. Required when creating, optional when updating — omit to leave unchanged. For partial updates, include only the sub-fields you want to change.
+          additionalProperties: false
+        alert-receiver-id:
+          type:
+            - "null"
+            - string
+          description: id of the alert receiver to which the alert is sent when triggered. Required when creating, optional when updating — omit to leave unchanged. To check for possible values, use the 'listResourceInstances' tool with id 'EMAIL_RECEIVER'.
+      additionalProperties: false
+  - name: manageCapabilityBW5CE
+    description: "Provision or update a bw5ce capability inside the given data plane\n\nPurpose: This tool provisions a new bw5ce capability instance or updates an existing one inside a specified data plane.\nIf capability-instance-id is provided, the existing capability instance is updated; otherwise, a new one is provisioned.\nFor updates, only provide the fields that need to be changed. Fields that are omitted will remain unchanged.\n\nInput:\n- data-plane-id: The ID of the data plane where the bw5ce capability instance will be provisioned or updated.\n- capability-instance-id: Optional. The ID of the capability instance to update. If omitted, a new instance is provisioned.\n- provision-schema: The schema containing the details required to provision or update the bw5ce capability instance. This includes:\n\t- path-prefix: The path prefix for the bw5ce capability instance. Required for create, optional for update.\n\t- storage-class-resource-instance-id: The ID of the storage class resource instance. Required for provisioning, must not be provided for update.\n\t- ingress-controller-resource-instance-id: Optional ID of the ingress controller resource instance to be used by the bw5ce capability. This is only needed if user wants to use ingress controller instead of gateway \n\t- gateway-resource-instance-id: Optional ID of the gateway resource instance to be used by the bw5ce capability. This is only needed if user wants to use gateway instead of ingress controller \n\t- fluentbit-sidecar-enabled: A boolean indicating whether the Fluent Bit sidecar to be enabled which is used for centralized logging. Required for create, optional for update.\n\nOutput:\n- For provisioning: The details of the provisioned bw5ce capability instance, including:\n\t- capabilityInstanceId: The ID of the provisioned capability instance.\n\t- releasesStatus: A list of release statuses, each containing name, namespace, releaseName, revision, status, and error.\n\t- successfulReleases: A list of successfully deployed releases with the same structure.\n- For update: A success message confirming the capability instance was updated.\n\nNote: The ingress-controller-resource-instance-id and gateway-resource-instance-id are mutually exclusive. Only one of them is needed based on whether user wants to use ingress controller or gateway.\n For the update calls only fields to be changed are expected in the input/payload\n\nSamples:\n         - Sample 1 — Success (provision)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"provision-schema\": {\"path-prefix\": \"/bw5ce\", \"storage-class-resource-instance-id\": \"storage-001\", \"ingress-controller-resource-instance-id\": \"ingress-001\", \"fluentbit-sidecar-enabled\": true}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"capabilityInstanceId\":\"bw5ce-inst-001\",\"releasesStatus\":[{\"name\":\"bw5ceprovisioner\",\"namespace\":\"ns-001\",\"releaseName\":\"bw5ceprovisioner-bw5ce-inst-001\",\"revision\":1,\"status\":\"deployed\",\"error\":\"\"}],\"successfulReleases\":[{\"name\":\"bw5ceprovisioner\",\"namespace\":\"ns-001\",\"releaseName\":\"bw5ceprovisioner-bw5ce-inst-001\",\"revision\":1,\"status\":\"deployed\",\"error\":\"\"}]},\"context\":[\"2025-01-01T00:00:00Z\"]}\n\n         - Sample 2 — Success (update)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"capability-instance-id\": \"bw5ce-inst-001\", \"provision-schema\": {\"path-prefix\": \"/bw5ce\", \"ingress-controller-resource-instance-id\": \"ingress-001\", \"fluentbit-sidecar-enabled\": false}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"message\":\"Successfully updated capability instance 'bw5ce-inst-001' on dataplane 'dp-123'\"},\"context\":[\"2025-01-01T00:00:00Z\"]}\n\n         - Sample 3 — Success (partial update — only change fluentbit setting)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"capability-instance-id\": \"bw5ce-inst-001\", \"provision-schema\": {\"fluentbit-sidecar-enabled\": false}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"message\":\"Successfully updated capability instance 'bw5ce-inst-001' on dataplane 'dp-123'\"},\"context\":[\"2025-01-01T00:00:00Z\"]}"
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane for which capability is to be provisioned or updated. To check for possible values, use the 'listDataplanes' tool.
+        capability-instance-id:
+          type: string
+          description: 'Optional: id of the capability instance to be updated. If provided, the existing capability instance is updated; if omitted, a new capability instance is provisioned. To get this id, use the ''listCapabilityInstances'' tool.'
+        provision-schema:
+          type: object
+          properties:
+            path-prefix:
+              type:
+                - "null"
+                - string
+              description: path prefix to be used while provisioning the capability. Required for create, optional for update.
+            storage-class-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: id of the storage class resource instance to be used while provisioning the capability. Required for provisioning, must not be provided for update. To check for possible values, use the 'listResourceInstances' tool with resourceType filter as 'STORAGE_CLASS'
+            ingress-controller-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: 'Optional: id of the ingress controller resource instance to be used while provisioning the capability. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''INGRESS_CONTROLLER'''
+            gateway-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: 'Optional: id of the gateway api resource instance to be used while provisioning the capability. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''GATEWAYAPI'''
+            fluentbit-sidecar-enabled:
+              type:
+                - "null"
+                - boolean
+              description: flag to enable or disable fluentbit sidecar while provisioning the capability. Required for create, optional for update.
+          description: schema for provisioning or updating the bw5ce capability
+          additionalProperties: false
+      required:
+        - data-plane-id
+        - provision-schema
+      additionalProperties: false
+  - name: manageCapabilityBWCE
+    description: "Provision or update a bwce capability inside the given data plane\n\nPurpose: This tool provisions a new bwce capability instance or updates an existing one inside a specified data plane.\nIf capability-instance-id is provided, the existing capability instance is updated; otherwise, a new one is provisioned.\nFor updates, only provide the fields that need to be changed. Fields that are omitted will remain unchanged.\n\nInput:\n- data-plane-id: The ID of the data plane where the bwce capability instance will be provisioned or updated.\n- capability-instance-id: Optional. The ID of the capability instance to update. If omitted, a new instance is provisioned.\n- provision-schema: The schema containing the details required to provision or update the bwce capability instance. This includes:\n\t- path-prefix: The path prefix for the bwce capability instance. Required for create, optional for update.\n\t- storage-class-resource-instance-id: The ID of the storage class resource instance. Required for provisioning, must not be provided for update.\n\t- ingress-controller-resource-instance-id: Optional ID of the ingress controller resource instance to be used by the bwce capability. This is only needed if user wants to use ingress controller instead of gateway \n\t- gateway-resource-instance-id: Optional ID of the gateway resource instance to be used by the bwce capability. This is only needed if user wants to use gateway instead of ingress controller \n\t- db-config-resource-instance-id: Optional ID of the database config resource instance to be used.\n\t- execution-history-enabled: Optional flag indicating whether to enable execution history for the bwce capability instance.\n\n\t- fluentbit-sidecar-enabled: A boolean indicating whether the Fluent Bit sidecar to be enabled which is used for centralized logging. Required for create, optional for update.\n\n\t- auto-discovery-enabled: Optional flag indicating whether to enable auto-discovery for the bwce capability instance.\n\t- auto-discovery-config: Optional configuration details for auto-discovery, including:\n\t\t- label-selectors: A map of label selectors to be used for auto-discovery.\n\t\t- port: The port number to be used for auto-discovery.\n\nOutput:\n- For provisioning: The details of the provisioned bwce capability instance, including:\n\t- capabilityInstanceId: The ID of the provisioned capability instance.\n\t- releasesStatus: A list of release statuses, each containing name, namespace, releaseName, revision, status, and error.\n\t- successfulReleases: A list of successfully deployed releases with the same structure.\n- For update: A success message confirming the capability instance was updated.\n\nNote: The db-config-resource-instance-id is optional and is only needed if execution-history-enabled is set to true. If execution history is not required, this field can be omitted.\n auto-discovery-config is optional and is only needed if auto-discovery-enabled is set to true. If auto-discovery is not required, this field can be omitted.\n The ingress-controller-resource-instance-id and gateway-resource-instance-id are mutually exclusive. Only one of them is needed based on whether user wants to use ingress controller or gateway.\n\nSamples:\n         - Sample 1 — Success (provision)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"provision-schema\": {\"path-prefix\": \"/bwce\", \"storage-class-resource-instance-id\": \"storage-001\", \"ingress-controller-resource-instance-id\": \"ingress-001\", \"execution-history-enabled\": true, \"db-config-resource-instance-id\": \"db-001\", \"fluentbit-sidecar-enabled\": true, \"auto-discovery-enabled\": true, \"auto-discovery-config\": {\"label-selectors\": {\"app\": \"bwce\"}, \"port\": 8080}}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"capabilityInstanceId\":\"bwce-inst-001\",\"releasesStatus\":[{\"name\":\"bwceprovisioner\",\"namespace\":\"ns-001\",\"releaseName\":\"bwceprovisioner-bwce-inst-001\",\"revision\":1,\"status\":\"deployed\",\"error\":\"\"}],\"successfulReleases\":[{\"name\":\"bwceprovisioner\",\"namespace\":\"ns-001\",\"releaseName\":\"bwceprovisioner-bwce-inst-001\",\"revision\":1,\"status\":\"deployed\",\"error\":\"\"}]},\"context\":[\"2025-01-01T00:00:00Z\"]}\n\n         - Sample 2 — Success (update)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"capability-instance-id\": \"bwce-inst-001\", \"provision-schema\": {\"path-prefix\": \"/bwce\", \"ingress-controller-resource-instance-id\": \"ingress-001\", \"execution-history-enabled\": true, \"db-config-resource-instance-id\": \"db-001\", \"fluentbit-sidecar-enabled\": true, \"auto-discovery-enabled\": true, \"auto-discovery-config\": {\"label-selectors\": {\"app\": \"bwce\"}, \"port\": 8080}}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"message\":\"Successfully updated capability instance 'bwce-inst-001' on dataplane 'dp-123'\"},\"context\":[\"2025-01-01T00:00:00Z\"]}\n\n         - Sample 3 — Success (partial update — only change path prefix)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"capability-instance-id\": \"bwce-inst-001\", \"provision-schema\": {\"path-prefix\": \"/bwce-v2\"}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"message\":\"Successfully updated capability instance 'bwce-inst-001' on dataplane 'dp-123'\"},\"context\":[\"2025-01-01T00:00:00Z\"]}"
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane for which capability is to be provisioned or updated. To check for possible values, use the 'listDataplanes' tool.
+        capability-instance-id:
+          type: string
+          description: 'Optional: id of the capability instance to be updated. If provided, the existing capability instance is updated; if omitted, a new capability instance is provisioned. To get this id, use the ''listCapabilityInstances'' tool.'
+        provision-schema:
+          type: object
+          properties:
+            path-prefix:
+              type:
+                - "null"
+                - string
+              description: path prefix to be used while provisioning the capability. Required for create, optional for update.
+            storage-class-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: id of the storage class resource instance to be used while provisioning the capability. Required for provisioning, must not be provided for update. To check for possible values, use the 'listResourceInstances' tool with resourceType filter as 'STORAGE_CLASS'
+            ingress-controller-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: 'Optional: id of the ingress controller resource instance to be used while provisioning the capability. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''INGRESS_CONTROLLER'''
+            gateway-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: 'Optional: id of the gateway api resource instance to be used while provisioning the capability. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''GATEWAYAPI'''
+            db-config-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: 'Optional: id of the db config resource instance to be used while provisioning the capability. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''DB_CONFIG'''
+            execution-history-enabled:
+              type:
+                - "null"
+                - boolean
+              description: 'Optional: flag to enable or disable execution history while provisioning the capability.'
+            fluentbit-sidecar-enabled:
+              type:
+                - "null"
+                - boolean
+              description: flag to enable or disable fluentbit sidecar while provisioning the capability. Required for create, optional for update.
+            auto-discovery-enabled:
+              type:
+                - "null"
+                - boolean
+              description: 'Optional: flag to enable or disable auto discovery while provisioning the capability.'
+            auto-discovery-config:
+              type:
+                - "null"
+                - object
+              properties:
+                label-selectors:
+                  type: object
+                  description: 'Optional: regular expression or simple key-value pair to select the bwce apps for auto discovery'
+                  additionalProperties:
+                    type: string
+                port:
+                  type: string
+                  description: 'Optional: port of the apps to be discovered'
+              description: 'Optional: configuration for auto discovery of bwce apps'
+              additionalProperties: false
+          description: schema for provisioning or updating the bwce capability
+          additionalProperties: false
+      required:
+        - data-plane-id
+        - provision-schema
+      additionalProperties: false
+  - name: manageCapabilityFlogo
+    description: "Provision or update a flogo capability inside the given data plane\n\nPurpose: This tool provisions a new flogo capability instance or updates an existing one inside a specified data plane.\nIf capability-instance-id is provided, the existing capability instance is updated; otherwise, a new one is provisioned.\nFor updates, only provide the fields that need to be changed. Fields that are omitted will remain unchanged.\n\nInput:\n- data-plane-id: The ID of the data plane where the flogo capability instance will be provisioned or updated.\n- capability-instance-id: Optional. The ID of the capability instance to update. If omitted, a new instance is provisioned.\n- provision-schema: The schema containing the details required to provision or update the flogo capability instance. This includes:\n\t- storage-class-resource-instance-id: The ID of the storage class resource instance. Required for provisioning, must not be provided for update.\n\t- ingress-controller-resource-instance-id: Optional ID of the ingress controller resource instance to be used by the flogo capability. This is only needed if user wants to use ingress controller instead of gateway \n\t- gateway-resource-instance-id: Optional ID of the gateway resource instance to be used by the flogo capability. This is only needed if user wants to use gateway instead of ingress controller \n\t- path-prefix: The path prefix to be used for the flogo capability. Required for create, optional for update.\n\t- fluent-bit-side-car-enabled: A boolean flag indicating whether to enable the Fluentbit sidecar for the flogo capability instance. Required for create, optional for update.\n\nOutput:\n- For provisioning: The details of the provisioned flogo capability instance, including:\n\t- capabilityInstanceId: The ID of the provisioned capability instance.\n\t- releasesStatus: A list of release statuses, each containing name, namespace, releaseName, revision, status, and error.\n\t- successfulReleases: A list of successfully deployed releases with the same structure.\n- For update: A success message confirming the capability instance was updated.\n\nNote: The ingress-controller-resource-instance-id and gateway-resource-instance-id are mutually exclusive. Only one of them is needed based on whether user wants to use ingress controller or gateway.\n\nSamples:\n         - Sample 1 — Success (provision)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"provision-schema\": {\"storage-class-resource-instance-id\": \"storage-001\", \"ingress-controller-resource-instance-id\": \"ingress-001\", \"path-prefix\": \"/flogo\", \"fluentbit-sidecar-enabled\": true}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"capabilityInstanceId\":\"flogo-inst-001\",\"releasesStatus\":[{\"name\":\"flogoprovisioner\",\"namespace\":\"ns-001\",\"releaseName\":\"flogoprovisioner-flogo-inst-001\",\"revision\":1,\"status\":\"deployed\",\"error\":\"\"}],\"successfulReleases\":[{\"name\":\"flogoprovisioner\",\"namespace\":\"ns-001\",\"releaseName\":\"flogoprovisioner-flogo-inst-001\",\"revision\":1,\"status\":\"deployed\",\"error\":\"\"}]},\"context\":[\"2025-01-01T00:00:00Z\"]}\n\n         - Sample 2 — Success (update)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"capability-instance-id\": \"flogo-inst-001\", \"provision-schema\": {\"ingress-controller-resource-instance-id\": \"ingress-001\", \"path-prefix\": \"/flogo-updated\", \"fluentbit-sidecar-enabled\": false}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"message\":\"Successfully updated capability instance 'flogo-inst-001' on dataplane 'dp-123'\"},\"context\":[\"2025-01-01T00:00:00Z\"]}\n\n         - Sample 3 — Success (partial update — only change path prefix)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"capability-instance-id\": \"flogo-inst-001\", \"provision-schema\": {\"path-prefix\": \"/flogo-v2\"}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"message\":\"Successfully updated capability instance 'flogo-inst-001' on dataplane 'dp-123'\"},\"context\":[\"2025-01-01T00:00:00Z\"]}"
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane for which capability is to be provisioned or updated. To check for possible values, use the 'listDataplanes' tool.
+        capability-instance-id:
+          type: string
+          description: 'Optional: id of the capability instance to be updated. If provided, the existing capability instance is updated; if omitted, a new capability instance is provisioned. To get this id, use the ''listCapabilityInstances'' tool.'
+        provision-schema:
+          type: object
+          properties:
+            storage-class-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: id of the storage class resource instance to be used while provisioning the capability. Required for provisioning, must not be provided for update. To check for possible values, use the 'listResourceInstances' tool with resourceType filter as 'STORAGE_CLASS'
+            ingress-controller-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: id of the ingress controller resource instance to be used while provisioning the capability. To check for possible values, use the 'listResourceInstances' tool with resourceType filter as 'INGRESS_CONTROLLER'
+            path-prefix:
+              type:
+                - "null"
+                - string
+              description: path prefix to be used while provisioning the capability. Required for create, optional for update.
+            fluentbit-sidecar-enabled:
+              type:
+                - "null"
+                - boolean
+              description: flag to enable or disable fluentbit sidecar while provisioning the capability. Required for create, optional for update.
+            gateway-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: 'Optional: id of the gateway api resource instance to be used while provisioning the capability. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''GATEWAYAPI'''
+          description: schema for provisioning or updating the flogo capability
+          additionalProperties: false
+      required:
+        - data-plane-id
+        - provision-schema
+      additionalProperties: false
+  - name: manageCapabilityInstance
+    description: |-
+      Upgrade or refresh a capability instance inside the given data plane
+
+      Purpose: This tool upgrades an existing capability instance to a specified version or refreshes it inside a data plane.
+               Refresh again deploys the concrete recipe for capability on the data plane. This is useful when user wants to re-deploy the capability with same version for scenarios like helm repo is updated, changes done to activation server,license file updated etc.
+      If capability-version is provided, the capability instance is upgraded to that version.
+      If capability-version is omitted, the capability instance is refreshed.
+
+      Input:
+      - data-plane-id: The ID of the data plane where the capability instance is located.
+      - capability-instance-id: The ID of the capability instance to upgrade or refresh.
+      - capability-version: Optional. The target version to upgrade the capability instance to. If omitted, a refresh is performed instead.
+
+      Output: The result of the upgrade or refresh operation, including:
+      - message: A message indicating the result of the operation.
+
+      Samples:
+               - Sample 1 — Success (upgrade)
+                  Input:
+                   {"data-plane-id": "dp-123", "capability-instance-id": "bwce-inst-001", "capability-version": "1.16.0"}
+                  Output:
+                   {"status":"success","response":{"message":"Upgrade initiated for capability instance bwce-inst-001"},"context":["2025-01-01T00:00:00Z"]}
+
+               - Sample 2 — Success (refresh)
+                  Input:
+                   {"data-plane-id": "dp-123", "capability-instance-id": "d7s65dd2sbvs73amckpg"}
+                  Output:
+                   {"status":"success","response":{"message":"Successfully refreshed capability instance 'd7s65dd2sbvs73amckpg' on dataplane 'dp-123'"},"context":["2026-05-05T04:04:54.317Z"]}
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane where the capability instance is located. To check for possible values, use the 'listDataplanes' tool.
+        capability-instance-id:
+          type: string
+          description: id of the capability instance to be upgraded or refreshed. To get this id, use the 'listCapabilityInstances' tool.
+        capability-version:
+          type: string
+          description: 'Optional: target version to upgrade the capability instance to. If omitted, the tool performs a refresh instead of an upgrade. To check for possible values, use the ''getCapabilitiesMetadata'' tool.'
+      required:
+        - data-plane-id
+        - capability-instance-id
+      additionalProperties: false
+  - name: manageCapabilityTIBCOHUB
+    description: "Provision or update a TibcoHub capability inside the given data plane\n\nPurpose: This tool provisions a new TibcoHub capability instance or updates an existing one inside a specified data plane.\nIf capability-instance-id is provided, the existing capability instance is updated; otherwise, a new one is provisioned.\nFor updates, only provide the fields that need to be changed. Fields that are omitted will remain unchanged.\n\nInput:\n- data-plane-id: The ID of the data plane where the TibcoHub capability instance will be provisioned or updated.\n- capability-instance-id: Optional. The ID of the capability instance to update. If omitted, a new instance is provisioned.\n- provision-schema: The schema containing the details required to provision or update the TibcoHub capability. This includes:\n\t- storage-class-resource-instance-id: Optional The ID of the storage class resource instance. Required for provisioning (if not using database-resource-instance-id), must not be provided for update.\n\t- ingress-controller-resource-instance-id: Optional ID of the ingress controller resource instance to be used by the TibcoHub capability. This is only needed if user wants to use ingress controller instead of gateway \n\t- gateway-resource-instance-id: Optional ID of the gateway resource instance to be used by the TibcoHub capability. This is only needed if user wants to use gateway instead of ingress controller \n\t- database-resource-instance-id: Optional ID of the database resource instance to be used.\n\t- configuration: Configurations needed for provisioning or updating TibcoHub capability. Required for create, optional for update. These include:\n\t\t- developer-hub-name: The name of the developer hub.\n\t- advanced: Optional advanced configurations for the TibcoHub capability instance. These include:\n\t\t- kubernetes-secret-object: Optional Name of the kubernetes secret\n\t- custom-config: Optional String representation of configuration yaml to override the default configuration\n\nOutput:\n- For provisioning: The details of the provisioned TibcoHub capability instance, including:\n\t- capabilityInstanceId: The ID of the provisioned capability instance.\n\t- releasesStatus: A list of release statuses, each containing name, namespace, releaseName, revision, status, and error.\n\t- successfulReleases: A list of successfully deployed releases with the same structure.\n- For update: A success message confirming the capability instance was updated.\n\nNote: The ingress-controller-resource-instance-id and gateway-resource-instance-id are mutually exclusive. Only one of them is needed based on whether user wants to use ingress controller or gateway.\nThe database-resource-instance-id and storage-class-resource-instance-id are mutually exclusive. Only one of them is needed for provisioning.\nIf user wants to use default db to be provisioned by platform specify storage-class-resource-instance-id.\nIf user wants to use an existing db instance then specify database-resource-instance-id.\nMake sure one of them is always present in the input for provisioning. \n\nSamples:\n         - Sample 1 — Success (provision)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"provision-schema\": {\"storage-class-resource-instance-id\": \"storage-001\", \"ingress-controller-resource-instance-id\": \"ingress-001\", \"configuration\": {\"developer-hub-name\": \"my-dev-hub\"}, \"advanced\": {\"kubernetes-secret-object\": \"my-secret\"}}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"capabilityInstanceId\":\"tibcohub-inst-001\",\"releasesStatus\":[{\"name\":\"tibcohubprovisioner\",\"namespace\":\"ns-001\",\"releaseName\":\"tibcohubprovisioner-tibcohub-inst-001\",\"revision\":1,\"status\":\"deployed\",\"error\":\"\"}],\"successfulReleases\":[{\"name\":\"tibcohubprovisioner\",\"namespace\":\"ns-001\",\"releaseName\":\"tibcohubprovisioner-tibcohub-inst-001\",\"revision\":1,\"status\":\"deployed\",\"error\":\"\"}]},\"context\":[\"2025-01-01T00:00:00Z\"]}\n\n         - Sample 2 — Success (update)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"capability-instance-id\": \"tibcohub-inst-001\", \"provision-schema\": {\"ingress-controller-resource-instance-id\": \"ingress-001\", \"database-resource-instance-id\": \"db-001\", \"configuration\": {\"developer-hub-name\": \"my-dev-hub-updated\"}, \"advanced\": {\"kubernetes-secret-object\": \"my-secret\"}, \"custom-config\": \"key: value\"}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"message\":\"Successfully updated capability instance 'tibcohub-inst-001' on dataplane 'dp-123'\"},\"context\":[\"2025-01-01T00:00:00Z\"]}\n\n         - Sample 3 — Success (partial update — only change configuration)\n            Input:\n             {\"data-plane-id\": \"dp-123\", \"capability-instance-id\": \"tibcohub-inst-001\", \"provision-schema\": {\"configuration\": {\"developer-hub-name\": \"my-dev-hub-v2\"}}}\n            Output:\n             {\"status\":\"success\",\"response\":{\"message\":\"Successfully updated capability instance 'tibcohub-inst-001' on dataplane 'dp-123'\"},\"context\":[\"2025-01-01T00:00:00Z\"]}"
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane for which capability is to be provisioned or updated. To check for possible values, use the 'listDataplanes' tool.
+        capability-instance-id:
+          type: string
+          description: 'Optional: id of the capability instance to be updated. If provided, the existing capability instance is updated; if omitted, a new capability instance is provisioned. To get this id, use the ''listCapabilityInstances'' tool.'
+        provision-schema:
+          type: object
+          properties:
+            storage-class-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: 'Optional: id of the storage class resource instance to be used while provisioning the capability. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''STORAGE_CLASS'''
+            ingress-controller-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: 'Optional: id of the ingress controller resource instance to be used while provisioning the capability. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''INGRESS_CONTROLLER'''
+            gateway-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: 'Optional: id of the gateway api resource instance to be used while provisioning the capability. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''GATEWAYAPI'''
+            database-resource-instance-id:
+              type:
+                - "null"
+                - string
+              description: 'Optional: id of the database resource instance to be used while provisioning the capability. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''DB_CONFIG'''
+            configuration:
+              type:
+                - "null"
+                - object
+              properties:
+                developer-hub-name:
+                  type: string
+                  description: user defined name for the TIBCOHub capability instance
+              description: configuration required to provision the TIBCOHub capability. Required for create, optional for update.
+              required:
+                - developer-hub-name
+              additionalProperties: false
+            advanced:
+              type:
+                - "null"
+                - object
+              properties:
+                kubernetes-secret-object:
+                  type: string
+                  description: Optional Name of the kubernetes-secret-object required by TIBCOHub
+              description: 'Optional: advanced configuration for provisioning the TIBCOHub capability'
+              additionalProperties: false
+            custom-config:
+              type:
+                - "null"
+                - string
+              description: 'Optional: A string representation of custom configuration in yaml format for provisioning the TIBCOHub capability and overriding any default configuration. Please refer to the documentation for the exact format of the custom configuration.'
+          description: schema for provisioning or updating the tibcohub capability
+          additionalProperties: false
+      required:
+        - data-plane-id
+        - provision-schema
+      additionalProperties: false
+  - name: manageDataPlane
+    description: |-
+      Update or upgrade an existing data plane
+
+      Purpose: This tool is used to update the details of an existing data plane, switch routes, or upgrade all capabilities on a data plane.
+      It supports three mutually exclusive operations:
+      1. Metadata update: Updates basic metadata (name, description, tags)
+      2. Route switching: Switches routes for Control Tower data planes
+      3. Upgrade: Upgrades all capabilities on a Kubernetes data plane to their latest available versions
+      For metadata updates, only provide the fields that need to be changed. Fields that are omitted will remain unchanged.
+
+      Input:
+      - data-plane-id: The unique identifier of the data plane to be updated
+      - name: Optional new name for the data plane
+      - description: Optional new description for the data plane
+      - tags: Optional new tags for the data plane
+      - route-resource-instance-id: Optional. The id of the new route resource instance (ingress controller or gateway) to switch to. Supported only for Control Tower data planes when switching routes.
+      - upgrade: Optional. Set to true to upgrade all capabilities on this data plane to their latest available versions.
+
+      Output: The result of the data plane update including:
+      - For metadata update: id, name, description, tags of the updated data plane
+      - For route switching: A success message confirming the route resource was switched successfully
+      - For upgrade: A list of upgraded capabilities with their from/to versions and any failed capabilities
+
+      Note: The three operations (metadata update, route switching, upgrade) are mutually exclusive. The tool should be used to perform only one operation at a time.
+       For the update calls only fields to be changed are expected in the input/payload
+
+      Samples:
+               - Sample 1 — Success (metadata update)
+                  Input:
+                   {"data-plane-id": "dp-123", "name": "updated-production-cluster", "description": "Updated production Kubernetes cluster", "tags": ["production", "updated", "critical"]}
+                  Output:
+                   {"status":"success","response":{"id":"dp-123","name":"updated-production-cluster","description":"Updated production Kubernetes cluster","tags":["production","updated","critical"]},"context":["2025-01-01T00:00:00Z"]}
+
+               - Sample 2 — Success (route switching for Control Tower data plane)
+                  Input:
+                   {"data-plane-id": "dp-456", "route-resource-instance-id": "d70e5v4o2qtc73bf2e0g"}
+                  Output:
+                   {"status":"success","response":{"message":"Route resource d70e5v4o2qtc73bf2e0g switched successfully"},"context":["2025-01-01T00:00:00Z"]}
+
+               - Sample 3 — Success (upgrade data plane)
+                  Input:
+                   {"data-plane-id": "dp-789", "upgrade": true}
+                  Output:
+                   {"status":"success","response":{"message":"Upgrade initiated for 3 capability(ies)","upgradedCapabilities":[{"capabilityId":"CPPROXY","capabilityInstanceId":"d6a8d94l3frc73c5m8hg","fromVersion":"1.14.0","toVersion":"1.15.0","message":"Successfully updated capability instance"},{"capabilityId":"MONITORINGAGENT","capabilityInstanceId":"d6a8d7sl3frc73c5m8h0","fromVersion":"1.14.0","toVersion":"1.15.0","message":"Successfully updated capability instance"},{"capabilityId":"O11Y","capabilityInstanceId":"d6a8disl3frc73c5m8i0","fromVersion":"1.14.0","toVersion":"1.15.0","message":"Successfully updated capability instance"}],"failedCapabilities":[]},"context":["2025-01-01T00:00:00Z"]}
+
+               - Sample 4 — Success (partial metadata update — only change name)
+                  Input:
+                   {"data-plane-id": "dp-123", "name": "new-cluster-name"}
+                  Output:
+                   {"status":"success","response":{"id":"dp-123","name":"new-cluster-name","description":"Existing description unchanged","tags":["existing","tags"]},"context":["2025-01-01T00:00:00Z"]}
+    inputSchema:
+      type: object
+      properties:
+        data-plane-id:
+          type: string
+          description: id of the data plane to be updated. To check for possible values, use the 'listDataplanes' tool and show them to the user.
+        name:
+          type:
+            - "null"
+            - string
+          description: 'Optional: New name for the data plane'
+        description:
+          type:
+            - "null"
+            - string
+          description: 'Optional: New description for the data plane'
+        tags:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: 'Optional: New tags for the data plane'
+        route-resource-instance-id:
+          type: string
+          description: 'Optional: id of the new route resource instance (ingress controller or gateway) to switch to. Required only for Control Tower data planes when switching routes. To check for possible values, use the ''listResourceInstances'' tool with resourceType filter as ''INGRESS_CONTROLLER'' or ''GATEWAYAPI''.'
+        upgrade:
+          type: boolean
+          description: 'Optional: Set to true to upgrade all capabilities on this Kubernetes data plane to their latest available versions. This is mutually exclusive with other update operations.'
+      required:
+        - data-plane-id
+      additionalProperties: false
+  - name: manageEmailReceiver
+    description: |-
+      Create or update an email receiver to be used for receiving alert notifications via an Email
+
+      Purpose: To create a new email receiver or update an existing one that receives notifications when an alert is triggered
+
+      Behaviour:
+      - If 'resource-instance-id' is omitted, a new email receiver is created
+      - If 'resource-instance-id' is provided, the existing email receiver is updated
+      - For updates, only provide the fields that need to be changed. Fields that are omitted will remain unchanged on the server.
+
+      Input: ManageEmailReceiverInput with the following fields:
+      - resource-instance-id: (Optional) ID of the email receiver resource instance to update. To get this id, use the 'listResourceInstances' tool with filter : resourceType as 'EMAIL_RECEIVER'
+      - name: Name of the email receiver (required for create, optional for update)
+      - description: (Optional) Description of the email receiver
+      - email: List of email addresses to be notified when an alert is triggered (required for create, optional for update)
+
+      Returns: Id of the created or updated resource
+      - resource_instance_id : Unique identifier for the email receiver resource instance
+
+      Note: Email receiver is a type of Resource known to the system as 'EMAIL_RECEIVER' and is managed at subscription level
+       For the update calls only fields to be changed are expected in the input/payload
+
+      Samples:
+               - Sample 1 — Create (no resource-instance-id)
+                  Input:
+                   {"name": "Alert Notifications", "description": "Email receiver for production alerts", "email": ["admin@company.com", "devops@company.com"]}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"email-rec-001"},"context":["2025-01-01T00:00:00Z"]}
+               - Sample 2 — Update (with resource-instance-id)
+                  Input:
+                   {"resource-instance-id": "dw8ryw8rbs9", "name": "Updated Alert Notifications", "description": "Updated email receiver", "email": ["admin@company.com", "ops@company.com"]}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"email-rec-001"},"context":["2025-01-01T00:00:00Z"]}
+               - Sample 3 — Partial update (only change name, leave other fields unchanged)
+                  Input:
+                   {"resource-instance-id": "dw8ryw8rbs9", "name": "New Receiver Name"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"email-rec-001"},"context":["2025-01-01T00:00:00Z"]}
+    inputSchema:
+      type: object
+      properties:
+        resource-instance-id:
+          type: string
+          description: 'optional: id of the email receiver resource instance to be updated. If provided, the existing receiver is updated ; if omitted, a new receiver is created . To get this id, use the ''listResourceInstances'' tool with id ''EMAIL_RECEIVER''.'
+        name:
+          type:
+            - "null"
+            - string
+          description: name of the email receiver. Required when creating, optional when updating — omit to leave unchanged.
+        description:
+          type:
+            - "null"
+            - string
+          description: 'Optional: description of the email receiver. Omit to leave unchanged during update.'
+        email:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: list of email addresses to be notified when an alert is triggered. Required when creating, optional when updating — omit to leave unchanged.
+      additionalProperties: false
+  - name: manageGatewayAPI
+    description: |-
+      Create or update a Gateway API resource at the data plane level
+
+      Purpose: To create a new Gateway API resource or update an existing one that manages gateway API configurations within a data plane
+
+      Behaviour:
+      - If 'resource-instance-id' is omitted, a new Gateway API resource is created (requires 'data-plane-id')
+      - If 'resource-instance-id' is provided, the existing Gateway API resource is updated
+      - For updates, only provide the fields that need to be changed. Fields that are omitted will remain unchanged on the server.
+
+      Input: ManageGatewayAPIInput with the following fields:
+      - resource-instance-id: (Optional) ID of the gateway API resource instance to update. To get this id, use the 'listResourceInstances' tool with filter : resourceType as 'GATEWAYAPI'
+      - data-plane-id: (Optional) ID of the data plane where the gateway API resource will be created. Required when creating a new resource. To check for possible values, use the 'listDataplanes' tool.
+      - name: Name of the gateway API resource (required for create, optional for update)
+      - description: (Optional) Description of the gateway API resource
+      - gateway-apicontroller-name: Name of the gateway API controller (required for create, optional for update)
+      - gateway-name: Name of the gateway (required for create, optional for update)
+      - gateway-namespace: Namespace of the gateway in the data plane cluster (required for create, optional for update)
+      - gateway-host-or-domain-name: Host or domain name for the gateway (required for create, optional for update)
+      - gateway-section-name: (Optional) Section name for the gateway
+
+      Returns: Id of the created or updated resource
+      - resource_instance_id : Unique identifier for the gateway API resource instance
+
+      Note: Gateway API is a type of Resource known to the system as 'GATEWAYAPI' and is created at the data plane level
+       For the update calls only fields to be changed are expected in the input/payload
+
+      Samples:
+               - Sample 1 — Create (no resource-instance-id)
+                  Input:
+                   {"data-plane-id": "d6engci4eopc7389p3ag", "name": "test", "description": "gateway resource test", "gateway-apicontroller-name": "gateway", "gateway-name": "gateway", "gateway-namespace": "test-ns", "gateway-host-or-domain-name": "test", "gateway-section-name": "test"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d6sf8hi9e1vs73cskvm0"},"context":["2026-03-17T06:27:24.850Z"]}
+               - Sample 2 — Update all fields (with resource-instance-id)
+                  Input:
+                   {"resource-instance-id": "opjrfpsada", "name": "test-updated", "description": "updated gateway resource", "gateway-apicontroller-name": "gateway1", "gateway-name": "gateway1", "gateway-namespace": "updated-ns", "gateway-host-or-domain-name": "updated-host", "gateway-section-name": "updated-section"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"opjrfpsada"},"context":["2026-03-17T06:27:24.850Z"]}
+               - Sample 3 — Partial update (only change gateway-namespace, leave other fields unchanged)
+                  Input:
+                   {"resource-instance-id": "opjrfpsada", "gateway-namespace": "new-ns"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"opjrfpsada"},"context":["2026-03-17T06:27:24.850Z"]}
+    inputSchema:
+      type: object
+      properties:
+        resource-instance-id:
+          type: string
+          description: 'optional: id of the gateway API resource instance to be updated. If provided, the existing gateway API resource is updated ; if omitted, a new gateway API resource is created . To get this id, use the ''listResourceInstances'' tool with id ''GATEWAYAPI''.'
+        data-plane-id:
+          type: string
+          description: id of the data plane for which the gateway API resource is to be created. Required when creating a new gateway API resource. To check for possible values, use the 'listDataplanes' tool .
+        name:
+          type:
+            - "null"
+            - string
+          description: name of the gateway API resource. Required when creating, optional when updating — omit to leave unchanged.
+        description:
+          type:
+            - "null"
+            - string
+          description: 'Optional: description of the gateway API resource. Omit to leave unchanged during update.'
+        gateway-apicontroller-name:
+          type:
+            - "null"
+            - string
+          description: name of the gateway API controller. Required when creating, optional when updating — omit to leave unchanged.
+        gateway-name:
+          type:
+            - "null"
+            - string
+          description: name of the gateway api. Required when creating, optional when updating — omit to leave unchanged.
+        gateway-namespace:
+          type:
+            - "null"
+            - string
+          description: namespace of the gateway in the data plane cluster. Required when creating, optional when updating — omit to leave unchanged.
+        gateway-host-or-domain-name:
+          type:
+            - "null"
+            - string
+          description: host or domain name for the gateway api. Required when creating, optional when updating — omit to leave unchanged.
+        gateway-section-name:
+          type:
+            - "null"
+            - string
+          description: 'Optional: section name for the gateway api. Omit to leave unchanged during update.'
+      additionalProperties: false
+  - name: manageIngressController
+    description: |-
+      Create or update an ingress controller to manage access to services of capabilities within a data plane
+
+      Purpose: To create a new ingress controller or update an existing one that manages access to services of capabilities within a data plane
+
+      Behaviour:
+      - If 'resource-instance-id' is omitted, a new ingress controller is created (data-plane-id is required)
+      - If 'resource-instance-id' is provided, the existing ingress controller is updated
+      - For updates, only provide the fields that need to be changed. Fields that are omitted will remain unchanged on the server.
+
+      Input: ManageIngressControllerInput with the following fields:
+      - resource-instance-id: (Optional) ID of the ingress controller resource instance to update. To get this id, use the 'listResourceInstances' tool with resourceType 'INGRESS_CONTROLLER'
+      - data-plane-id: (Optional) ID of the data plane where the ingress resource will be created (required for create, not needed for update)
+      - name: Name of the ingress controller (required for create, optional for update)
+      - description: (Optional) Description of the ingress controller
+      - ingress-controller: Type of the ingress controller e.g., NGINX, Traefik (required for create, optional for update)
+      - ingress-class-name: Class name for the ingress controller (required for create, optional for update)
+      - fqdn: Fully Qualified Domain Name for the ingress controller (required for create, optional for update)
+      - annotations: (Optional) Key-value pairs for annotations to be applied to the ingress controller. Omit to leave unchanged during update. Set to empty object {} to remove all existing annotations.
+
+      Returns: Id of the created or updated resource
+      - resource_instance_id : Unique identifier for the ingress controller resource instance
+
+      Note: Ingress controller is a type of Resource known to the Control Plane as 'INGRESS_CONTROLLER' and is created only at the data plane level
+       For the update calls only fields to be changed are expected in the input/payload
+
+      Samples:
+               - Sample 1 — Create (no resource-instance-id)
+                  Input:
+                   {"data-plane-id": "dp-123", "name": "production-ingress", "description": "Production ingress controller", "ingress-controller": "NGINX", "ingress-class-name": "nginx", "fqdn": "api.company.com", "annotations": {"nginx.ingress.kubernetes.io/ssl-redirect": "true"}}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"ingress-001"},"context":["2025-01-01T00:00:00Z"]}
+               - Sample 2 — Update all fields (with resource-instance-id)
+                  Input:
+                   {"resource-instance-id": "d70j1nko2qtc73bf2e10", "name": "my-ingress-updated", "description": "Updated ingress controller", "ingress-controller": "nginx", "ingress-class-name": "nginx", "fqdn": "my-fqdn2.com", "annotations": {"key-1": "value-1"}}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d70j1nko2qtc73bf2e10"},"context":["2025-01-01T00:00:00Z"]}
+               - Sample 3 — Partial update (only change fqdn, leave other fields unchanged)
+                  Input:
+                   {"resource-instance-id": "d70j1nko2qtc73bf2e10", "fqdn": "new-fqdn.com"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d70j1nko2qtc73bf2e10"},"context":["2025-01-01T00:00:00Z"]}
+    inputSchema:
+      type: object
+      properties:
+        resource-instance-id:
+          type: string
+          description: 'Optional: id of the ingress controller resource instance to be updated. If provided, the existing ingress controller is updated ; if omitted, a new ingress controller is created. To get this id, use the ''listResourceInstances'' tool with resourceType ''INGRESS_CONTROLLER''.'
+        data-plane-id:
+          type: string
+          description: 'Optional: id of the data plane for which the ingress controller is to be created. Required when creating a new ingress controller. To check for possible values, use the ''listDataplanes'' tool'
+        name:
+          type:
+            - "null"
+            - string
+          description: name of the ingress controller. Required when creating, optional when updating — omit to leave unchanged.
+        description:
+          type:
+            - "null"
+            - string
+          description: 'Optional: description of the ingress controller. Omit to leave unchanged during update.'
+        ingress-controller:
+          type:
+            - "null"
+            - string
+          description: ingress controller type. Required when creating, optional when updating — omit to leave unchanged.
+        ingress-class-name:
+          type:
+            - "null"
+            - string
+          description: ingress class name for the ingress controller. Required when creating, optional when updating — omit to leave unchanged.
+        fqdn:
+          type:
+            - "null"
+            - string
+          description: fqdn for the ingress controller. Required when creating, optional when updating — omit to leave unchanged.
+        annotations:
+          type:
+            - "null"
+            - object
+          description: 'Optional: annotations to be added to the ingress resource. Omit to leave unchanged during update. Set to empty object {} to remove all existing annotations.'
+          additionalProperties:
+            type: string
+      additionalProperties: false
+  - name: manageWebhookReceiver
+    description: |-
+      Create or update a webhook receiver used for receiving alert notifications via HTTP webhook
+
+      Purpose: To create a new webhook receiver or update an existing one that receives alert notifications via an HTTP POST to a specified URL when an alert is triggered
+
+      Behaviour:
+      - If 'resource-instance-id' is omitted, a new webhook receiver is created
+      - If 'resource-instance-id' is provided, the existing webhook receiver is updated
+      - For updates, only provide the fields that need to be changed. Fields that are omitted will remain unchanged on the server.
+
+      Input: ManageWebhookReceiverInput with the following fields:
+      - resource-instance-id: (Optional) ID of the webhook receiver resource instance to update. To get this id, use the 'listResourceInstances' tool with filter : resourceType as 'WEBHOOK_RECEIVER'
+      - name: Name of the webhook receiver (required for create, optional for update)
+      - description: (Optional) Description of the webhook receiver
+      - url: Webhook URL to which alerts will be sent (required for create, optional for update)
+      - max-alerts: (Optional) Maximum number of alerts to send in a single webhook call
+      - timeout: (Optional) Timeout in seconds for the webhook call
+      - headers: (Optional) Custom headers to include in the webhook request. Omit to leave existing headers unchanged during update. Set to empty object {} to remove all existing headers. If new headers are provided the existing ones are replaced.
+
+      Returns: Id of the created or updated resource
+      - resource_instance_id : Unique identifier for the webhook receiver resource instance
+
+      Note: Webhook receiver is a type of Resource known to the system as 'WEBHOOK_RECEIVER' and is managed at subscription level
+       For the update calls only fields to be changed are expected in the input/payload
+
+      Samples:
+               - Sample 1 — Create (no resource-instance-id)
+                  Input:
+                   {"name": "alert-receiver-name", "description": "alert receiver description", "url": "https://www.webhook-url.com", "max-alerts": 12, "timeout": 30}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d6oipqq9e1vs73cskv00"},"context":["2026-03-11T08:50:57.943Z"]}
+               - Sample 2 — Update all fields (leave existing headers unchanged)
+                  Input:
+                   {"resource-instance-id": "d6oipqq9e1vs73cskv00", "name": "updated-receiver-name", "description": "updated receiver description", "url": "https://www.new-webhook-url.com", "max-alerts": 20, "timeout": 60}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d6oipqq9e1vs73cskv00"},"context":["2026-03-11T08:50:57.943Z"]}
+               - Sample 3 — Partial update (only change url, leave other fields unchanged)
+                  Input:
+                   {"resource-instance-id": "d6oipqq9e1vs73cskv00", "url": "https://www.new-webhook-url.com"}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d6oipqq9e1vs73cskv00"},"context":["2026-03-11T08:50:57.943Z"]}
+               - Sample 4 — Update and remove all existing headers
+                  Input:
+                   {"resource-instance-id": "d6oipqq9e1vs73cskv00", "name": "alert-receiver-name", "url": "https://www.webhook-url.com", "headers": {}}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d6oipqq9e1vs73cskv00"},"context":["2026-03-11T08:50:57.943Z"]}
+               - Sample 5 — Update and replace headers with new values
+                  Input:
+                   {"resource-instance-id": "d6oipqq9e1vs73cskv00", "name": "updated-receiver-name", "url": "https://www.new-webhook-url.com", "headers": {"Authorization": "Bearer newtoken456", "Content-Type": "application/json"}}
+                  Output:
+                   {"status":"success","response":{"resource_instance_id":"d6oipqq9e1vs73cskv00"},"context":["2026-03-11T08:50:57.943Z"]}
+    inputSchema:
+      type: object
+      properties:
+        resource-instance-id:
+          type: string
+          description: 'optional: id of the webhook receiver resource instance to be updated. If provided, the existing receiver is updated (PUT); if omitted, a new receiver is created (POST). To get this id, use the ''listResourceInstances'' tool with id ''WEBHOOK_RECEIVER''.'
+        name:
+          type:
+            - "null"
+            - string
+          description: name of the webhook receiver. Required when creating, optional when updating — omit to leave unchanged.
+        description:
+          type:
+            - "null"
+            - string
+          description: 'Optional: description of the webhook receiver. Omit to leave unchanged during update.'
+        url:
+          type:
+            - "null"
+            - string
+          description: webhook URL to which alerts will be sent. Required when creating, optional when updating — omit to leave unchanged.
+        max-alerts:
+          type:
+            - "null"
+            - integer
+          description: 'Optional: maximum number of alerts to send in a single webhook call. Omit to leave unchanged during update.'
+        timeout:
+          type:
+            - "null"
+            - integer
+          description: 'Optional: timeout in seconds for the webhook call. Omit to leave unchanged during update.'
+        headers:
+          type:
+            - "null"
+            - object
+          description: 'Optional: new custom headers to include in the webhook request. Omit to leave existing headers unchanged during update. Set to empty object {} to remove all existing headers. If new headers are provided the existing ones are replaced.'
+          additionalProperties:
+            type: string
+      additionalProperties: false
+resources: []
+prompts: []
+toolCount: 26
+resourceCount: 0
+promptCount: 0
+errors: []

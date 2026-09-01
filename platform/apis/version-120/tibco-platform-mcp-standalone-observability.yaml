@@ -1,0 +1,19 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: "observability-mcp-120"
+  title: TIBCO Platform Observability MCP Server
+  description: MCP server for TIBCO Platform observability.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - model-context-protocol
+spec:
+  type: mcp-server
+  lifecycle: production
+  owner: TIBCO
+  remotes:
+    - type: streamable-http
+      url: /o11y/mcp
+  definition:
+    $text: ./observability-mcp-definition-120.yaml
