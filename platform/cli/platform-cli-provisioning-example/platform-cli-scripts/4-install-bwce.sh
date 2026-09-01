@@ -3,6 +3,7 @@ set -e
 source 0-common-script-functions.sh
 
 profile="${1:-initialProfile}"
+start_e2e=$(date +%s)
 version=v$(date +%s)
 
 # Data Plane NAME

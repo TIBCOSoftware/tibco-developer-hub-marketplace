@@ -5,6 +5,11 @@
 # export KUBECONFIG=$PWD/cluster.yaml
 
 convertsecs() {
+ # Guard against an unset/invalid timer (would otherwise print epoch seconds)
+ if ! [[ "${1}" =~ ^[0-9]+$ ]]; then
+   printf "unknown duration (timer not started)\n"
+   return 0
+ fi
  ((h=${1}/3600))
  ((m=(${1}%3600)/60))
  ((s=${1}%60))
