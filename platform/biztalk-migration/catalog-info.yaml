@@ -1,0 +1,39 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: biztalk-migration-doc
+  description: BizTalk to TIBCO Platform Migration Documentation
+spec:
+  type: organization
+  profile:
+    displayName: BizTalk to TIBCO Platform Migration
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: biztalk-migration-doc
+  description: Guidance on migrating from Microsoft BizTalk Server to the TIBCO Platform
+spec:
+  owner: biztalk-migration-doc
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: biztalk-to-tibco-platform-migration
+  description: 'A strategic guide by Behaim ITS to migrating from Microsoft BizTalk Server to the TIBCO Platform'
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - documentation
+    - biztalk
+  links:
+    - url: https://behaimits.com/wp-content/uploads/BizTalk2TIBCO.pdf
+      title: Full Technical Brief (Behaim ITS)
+      icon: docs
+    - url: https://www.tibco.com/blog/2026/04/15/from-legacy-to-cloud-native-a-strategic-guide-to-biztalk-to-tibco-platform-migration/
+      title: TIBCO Blog Post
+      icon: docs
+spec:
+  owner: biztalk-migration-doc
+  domain: biztalk-migration-doc

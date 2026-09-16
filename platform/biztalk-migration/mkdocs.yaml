@@ -1,0 +1,8 @@
+site_name: 'BizTalk to TIBCO Platform Migration'
+site_description: 'A strategic guide to migrating from Microsoft BizTalk Server to the TIBCO Platform'
+
+nav:
+  - Introduction: index.md
+
+plugins:
+  - techdocs-core
