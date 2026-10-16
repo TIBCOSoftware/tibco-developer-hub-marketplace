@@ -1,0 +1,22 @@
+site_name: 'TIBCO MCP Hub Scenarios & Policies'
+site_description: 'Use cases, scenarios and policy plugins for TIBCO MCP Hub — what each one proves, how to configure it, what happens, and where it stops'
+
+nav:
+  - Overview: index.md
+  - Capabilities:
+      - Onboarding & tool lifecycle: capabilities-onboarding.md
+      - Identity, external policy & deployment: capabilities-identity-governance.md
+      - Composing the plugin pipeline: plugin-pipeline.md
+      - Business compositions: business-compositions.md
+  - Integration — Flogo & BW5: integration.md
+  - Policy plugins:
+      - Access, identity & credentials: policies-access.md
+      - Data protection & privacy: policies-data-protection.md
+      - Content safety & threat protection: policies-content-safety.md
+      - Reliability, rate & cost control: policies-reliability-cost.md
+      - Validation, contracts & normalization: policies-validation.md
+      - Response shaping & protocol bridging: policies-response-shaping.md
+      - Observability & audit: policies-observability.md
+
+plugins:
+  - techdocs-core

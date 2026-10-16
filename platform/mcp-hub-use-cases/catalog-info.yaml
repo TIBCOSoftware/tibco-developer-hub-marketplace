@@ -1,0 +1,35 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: mcp-hub-use-cases-doc
+  description: TIBCO MCP Hub Scenarios & Policies Documentation
+spec:
+  type: organization
+  profile:
+    displayName: TIBCO MCP Hub Scenarios & Policies
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: mcp-hub-use-cases-doc
+  description: A group of documents
+spec:
+  owner: mcp-hub-use-cases-doc
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: mcp-hub-use-cases
+  description: 'TIBCO MCP Hub use cases and policy plugins — onboarding capabilities, identity and external policy, business compositions, Flogo and BW5 integration, and 37 governance plugins, each with its scenario, configuration, outcome and considerations.'
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - documentation
+    - tibco-hub-documentation
+    - mcp
+    - mcp-hub
+    - ai-governance
+spec:
+  owner: mcp-hub-use-cases-doc
+  domain: mcp-hub-use-cases-doc
