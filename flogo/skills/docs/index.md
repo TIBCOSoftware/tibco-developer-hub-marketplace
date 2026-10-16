@@ -6,9 +6,17 @@ A library of **skills for AI coding agents** (such as **Claude Code**) to design
 
 See the skills in action — designing, building and deploying a Flogo application with an AI coding agent.
 
-[![Build Integration workflows in minutes with AI Coding Agents & Skills](https://img.youtube.com/vi/bxucbxwSBPc/maxresdefault.jpg)](https://www.youtube.com/watch?v=bxucbxwSBPc)
+<div style="position:relative;padding-top:56.25%;max-width:880px;margin:1.5rem auto;">
+  <a href="https://www.youtube.com/watch?v=bxucbxwSBPc"><img src="https://img.youtube.com/vi/bxucbxwSBPc/maxresdefault.jpg" alt="Build Integration workflows in minutes with AI Coding Agents &amp; Skills" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:8px;"></a>
+  <iframe
+    src="https://www.youtube.com/embed/bxucbxwSBPc"
+    title="Build Integration workflows in minutes with AI Coding Agents &amp; Skills"
+    loading="lazy"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;border-radius:8px;"
+  ></iframe>
+</div>
 
-*Click the image to watch on YouTube.*
+<p style="text-align:center;"><a href="https://www.youtube.com/watch?v=bxucbxwSBPc">Watch on YouTube</a></p>
 
 ---
 

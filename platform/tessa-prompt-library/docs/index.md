@@ -19,9 +19,17 @@ curated set of prompts that are known to work, organised by what you are trying 
 
 See TESSA in action — asking plain-language questions across the platform and getting analysis back.
 
-[![Talk to Your Whole TIBCO Platform — Meet TESSA](images/tessa-overview.webp)](https://www.youtube.com/watch?v=3FPMPI5eRas&t=86s)
+<div style="position:relative;padding-top:56.25%;max-width:880px;margin:1.5rem auto;">
+  <a href="https://www.youtube.com/watch?v=3FPMPI5eRas&amp;t=86s"><img src="images/tessa-overview.webp" alt="Talk to Your Whole TIBCO Platform — Meet TESSA" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:8px;"></a>
+  <iframe
+    src="https://www.youtube.com/embed/3FPMPI5eRas?start=86"
+    title="Talk to Your Whole TIBCO Platform — Meet TESSA"
+    loading="lazy"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;border-radius:8px;"
+  ></iframe>
+</div>
 
-*Click the image to watch on YouTube.*
+<p style="text-align:center;"><a href="https://www.youtube.com/watch?v=3FPMPI5eRas&amp;t=86s">Watch on YouTube</a></p>
 
 ---
 
