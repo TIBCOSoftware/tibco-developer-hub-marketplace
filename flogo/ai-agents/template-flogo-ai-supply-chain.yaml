@@ -1,5 +1,5 @@
-# Code Folder: https://github.com/TIBCOSoftware/flogo-enterprise-hub/tree/master/samples/Agentic_AI/Smart-Supply-Chain-Assistant
-# Doc File: https://github.com/TIBCOSoftware/flogo-enterprise-hub/tree/master/samples/Agentic_AI/Smart-Supply-Chain-Assistant/README.md
+# Code Folder: https://github.com/TIBCOSoftware/flogo-enterprise-hub/tree/master/samples/Agentic_AI/Feature_Samples/Smart-Supply-Chain-Assistant
+# Doc File: https://github.com/TIBCOSoftware/flogo-enterprise-hub/tree/master/samples/Agentic_AI/Feature_Samples/Smart-Supply-Chain-Assistant/README.md
 # Doc File Target Path: ./docs/index.md
 # name: flogo-ai-supply-chain
 # title: Smart Supply Chain Assistant
@@ -82,13 +82,13 @@ spec:
       action: fetch:plain
       name: Fetch code
       input:
-        url: 'https://github.com/TIBCOSoftware/flogo-enterprise-hub/tree/master/samples/Agentic_AI/Smart-Supply-Chain-Assistant'
+        url: 'https://github.com/TIBCOSoftware/flogo-enterprise-hub/tree/master/samples/Agentic_AI/Feature_Samples/Smart-Supply-Chain-Assistant'
 
     - id: fetch-docs
       action: fetch:plain:file
       name: Fetch docs
       input:
-        url: 'https://github.com/TIBCOSoftware/flogo-enterprise-hub/tree/master/samples/Agentic_AI/Smart-Supply-Chain-Assistant/README.md'
+        url: 'https://github.com/TIBCOSoftware/flogo-enterprise-hub/tree/master/samples/Agentic_AI/Feature_Samples/Smart-Supply-Chain-Assistant/README.md'
         targetPath: './docs/index.md'
 
     - id: publish

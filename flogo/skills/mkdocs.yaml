@@ -1,5 +1,5 @@
 site_name: 'Flogo Skill Library for Coding Agents'
-site_description: 'A library of skills for AI coding agents to build, test, and deploy TIBCO Flogo integration applications.'
+site_description: 'A library of skills for AI coding agents to design, build, test, and deploy TIBCO Flogo integration applications, and to build governed Agentic AI use cases.'
 
 nav:
   - Introduction: index.md

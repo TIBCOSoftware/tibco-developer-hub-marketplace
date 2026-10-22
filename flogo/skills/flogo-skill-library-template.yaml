@@ -3,12 +3,14 @@ kind: Template
 metadata:
   name: flogo-skill-library-template
   title: Flogo Skill Library
-  description: Create a new project pre-seeded with the Flogo Skill Library — a set of skills for AI coding agents to build, test, and deploy TIBCO Flogo applications.
+  description: Create a new project pre-seeded with the Flogo Skill Library — skills for AI coding agents (Claude Code, GitHub Copilot, AWS Kiro) to design, build, test, and deploy TIBCO Flogo applications, including the Agentic AI Use Case Builder.
   tags:
     - flogo
     - artificial-intelligence
     - coding-agents
     - claude-code
+    - github-copilot
+    - agentic-ai
 spec:
   owner: flogo-skill-library
   type: integration
@@ -76,7 +78,30 @@ spec:
       name: Fetch agent instructions
       input:
         url: 'https://github.com/TIBCOSoftware/flogo-enterprise-hub/blob/master/skills-library/AGENT.md'
+        targetPath: './AGENT.md'
+
+    # CLAUDE.md imports AGENT.md (@AGENT.md), so the project conventions apply in Claude Code too.
+    - id: fetch-claude
+      action: fetch:plain:file
+      name: Fetch Claude Code instructions
+      input:
+        url: 'https://github.com/TIBCOSoftware/flogo-enterprise-hub/blob/master/skills-library/CLAUDE.md'
         targetPath: './CLAUDE.md'
+
+    # Keeps .claude/skills/config.md (real credentials), build output and scratch apps out of the new repo.
+    - id: fetch-gitignore
+      action: fetch:plain:file
+      name: Fetch .gitignore
+      input:
+        url: 'https://github.com/TIBCOSoftware/flogo-enterprise-hub/blob/master/skills-library/.gitignore'
+        targetPath: './.gitignore'
+
+    - id: fetch-excel-sample
+      action: fetch:plain:file
+      name: Fetch Excel mapping sample
+      input:
+        url: 'https://github.com/TIBCOSoftware/flogo-enterprise-hub/blob/master/skills-library/ExcelWithMapping.xlsx'
+        targetPath: './ExcelWithMapping.xlsx'
 
     - id: fetch-images
       action: fetch:plain
@@ -91,6 +116,14 @@ spec:
       input:
         url: 'https://github.com/TIBCOSoftware/flogo-enterprise-hub/blob/master/skills-library/README.md'
         targetPath: './docs/index.md'
+
+    # The README links to SamplePrompts/README.md relative to itself, i.e. docs/SamplePrompts/ here.
+    - id: fetch-sample-prompts
+      action: fetch:plain
+      name: Fetch sample prompts
+      input:
+        url: 'https://github.com/TIBCOSoftware/flogo-enterprise-hub/tree/master/skills-library/SamplePrompts'
+        targetPath: './docs/SamplePrompts'
 
     - id: publish
       name: Publish

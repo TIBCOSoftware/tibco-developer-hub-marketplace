@@ -21,7 +21,7 @@ apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:
   name: flogo-skill-library
-  description: 'A library of skills for AI coding agents (Claude Code, etc.) to design, build, test, and deploy TIBCO Flogo integration applications.'
+  description: 'A library of skills for AI coding agents (Claude Code, GitHub Copilot, AWS Kiro, etc.) to design, build, test, and deploy TIBCO Flogo integration applications — including the Agentic AI Use Case Builder for governed MCP + A2A agentic apps.'
   annotations:
     backstage.io/techdocs-ref: dir:.
   tags:
@@ -30,6 +30,8 @@ metadata:
     - coding-agents
     - skills
     - claude-code
+    - github-copilot
+    - agentic-ai
 spec:
   owner: flogo-skill-library
   domain: flogo-skill-library
